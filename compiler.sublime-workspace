@@ -1,0 +1,1604 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "ASTAlias.py",
+			"settings":
+			{
+				"buffer_size": 310,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "AST.py",
+			"settings":
+			{
+				"buffer_size": 92,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTArgItem.py",
+			"settings":
+			{
+				"buffer_size": 364,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTArgList.py",
+			"settings":
+			{
+				"buffer_size": 256,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTAttribute.py",
+			"settings":
+			{
+				"buffer_size": 126,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTBlock.py",
+			"settings":
+			{
+				"buffer_size": 200,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTCase.py",
+			"settings":
+			{
+				"buffer_size": 315,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTCases.py",
+			"settings":
+			{
+				"buffer_size": 220,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTClass.py",
+			"settings":
+			{
+				"buffer_size": 658,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTDeclFunc.py",
+			"settings":
+			{
+				"buffer_size": 254,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTEmpty.py",
+			"settings":
+			{
+				"buffer_size": 108,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTExpr.py",
+			"settings":
+			{
+				"buffer_size": 160,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTExprs.py",
+			"settings":
+			{
+				"buffer_size": 189,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTFalse.py",
+			"settings":
+			{
+				"buffer_size": 108,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTFor.py",
+			"settings":
+			{
+				"buffer_size": 293,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTFuncCall.py",
+			"settings":
+			{
+				"buffer_size": 339,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTIf.py",
+			"settings":
+			{
+				"buffer_size": 291,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTIndexing.py",
+			"settings":
+			{
+				"buffer_size": 344,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTListGenerateType1.py",
+			"settings":
+			{
+				"buffer_size": 316,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTListValue.py",
+			"settings":
+			{
+				"buffer_size": 237,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTNames.py",
+			"settings":
+			{
+				"buffer_size": 350,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTNamespace.py",
+			"settings":
+			{
+				"buffer_size": 501,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTOperator.py",
+			"settings":
+			{
+				"buffer_size": 383,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTPatternMatch.py",
+			"settings":
+			{
+				"buffer_size": 323,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTRankSpecs.py",
+			"settings":
+			{
+				"buffer_size": 304,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTReturn.py",
+			"settings":
+			{
+				"buffer_size": 203,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTSet.py",
+			"settings":
+			{
+				"buffer_size": 265,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTSimpleExprs.py",
+			"settings":
+			{
+				"buffer_size": 195,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTTemplate.py",
+			"settings":
+			{
+				"buffer_size": 257,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "ASTTemplateList.py",
+			"settings":
+			{
+				"buffer_size": 323,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTTrue.py",
+			"settings":
+			{
+				"buffer_size": 105,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTType.py",
+			"settings":
+			{
+				"buffer_size": 588,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTUse.py",
+			"settings":
+			{
+				"buffer_size": 197,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTVal.py",
+			"settings":
+			{
+				"buffer_size": 373,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTVar.py",
+			"settings":
+			{
+				"buffer_size": 373,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTWord.py",
+			"settings":
+			{
+				"buffer_size": 575,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ASTWrap.py",
+			"settings":
+			{
+				"buffer_size": 169,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "IR.py",
+			"settings":
+			{
+				"buffer_size": 235,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "mangle.py",
+			"settings":
+			{
+				"buffer_size": 4755,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "parser_new.py",
+			"settings":
+			{
+				"buffer_size": 1072,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "#!/usr/bin/env pythone\n# -*- coding: utf-8 -*-\nimport traceback\n\nfrom Token import *\n\nfrom AST import *\nfrom ASTAlias import *\nfrom ASTArgItem import *\nfrom ASTArgList import *\nfrom ASTAttribute import *\nfrom ASTTemplate import *\nfrom ASTClass import *\nfrom ASTDeclFunc import *\nfrom ASTEmpty import *\nfrom ASTExpr import *\nfrom ASTExprs import *\nfrom ASTFor import *\nfrom ASTFuncCall import *\nfrom ASTIf import *\nfrom ASTListGenerateType1 import *\nfrom ASTNames import *\nfrom ASTNamespace import *\nfrom ASTOperator import *\nfrom ASTRankSpecs import *\nfrom ASTSimpleExprs import *\nfrom ASTTemplateList import *\nfrom ASTType import *\nfrom ASTUse import *\nfrom ASTVal import *\nfrom ASTVar import *\nfrom ASTWord import *\nfrom ASTBlock import *\nfrom ASTIndexing import *\nfrom ASTSet import *\nfrom ASTCase import *\nfrom ASTCases import *\nfrom ASTPatternMatch import *\nfrom ASTTrue import *\nfrom ASTFalse import *\nfrom ASTReturn import *\nfrom ASTWrap import *\nfrom mangle import *\n\nimport copy\nimport random\n\nbasic_type = {'char': 0, 'int': 0, 'float': 0, 'double': 0}\n\n#class SymbolInfo:\n#  def __init__(self, val):\n#    info = {}\n#    for key in val:\n#      info[\"@\" + key] = val[key]\n#    self.info = info\n#\n#  def get_info(self, keyword):\n#    true_name = \"@\" + keyword\n#    if self.info.has_key(true_name):\n#      return self.info[true_name]\n#    return None\n\ndef make_keys(target, keys, value):\n  if target == None:\n    target = {}\n  elif not isinstance(target, dict):\n    print \"target variable is not dict\"\n    sys.exit(-1)\n\n  cursor = target\n  for key in keys[:-1]:\n    if cursor.has_key(key):\n      cursor = cursor[key]\n    else:\n      cursor[key] = {}\n      cursor = cursor[key]\n\n  key = keys[-1]\n  cursor[key] = value\n\nclass SymbolTable:\n  def __init__(self):\n    self.alias     = {}\n    self.hierarchy = {}\n    self.reverse   = {}\n\n    self.symtbl    = {}\n\n  def reg_symbol(self, info):\n    #print info.get_info('type')\n    \n    # alias is also class\n    if info[\"@type\"] == 'alias':\n      name = info[\"@alias\"]\n      real = info[\"@target\"]\n      self.alias[name] = {\"@type\": \"alias\", \"@original\": info[\"@target\"]}\n      isloaded = self.search(real)\n      if not isloaded:\n        self.load_symbol_info(real)\n    else:\n      full = info[\"@long\"]\n      make_keys(self.hierarchy, full, info)\n    \n      reverse_token = full[:]\n      reverse_token.reverse()\n      make_keys(self.reverse, reverse_token, info)\n\n  \"\"\" load symbol informations from file \"\"\"\n  def load_symbol_info(self, name):\n    pass\n\n  def search(self, name):\n    tmp = name\n    if isinstance(name, str):\n      tmp = name.split('.')\n\n    if len(tmp) == 1:\n      if self.alias.has_key(tmp):\n        tmp = self.alias[tmp].strip().split()\n\n    node = self.hierarchy\n    for item in tmp:\n      if node.has_key(item):\n        node = node[item]\n      else:\n        return None\n\n    # node의 타입을 얻습니다. \n    if not node.has_key('@type'):\n      return {'type': 'namespace'}\n\n    return {'type': node['@type'], 'value': node}\n      \n  def walk_node(self, path, now, ret):\n    if now.has_key('@type'):\n      _ret = path[:]\n      _ret.reverse()\n      ret.append(_ret)\n      return \n\n    for key in now:\n      if key[0] == '@': \n        continue\n      \n      new_path = path + [key]\n      self.walk_node(path = new_path, now = now[key], ret = ret)\n\nsymbol_dict = SymbolTable()\n\nclass Parser:\n  def __init__(self, fn):\n    self.isdebug = True\n\n    self.token  = Token(fn)\n \n    # for namespace\n    self.now_scope = []\n    self.property  = []    \n    self.token.nextToken()\n\n  def parse(self):\n    context = []\n    while self.token.tok != None:\n      tree = None\n    	\n      value = self.token.tok.value\n      if value == 'namespace':\n        tree = self.parseNamespace()\n      elif value == 'template':\n        tree = self.parseTemplate()\n      elif value == 'class':\n        tree = self.parseClass()\n      elif value == 'use' \\\n        or value == 'import':\n        self.parseUse()\n      elif value == 'def':\n        tree = self.parseDefFunc()\n      elif value == 'var':\n        tree = self.parseDefVar(context = None)\n      elif value == 'val':\n        tree = self.parseDefVal(context = None)\n      elif value == '@':\n      	# parseAttribute\n      	pass\n      elif value == 'native':\n      	self.token.match(value)\n      	self.property.append(value)\n      else:\n        break\n\n      if tree != None:\n        context.append(tree)\n\n    return context\n\n  def parseNamespace(self):\n    if not self.token.match('namespace'):\n      return None\n\n    old_scope         = self.now_scope\n\n    names = self.parseNames(limitLen = 0)\n    if len(self.now_scope) == 0:\n      self.now_scope = names.array\n    else:\n      self.now_scope = self.now_scoop + names.array\n\n    content = None\n    if not self.token.match(';'):\n      self.token.match('{')\n      content = self.parse()\n      self.token.match('}')\n\n    ret_tree = ASTNamespace(ASTNames(self.now_scope), content)\n\n    self.now_scope     = old_scope\n    return ret_tree\n\n  def parseTemplate(self):\n    if not self.token.match('template'):\n      return None\n\n    type_info = {\"@type\": \"template\"}\n\n    args = self.parseTemplateDefArgs()\n    if tmpl == None or len(tmpl) == 0:\n      print \"Error) Need more template arguments\"\n      sys.exit(-1)\n\n    # will change regular expression \n    postfix = \"\".join(map(lambda x: \"\".join([\"?\", x]), tmpl))\n\n    tree = None\n\n    value = self.token.tok.value\n    if value == 'template':\n      tree = self.parseTemplate()\n    elif value == 'class':\n      tree = self.parseClass()\n    elif value == 'def':\n      tree = self.parseDefFunc()\n    elif value == 'var':\n      tree = self.parseDefVar()\n    elif value == 'val':\n      tree = self.parseDefVal()\n\n    return ASTTemplate(args, tree, type_info = type_info)\n\n  def parseTemplateDefArgs(self):\n    if not self.token.match('<'):\n      return None\n\n    items = []\n    \n    while True:\n      self.token.match('class')\n      name = self.parseNames(limitLen = 1)\n      if name[0] in items:\n        print \"duplicated template name\"\n        sys.exit(-1)\n      else:\n        items.append(name[0])\n        if not self.token.match(','):\n          break\n    \n    self.token.match('>')\n    return items\n\n  def parseClass(self):\n    if not self.token.match('class'):\n      return None\n\n    type_info = {\"@type\": \"class\"}\n\n    cname = self.parseNames(limitLen = 0)\n    fname = self.now_scope + cname.array\n\n    if len(cname.array) == 1:\n      type_info['@short'] = cname.array[0]\n    else:\n      type_info[\"@short\"] = \".\".join(cname.array[-1])\n    type_info[\"@long\"] = fname\n    \n    type_info[\"@property\"] = self.property\n    self.property = []\n\n    symbol_dict.reg_symbol(type_info)\n  \n    # 단순히 정의만...\n    # class xxx.xxx.xxx;\n    if self.token.match(';'):\n      return ASTClass(type_info)\n\n    # 상속 \n    if self.token.match(':'):\n      level = self.token.tok.value\n\n      if level != 'public' and level != 'protected' and level != 'private':\n        print \"Error) We didn't want '%s'\" % level\n        sys.exit(-1)\n      \n      self.token.nextToken()\n\n      oname = self.parseNames(limitLen = 0)\n      lst   = symbol_dict.search(oname.array)\n      if lst == None:\n        print \"Not found that symbol\"\n        exit(-1)\n\n      if lst['type'] != 'class':\n        print \"You must use class instead of %s\" % (lst['type'])\n        exit(-1)\n\n      type_info[\"@parent\"] = lst['value']\n\n    self.token.match('{')\n    type_info['@children'] = {}\n    self.parseClassBody(type_info)\n    self.token.match('}')\n\n    return ASTClass(type_info)\n\n  def parseClassBody(self, context):\n    level = \"public\"\n\n    while True:\n      _info = None\n      value = self.token.tok.value\n      if value == 'public':\n        self.token.match('public')\n        self.token.match(':')\n        level = \"public\"\n      elif value == 'private':\n        self.token.match('private')\n        self.token.match(':')\n        level = \"private\"\n      elif value == 'protected':\n        self.token.match('protected')\n        self.token.match(':')\n        level = 'protected'\n      elif value == 'def':\n        _info = self.parseDefFuncAtClass(context)\n      elif value == 'var':\n        _info = self.parseDefVarAtClass(context)\n      elif value == 'val':\n        _info = self.parseDefValAtClass(context)\n      else:\n        break\n\n      if _info != None:\n        _info['@level'] = level\n\n  def parseUse(self):\n    if not self.token.match('use') \\\n      and not self.token.match('import'):\n      return\n\n    # in general\n    # use <external namespace>;\n    names = self.parseNames(limitLen = 0)\n    _name  = \".\".join(names.array)\n\n    # to load namespace information\n    # however, ...\n    type_info = {\n      \"@type\" : \"class\",\n      \"@long\" : names.array,\n      \"@short\": names.array[-1]}\n    symbol_dict.reg_symbol(type_info)\n \n    if self.token.match('='):\n      # use <external namespace> = <alias name>;\n      alias = self.parseNames(limitLen = 1)\n      self.token.nextToken(';')\n      _alias = \"\".join(alias.array)\n      if self.reverse_stack.has_key(alias[0]):\n        self.reverse_stack[alias[0]].append(names.array)\n      else:\n        self.reverse_stack[alias[0]] = [names.array]\n\n      type_info = {\n        \"@type\"  : \"alias\",\n        \"@alias\" : names.array[-1],\n        \"@long\"  : [names.array[-1]],\n        \"@target\": \".\".join(names.array)}\n      symbol_dict.reg_symbol(type_info)\n\n    self.token.match(';')\n  \n  def parseNames(self, limitLen = 1):\n    if self.token.match('_'):\n      return ASTNames(['_'])\n    elif self.token.tok.type != 'id':\n      return None\n\n    history = [self.token.tok.value]\n    self.token.nextToken()\n    if self.token.tok.value == '.' and limitLen == 1:\n      print \"we just needed one word!\"\n      sys.exit(-1)\n\n    while self.token.match('.'):\n      history.append(self.token.tok.value)\n      self.token.nextToken()\n\n    return ASTNames(history)\n\n  def search_type(self, type):\n    name  = type.name\n    templ = type.templ\n    ranks = type.ranks\n\n    lst   = symbol_dict.search_from_last(name)\n    if lst == None: return False\n\n    return True\n\n  def convert_to_str(self, type):\n    def __inner(__templ):\n      if __templ == None:\n        return None\n\n      str = None\n      for item in _templ.history:\n        str  = '<'\n        str += self.convert_to_str(item)\n        str += '>'\n        \n      return str\n      \n    name  = \".\".join(type.name)\n    templ = __inner(type.templ)\n    ranks = None\n    if type.ranks != None:\n      for item in type.ranks.history:\n        ranks += '[]'\n\n    return \"\".join([name, templ, ranks])\n \n  def parseDefFunc(self):\n    if not self.token.match('def'):\n      return None\n\n    type_info = {}\n\n    type_info['@type']     = 'function'\n    type_info['@property'] = []\n\n    # to make full path\n    name = self.parseNames(limitLen = 0)\n   \n    type_info['@short'] = name.array[-1]\n    type_info['@long'] = name.array\n    \n    self.token.match('(')\n    args  = self.parseFuncArgsList()\n    self.token.match(')')\n    \n    args_info = {}\n    for item in args.history:\n      if isinstance(item, ASTEmpty):\n        break\n      elif isinstance(item, ASTSet):\n        # 이거에 대해서는 아직 결정된바가 없다.\n        pass\n      elif isinstance(item, ASTArgItem):\n        name = item.name.array[0]\n        # 1. name 중복성 체크\n        if args_info.has_key(name):\n          print \"duplicated name at argument list : %s\" % (name)\n          sys.exit(-1)\n       \n        # 2. 그 다음 type의 symbol check : argument parsing을 할때 검사했기에\n        # 3. 만들기\n        args_info[name] = item.type\n\n    type_info[\"@arguments\"] = args_info\n\n    # 일단 template 제외\n    print type_info['@long']\n    print type_info['@arguments']\n\n    type_info['@symbol'] = encodeSymbolName(type_info['@long'], type_info['@arguments'])\n    \n    type  = None\n    if self.token.match(':'):\n      type = self.parseType()\n      type_info[\"@rettype\"] = type\n\n    if not self.token.match(';'):\n      body  = None\n      if self.token.match('='):\n        body  = self.parseExpr()\n      elif self.token.match('{'):\n        body  = self.parseExprs()\n        self.token.match('}')\n\n      type_info[\"@body\"] = body\n    else:\n      type_info[\"@body\"] = None\n\n    symbol_dict.reg_symbol(type_info)\n    print symbol_dict.hierarchy\n    return type_info\n\n\n  def parseDefFuncAtClass(self):\n    if not self.token.match('def'):\n      return None\n\n    type_info = {}\n\n    type_info['@type']     = 'function'\n    type_info['@property'] = []\n\n    # to make full path\n    _tmp = self.parseNames(limitLen = 1)\n    if _tmp.array[0] == '~':\n      type_info['@type'] = 'destructor'\n      _tmp = self.parseNames(limitLen = 1)\n\n    path = _tmp.array[0]\n    # 생성자인지 채크한다. \n    cls_name = context['@short']\n    if cls_name == _tmp.array[0]:\n      type_info['@type'] = 'constructor'\n    #elif _tmp.array[0] == '+':\n    #  pass\n\n    type_info[\"@short\"] = path\n    type_info[\"@long\"] = context['@long'] + [path]\n\n    self.token.match('(')\n    args  = self.parseFuncArgsList()\n    self.token.match(')')\n    \n    args_info = {}\n    for item in args.history:\n      if isinstance(item, ASTEmpty):\n        break\n      elif isinstance(item, ASTSet):\n        # 이거에 대해서는 아직 결정된바가 없다.\n        pass\n      elif isinstance(item, ASTArgItem):\n        name = item.name.array[0]\n        # 1. name 중복성 체크\n        if args_info.has_key(name):\n          print \"duplicated name at argument list : %s\" % (name)\n          sys.exit(-1)\n       \n        # 2. 그 다음 type의 symbol check : argument parsing을 할때 검사했기에\n        # 3. 만들기\n        args_info[name] = item.type\n\n    type_info[\"@arguments\"] = args_info\n\n    # 일단 template 제외\n    print type_info['@long']\n    print type_info['@arguments']\n\n    type_info['@symbol'] = encodeSymbolName(type_info['@long'], type_info['@arguments'])\n    \n    type  = None\n    if self.token.match(':'):\n      type = self.parseType()\n      type_info[\"@rettype\"] = type\n\n    if not self.token.match(';'):\n      body  = None\n      if self.token.match('='):\n        body  = self.parseExpr()\n      elif self.token.match('{'):\n        body  = self.parseExprs()\n        self.token.match('}')\n\n      type_info[\"@body\"] = body\n    else:\n      type_info[\"@body\"] = None\n\n    symbol_dict.reg_symbol(type_info)\n    print symbol_dict.hierarchy\n    return type_info\n\n  def parseDefInnerFunc(self):\n    if not self.token.match('def'):\n      return None\n\n    type_info = {}\n\n    type_info['@type']     = 'function'\n    type_info['@property'] = []\n\n    # to make full path\n    _tmp = self.parseNames(limitLen = 1)\n    path = _tmp.array[0]\n    type_info['@property'].append('lambda')\n    type_info[\"@name\"] = path\n\n    self.token.match('(')\n    args  = self.parseFuncArgsList()\n    self.token.match(')')\n    \n    args_info = {}\n    for item in args.history:\n      if isinstance(item, ASTEmpty):\n        break\n      elif isinstance(item, ASTSet):\n        # 이거에 대해서는 아직 결정된바가 없다.\n        pass\n      elif isinstance(item, ASTArgItem):\n        name = item.name.array[0]\n        # 1. name 중복성 체크\n        if args_info.has_key(name):\n          print \"duplicated name at argument list : %s\" % (name)\n          sys.exit(-1)\n       \n        # 2. 그 다음 type의 symbol check : argument parsing을 할때 검사했기에\n        # 3. 만들기\n        args_info[name] = item.type\n\n    type_info[\"@arguments\"] = args_info\n    \n    type  = None\n    if self.token.match(':'):\n      type = self.parseType()\n      type_info[\"@rettype\"] = type\n\n    body  = None\n    if self.token.match('='):\n      body  = self.parseExpr()\n    elif self.token.match('{'):\n      body  = self.parseExprs()\n      self.token.match('}')\n\n    type_info[\"@body\"] = body\n    \n    return ASTDeclFunc(type_info)\n\n  def parseFuncArgsList(self):\n    history = []\n    while True:\n      isset = False\n      if self.token.match('*'): \n        isset = True\n\n      name = self.parseNames(limitLen = 1) \n      if name == None:\n        history.append(ASTEmpty())\n        break\n\n      if isset:\n        history.append(ASTSet([name]))\n      else:\n        self.token.match(':')\n        type = self.parseType()\n        history.append(ASTArgItem(name, type))\n\n      if not self.token.match(','): break\n    return ASTArgList(history)\n      \n  def parseType(self):\n    names = self.parseNames(limitLen = 0)\n    tmpl  = self.parseTemplatePart()\n    #ename, body = symbol_dict.search(names.array)\n    #if ename == None:\n    #  print \"doesn't exist symbol : %s\" % (\".\".join(names.array))\n    #  sys.exit(-1) # 일단 죽이고... 나중에 에러처리 생각\n    #else:\n    #  names.array = ename\n\n    rank  = self.parseRankList()\n    return ASTType(names, tmpl, rank)\n\n  def parseTemplatePart(self):\n    if not self.token.match('<'):\n      return None\n\n    ret = self.parseTemplateArgs()\n    self.token.match('>')\n    return ret\n\n  def parseTemplateArgs(self):\n    history = [self.parseType()]\n    while self.token.match(','):\n      history.append(self.parseType())\n    return ASTTemplateList(history)\n\n  def parseRankList(self):\n    history = None\n    while self.token.match('['):\n      history.append(ASTEmpty())\n      self.token.match(']')\n    return history\n\n  def parseExprs(self):\n    history = []\n    while True:\n      tree = self.parseExpr()\n      if tree == None: break\n      history.append(tree)\n\n    return ASTExprs(history)\n\n  def parseExpr(self):\n    which = self.token.tok.value\n    ret = None\n    if which == 'if':\n      ret = self.parseIfStmt()\n    elif which == 'for':\n      ret = self.parseForStmt()\n    elif which == 'var':\n      ret = self.parseDefInnerVar()\n\n      #realname = ret.name[0]\n      #if self.findAt(tbl = self.local_symtbl, target = realname):\n      #  print \"duplicated name : %s\" % (realname)\n      #  sys.exit(-1)\n\n      ## to check type\n      #typename = convertType(ret.type)\n      #if self.validateType(typename) == False:\n      #  print \"no type!\"\n      #  sys.exit(-1)\n\n      #self.local_symtbl[realname] = {\"attribute\": None, \"type\": typename}\n      ## 해당 Type에 assign operator가 있는지 확인\n      #if ret.code != None:\n      #  rname = self.makeMethodName(type, '=')\n      #  if response != None:\n      #    ret = ASTFuncCall(rname, ret.code)\n      #  else:\n      #    print \"no method!\"\n      #    sys.exit(-1) # 일단 무조건 죽이고 본다.\n      #else:\n      #  ret = ASTEmpty()\n    elif which == 'val':\n      ret = self.parseDefInnerVal()\n\n      #realname = ret.name[0]\n      #if self.findAt(tbl = self.local_symtbl, target = realname):\n      #  print \"duplicated name : %s\" % (realname)\n      #  sys.exit(-1)\n\n      ## to check type\n      #typename = convertType(ret.type)\n      #if self.validateType(typename) == False:\n      #  print \"no type!\"\n      #  sys.exit(-1)\n\n      #self.local_symtbl[realname] = {\"attribute\": [\"readonly\"], \"type\": typename}\n      ## 해당 Type에 assign operator가 있는지 확인\n      #if ret.code != None:\n      #  rname = self.makeMethodName(type, '=')\n      #  if response != None:\n      #    ret = ASTFuncCall(rname, ret.code)\n      #  else:\n      #    print \"no method!\"\n      #    sys.exit(-1) # 일단 무조건 죽이고 본다.\n      #else:\n      #  ret = ASTEmpty()\n    elif which == '{':\n      ret = self.parseBlockExprs()\n    else:\n      ret = self.parseSimpleExpr1()\n      if ret == None: return None\n\n    return ASTExpr(ret)\n\n  def parseSimpleExpr1(self):\n    ret = self.parseSimpleExprs()\n    if self.token.match('?'):\n      body = self.parseMatchingCases()\n      ret  = ASTPatternMatch(cond = ret, body = body)\n    if ret == None: return None\n    return ret\n \n  def parseIfStmt(self):\n    if not self.token.match('if'):\n      return None\n\n    cond = self.parseExpr()\n    self.token.match(':')\n    body = self.parseExpr()\n    return ASTIf(cond, body)\n\n  def parseForStmt(self):\n    if not self.token.match('for'):\n      return None\n\n    cond = self.parseExpr()\n    self.token.match(':')\n    body = self.parseExpr()\n    return ASTFor(cond, body)\n\n  def parseDefVar(self):\n    if not self.token.match('var'):\n      return None\n\n    name = self.parseNames(limitLen = 1)\n    if not isLambda:\n      name = self.now_scope + name\n\n    self.token.match(':')\n    type = self.parseType()\n    init = None\n    if self.token.match('='):\n      init = self.parseExpr()\n    return ASTVar(name, type, init)\n\n  def parseDefVal(self):\n    if not self.token.match('val'):\n      return None\n\n    name = self.parseNames(limitLen = 1)\n    #if not isLambda:\n    #  name = self.now_scope + name\n\n    self.token.match(':')\n    type = self.parseType()\n    init = None\n    if self.token.match('='):\n      init = self.parseExpr()\n\n    return ASTVal(name, type, init)\n\n  def parseDefInnerVar(self):\n    if not self.token.match('var'):\n      return None\n\n    name = self.parseNames(limitLen = 1)\n    if not isLambda:\n      name = self.now_scope + name\n\n    self.token.match(':')\n    type = self.parseType()\n    init = None\n    if self.token.match('='):\n      init = self.parseExpr()\n    return ASTVar(name, type, init)\n\n  def parseDefInnerVal(self):\n    if not self.token.match('val'):\n      return None\n\n    name = self.parseNames(limitLen = 1)\n    #if not isLambda:\n    #  name = self.now_scope + name\n\n    self.token.match(':')\n    type = self.parseType()\n    init = None\n    if self.token.match('='):\n      init = self.parseExpr()\n\n    return ASTVal(name, type, init)\n\n  def parseBlockExprs(self):\n    if not self.token.match('{'):\n      return None\n    body = self.parseExprs()\n    self.token.match('}')\n    return ASTBlock(body)\n\n  def parseSimpleExprs(self):\n    history = []\n    while True:\n      tree = self.parseSimpleExpr()\n      if tree == None: break\n      if self.token.tok.value == ',':\n        hist = [tree]\n        while self.token.match(','):\n          tree = self.parseSimpleExpr()\n          hist.append(tree)\n        tree = ASTSet(hist)\n      history.append(tree)\n\n    if len(history) == 0: return None\n    self.token.match(';') # caution!!\n    return ASTSimpleExprs(history)\n\n  def searchSymbolInLocal(self, name):\n    # search at argument symbol list\n    if len(self.argumentSymbolTbl) != 0:\n      if self.argumentSymbolTbl.has_key(name):\n        return convertType(self.argumentSymbolTbl[name])\n    # search at local symbol list\n    if len(self.localSymbolTbl) != 0:\n      if self.localSymbolTbl.has_key(name):\n        return convertType(self.localSymbolTbl[name])\n    # search at global symbol list\n    if len(self.symtbl) != 0:\n      return None\n\n    return None\n    \n  def parseSimpleExpr(self):\n    tree = self.parseBasicSimpleExpr()\n    if tree == None: return None\n    while True:\n      tok = self.token.tok\n      if self.token.match('.'):\n        right = self.parseBasicSimpleExpr()\n        if isinstance(tree, ASTWord):\n          if isinstance(right, ASTWord):\n            tree = ASTNames([tree.value, right.value])\n          elif isinstance(right, ASTFuncCall):\n            tree = ASTFuncCall(ASTNames([tree.value, right.name.value]), right.body)\n          elif isinstance(right, ASTIndexing):\n            tree = ASTIndexing(ASTNames([tree.value, right.name.value]), right.history)\n        elif isinstance(tree, ASTNames):\n          if isinstance(right, ASTWord):\n            tree = ASTNames(tree.array + [right.value])\n          elif isinstance(right, ASTFuncCall):\n            tree = ASTFuncCall(ASTNames(tree.array + [right.name.value]), right.body)\n          elif isinstance(right, ASTIndexing):\n            tree = ASTIndexing(ASTNames(tree.array + [right.name.value]), right.history)\n        else:\n          tree = ASTOperator(ASTWord(tok.type, tok.value), tree, right)\n      elif tok.type == 'id':\n        #if isinstance(tree, ASTSet):\n        #  #if len(tree.lst) != 1:\n        #  #  print \"error!!\" # make error!!\n        #  if self.check_type(tree.lst[0]):\n        #    tree = ASTCasting(tree.lst[0], ASTWord(tok.type, tok.value))\n        self.token.nextToken()\n        right = self.parseBasicSimpleExpr()\n        tree = ASTOperator(ASTWord(tok.type, tok.value), tree, right)\n      else:\n        break\n\n    return tree\n\n  def parseBasicSimpleExpr(self):\n    tok = self.token.tok\n    if tok.type == 'stringLiteral': \n      self.token.nextToken()\n      return ASTWord('System.lang.String', tok.value)\n    elif tok.type == 'integerLiteral':\n      self.token.nextToken()\n      return ASTWord('System.lang.Integer', tok.value)\n    elif tok.type == 'floatLiteral':\n      self.token.nextToken()\n      return ASTWord('System.lang.Float', tok.value)\n    elif self.token.match('true'):\n      return ASTWord('System.lang.Boolean', '1')\n    elif self.token.match('false'):\n      return ASTWord('System.lang.Boolean', '0')\n    elif self.token.match('return'):\n      return ASTReturn(self.parseExpr())\n    elif tok.value == 'def':\n      ret = self.parseDefInnerFunc()\n\n      #if len(ret.name) != 1:\n      #  print \"don't use namespace!\"\n      #  sys.exit(-1)\n\n      #realname = ret.name[0]\n      #if realname == '_':\n      #  realname = self.genTemporaryName()  \n      #if self.findAt(tbl = self.local_symtbl, target = ret.name):\n      #  print \"already defined!\"\n      #  sys.exit(-1)\n\n      #typename = convertType(ret.ret)\n      #if not self.validateType(typename):\n      #  print \"not declare type\"\n      #  sys.exit(-1)\n      \n      #self.local_symtbl[realname] = {\n      #  \"attribute\": [\"lambda\"], \n      #  \"args\": ret.args, \n      #  \"type\": typename, \n      #  \"body\": ret.body}\n\n      return ret\n    elif tok.type == 'id':\n      self.token.nextToken()\n      if self.token.tok.value == '[':\n        history = []\n        while self.token.match('['):\n          history.append(self.parseSimpleExpr())\n          self.token.match(']')\n        return ASTIndexing(ASTWord(tok.type, tok.value), history)\n      elif self.token.match('('):\n        args = self.parseArgumentList()\n        self.token.match(')')\n        return ASTFuncCall(ASTWord(tok.type, tok.value), args)\n      else:\n        return ASTWord(tok.type, tok.value)\n    elif tok.value == '_':\n      self.token.nextToken()\n      return ASTWord('v', tok.value)\n    elif tok.value == '[':\n      self.token.match('[')\n      history = []\n      tree = self.parseSimpleExpr()\n      if self.token.match('...'):\n        right = self.parseSimpleExpr()\n        self.token.match(']')\n        return ASTListGenerateType1(tree, right)\n      elif self.token.tok.value == ',':\n        history.append(tree)\n        while self.token.match(','):\n          item = self.parseSimpleExpr()\n          history.append(item)\n        self.token.match(']')\n        return ASTListValue(history)\n       \n      self.token.match(']')\n      return ASTListValue([tree])\n    elif tok.value == '(':\n      self.token.match('(')\n      tree = self.parseSimpleExpr1()\n      self.token.match(')')\n      return ASTWrap(tree)\n\n    return None\n\n  def parseArgumentList(self):\n    # 인자로 if나 for문이 올 수 있다면 아래것 그대로 사용하면 ㅇㅋ,\n    # 하지만 그렇지 않다면...\n    tree = self.parseExpr()\n    if tree == None: return None\n\n    history = [tree]\n    while self.token.match(','):\n      history.append(self.parseExpr())\n\n    return ASTArgList(history)\n\n  def parseMatchingCases(self):\n    history = []\n    while True:\n      left = self.parseSimpleExpr()\n      self.token.match('=>')\n      right = self.parseSimpleExpr()\n      if self.token.match(';'): break\n      history.append(ASTCase(left, right))\n      self.token.match(',')\n\n    return ASTCases(history)\n\nclass IntermediateRuntimeCode:\n  def __init__(self, symtbl):\n    self.symtbl = symtbl\n    self.stack_of_var = {}\n    self.stack_of_fun = {}\n\n    self.ir = IR()\n\n  def convert(self):\n    for key in self.symtbl:\n      cursor = self.symtbl[key]\n      type   = cursor[\"type\"]\n      if type == \"variable\":\n        self.reserve_space(key, cursor[\"body\"])\n      elif type == \"value\":\n        self.reserve_constant_space(key, cursor[\"body\"])\n      elif type == \"function\":\n        self.process_function(key, cursor[\"body\"])\n\n  def reserve_space(self, name, body):\n    type = body.type\n    tname = \".\".join(type.name.array)\n    if tname == \"int\" \\\n      or tname == \"uint\":\n      self.ir.define_var(name, \"dd\")\n\n  def reserve_constant_space(self, name, body):\n    type  = body.type\n    tname = \".\".join(type.name.array)\n\n  def process_function(self, name, body):\n    real_body = body.body\n    if isinstance(real_body, ASTExprs):\n      for item in real_body.exprs:\n        self.process_expr(item)\n    elif isinstance(real_body, ASTExpr):\n      self.process_expr(real_body.expr)\n\n  def process_expr(self, body):\n    if isinstance(body, ASTIfStmt):\n      return None\n    elif isinstance(body, ASTForStmt):\n      return None\n    elif isinstance(body, ASTDefVar):\n      return None\n    elif isinstance(body, ASTDefVal):\n      return None\n    elif isinstance(body, ASTBlock):\n      exprs = body.exprs\n      for item in exprs.exprs:\n        self.process_expr(item)\n    else:\n      return None\n\ndef convertIntToHex(value):\n  string = str(value)\n  if string[:2] == '0x':\n    return hex(int(string[2:], 16))\n  elif string[0] == '0':\n    try:\n      return hex(int(string, 8))\n    except:\n      return hex(int(string))\n  else:\n    return hex(int(string))\n\n  return None\n\ndef convertFloatToHex(value):\n  string = str(value)\n  return None\n\n# 아래 코드는 수정할 예정임  \nclass Transformation:\n  def __init__(self, symtbl):\n    self.symtbl = symtbl\n    self.arg_symtbl   = {}\n    self.local_symtbl = {}\n    self.local_constant_symtbl = {}\n    self.stringtbl    = []\n\n  def convert(self):\n    for key in self.symtbl:\n      ast = self.symtbl[key]\n      if isinstance(ast, ASTDeclFunc):\n        # local 변수 Stack 필요.\n        continue\n      elif isinstance(ast, ASTDefVar):\n        continue\n      elif isinstance(ast, ASTDefVal):\n        continue\n\n  # search the symbol and return type of it.\n  def searchSymbolTable(self, name):\n    if self.arg_symtbl.has_key(name):\n      return self.arg_symtbl[name]\n    elif self.local_symtbl.has_key(name):\n      return self.local_symtbl[name]\n    elif self.local_constant_symtbl.has_key(name):\n      return self.local_constant_symtbl[name]\n\n    return None\n\n  def processExpr(self):\n    now = self.now\n    if isinstance(now, ASTOperator):\n      left  = self.transform(now.left)\n      right = self.transform(now.right)\n      # to construct\n    if isinstance(now, ASTWord):\n      if now.type == 'integerLiteral':\n        convstr = convertIntToHex(now.value)\n        typestr = \"\"\n        if len(convstr) <= 2:\n          typestr = \"integer2\"\n        elif len(convstr) <= 4:\n          typestr = \"integer4\"\n        elif len(convstr) <= 8:\n          typestr = \"integer8\"\n        elif len(convstr) <= 16:\n          typestr = \"integer16\"\n        else:\n          typestr = \"number\"\n\n        return {\"type\": typestr, \"value\": convstr}\n      elif now.type == 'floatLiteral':\n        convstr = convertFloatToHex(now.value)\n        return {\"type\": \"float8\", \"value\": convstr}\n      elif now.type == 'stringLiteral':\n        index = len(self.stringtbl)\n        self.stringtbl.append(now.value)\n        return {\"type\": \"string\", \"index\": index}\n      elif now.type == 'id':\n        regnum = len(self.symboltbl)\n        # 단일이면 register, 크기가 있다면 start address를 register\n        type   = self.searchSymbol(now.value)\n        if self.isBasicType(type):\n          return {\"type\": type, \"register-num\": regnum}\n        else:\n          return {\"type\": type, \"register-num\": regnum, \"extendtype\": \"indrect\"}\n      else:\n        print \"I don't know how the ASTWord(%s) convert\" % (now.name)\n      return None\n    elif isinstance(now, ASTVar):\n      if self.searchSymbol(now.name) == None:\n        print \"duplicate symbol\"\n      self.local_symtbl[now.name] = convertType(now.type)\n      ret = self.parseExpr(now.init)\n    elif isinstance(now, ASTVal):\n      if self.searchSymbol(now.name) == None:\n        print \"duplicate symbol\"\n      self.local_constant_symtbl[now.name] = now.type\n      ret = self.parseExpr(now.init)\n\nparser = Parser(\"sample.prg\")\nparser.parse()\n#print parser.symbol_dict.hierarchy\n#for key in parser.symbol_dict.hierarchy:\n#  print key\n\ndef makeSymbolName(cname, fname, args):\n  print \"debug) %s, %s\" % (cname, fname)\n\n  name = [cname, str(len(fname)), fname, convertType(args)]\n  print \"debug) full : %s\" % (\"\".join(name))\n  return \"\".join(name)\n\nclass Register:\n  MODE_NONE = 0\n  MODE_REG  = 1\n  MODE_IMM  = 2\n  # addressing mode\n  MODE_ADDR = 3 \n\n  def __init__(self, type, regid = None, base = None, index = None, imm = None):\n    self.type  = type\n    self.regid = regid\n    self.base  = base\n    self.index = index\n    self.imm   = imm\n\n  def __str__(self):\n    if self.type == Register.MODE_IMM:\n      return \"%08x\" % (self.imm)\n    elif self.type == MODE_REG:\n      if self.regid == REG_RAX:\n        return \"rax\"\n      elif self.regid == REG_EAX:\n        return \"eax\"\n      elif self.regid == REG_AX:\n        return \"ax\"\n      elif self.regid == REG_AH:\n        return \"al\"\n      elif self.regid == REG_AL:\n        return \"ah\"\n\ndef genRandomString(length):\n  chars  = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$#@~.?\"\n  locs   = [random.uniform(0, len(chars)) for i in range(0, length)]\n  if locs[0] > chars.index('Z'):\n    locs[0] = random.uniform(0, chars.index('Z'))\n  return map(lambda loc: chars[loc], locs)\n\nclass Configure:\n  def __init__(self):\n    pass\n\n  def getLengthOfTemporaryVariable():\n    return 16\n\ndef convertDoubleToHex(value):\n  return 0\n\ndef convertFloatToHex(value):\n  return 0\n\ndef convertIntToHex(value):\n  if isinstance(value, str):\n    return int(value)\n  elif isinstance(value, int):\n    return value\n\n  return None\n\nclass IRegister:\n  def __init__(self, name):\n    self.name = name\n\n  def __str__(self):\n    return \"%s\" % (self.name)\n\nclass ILabel:\n  def __init__(self, label):\n    self.label = label\n\n  def __str__(self):\n    return \"%s\" % (self.label)\n\nclass IPointer:\n  def __init__(self, pointer):\n    self.value = pointer\n\n  def __str__(self):\n    return \"0x%x\" % (self.value)\n\nclass IImmediate:\n  def __init__(self, _value):\n    self.value = _value\n\n  def __str__(self):\n    return \"0x%x\" % (self.value)\n\nclass IFloat:\n  def __init__(self, _value):\n    self.value = _value\n\n  def __str__(self):\n    #return \"%g\" % (convertHexToFloat(self.value))\n    return \"0x%x\" % (self.value)\n\nclass IDouble:\n  def __init__(self, _value):\n    self.value = _value\n\n  def __str__(self):\n    #return \"%g\" % (convertHexToFloat(self.value))\n    return \"0x%x\" % (self.value)\n\nclass IMemoryAddress:\n  def __init__(self, base, idx = None, imm = 0):\n    self.basereg = base\n    self.idxreg  = idx\n    self.imm     = imm\n\n  def __str__(self):\n    code  = \"%s\" % (self.basereg)\n    if self.idxreg != None:\n      code += \"+%s\" % (self.idxreg)\n    if self.imm    != 0:\n      code += \"+%d\" % (self.imm)\n\n    return \"[%s]\" % (code)\n\nREG_RAX = IRegister(\"rax\")\nREG_RBX = IRegister(\"rbx\")\nREG_RCX = IRegister(\"rcx\")\nREG_RDX = IRegister(\"rdx\")\nREG_RSI = IRegister(\"rsi\")\nREG_RDI = IRegister(\"rdi\")\nREG_RBP = IRegister(\"rbp\")\nREG_RSP = IRegister(\"rsp\")\nREG_R8  = IRegister(\"r8\")\nREG_R9  = IRegister(\"r9\")\nREG_R10 = IRegister(\"r10\")\nREG_R11 = IRegister(\"r11\")\nREG_R12 = IRegister(\"r12\")\nREG_R13 = IRegister(\"r13\")\nREG_R14 = IRegister(\"r14\")\nREG_R15 = IRegister(\"r15\")\n\nclass IR:\n  def __init__(self):\n    self.code    = []\n    self.data    = {}\n    self.stack   = []\n\n  def emitClear(self, left):\n    self.code.append(\"xor %s, %s\" % (left, left))\n\n  def emitMove(self, left, right):\n    strcmd = \"mov %s, %s\" % (left, right)\n    self.code.append(strcmd)\n\n  def emitPush(self, left):\n    self.code.append(\"push %s\" % (left))\n\n  def emitPop(self, left):\n    self.code.append(\"pop %s\" % (left))\n\n  def emitAdd(self, rd, rn, rs):\n    pass\n\n  def emitAdd(self, left, right):\n    self.code.append(\"add %s, %s\" % (left, right))\n\n  def emitSub(self, left, right):\n    self.code.append(\"sub %s, %s\" % (left, right))\n\n  def emitMul(self, left, right):\n    self.code.append(\"mul %s, %s\" % (left, right))\n\n  def emitDiv(self, left, right):\n    self.code.append(\"div %s, %s\" % (left, right))\n\n  def emitCall(self, name, **kw):\n    for (key, item) in kw.items():\n      pass\n  \n    self.emitClear(REG_RAX)\n    self.code.append(\"call %s\" % (name))\n\n  def searchFunctionInClass(self, BaseName, OperatorName):\n    fpath = mergeName(BaseName, changeIntoReal(OperatorName))\n    if not self.symtbl.has_key(fpath):\n      return None\n\n    return fpath\n\n  def searchConstructorInClass(self, BaseName, RightType):\n    pattern = \"\".join([BaseName, \"Ec\"])\n    for (key, value) in self.symtbl.items():\n      if re.match(pattern, key):\n        return key\n    \n    return None\n\n  def evalOperator(self, tree):\n    self.eval(tree.left)\n    lval = self.stack.pop()\n    self.eval(tree.right)\n    rval = self.stack.pop()\n\n    if type(lval) == type(rval):\n      \n    \n    l_classname, l_typestr  = getTypeOf(lsubtree)\n    ret      = searchFunctionInClass(l_typestr, tree.name)\n    if ret == None:\n      print \"Error) Operator Not Found! : %s\" % (tree.name)\n      sys.exit(-1)\n\n    r_classname, r_typestr  = getTypeOf(rsubtree)\n    if l_typestr != r_typestr:\n      result = searchConstructorInClass(l_typestr, r_typestr)\n      if result == None:\n        print \"Error) Don't know how to convert %s to %s\" % (demangleName(r_typestr), demangleName(l_typestr))\n        sys.exit(-1)\n\n      \n      emitCall(result[0], arg1 = rsubtree.space)\n\n    emitCall(ret, arg1 = lsubtree.space, arg2 = rsubtree.space)\n\n  def evalTerminalToken(self, tree):\n    realName = convertName(tree.type)\n    if tree.type == 'System.lang.String':\n      label = genRandomString(16)\n      self.data[label] = {\"type\": realName, \"value\": tree.value}\n      self.stack.append(ILabel(label))\n    elif tree.type == 'System.lang.Integer':\n      self.stack.append(IImmediate(convertIntToHex(tree.value)))\n    elif tree.type == 'System.lang.Float':\n      #label = genRandomString(16)\n      #realName = convertName('System.lang.Float')\n      self.stack.append(IFloat(convertFloatToHex(tree.value)))\n    elif tree.type == 'System.lang.Double':\n      #label = genRandomString(16)\n      #realName = convertName('System.lang.Double')\n      #self.data[label] = {\"type\": realName, \n      #                    \"value\": convertDoubleToHex(tree.value)}\n      #return (label, self.data[label])\n      self.stack.append(IDouble(convertDoubleToHex(tree.value)))\n    elif tree.type == 'System.lang.Boolean':\n      pass\n\n  def eval(self, tree):\n    if isinstance(tree, ASTWord):\n      ret = self.evalTerminalToken(tree)\n    pass\n\nclass IR2:\n  def __init__(self):\n    self.content = []\n    self.random  = Random()\n    self.info    = {}\n\n  def getType(self, node):\n    print \"getType = \", node\n    if node is ASTWord:\n      type = None\n      if node.type is str:\n        type = node.type.split('.')\n      else:\n        # not yet\n        type = node.array\n\n      return convertName(type)\n    elif node is ASTNames:\n      return convertName(self.array)\n    else:\n      print \"Error in getType\"\n\n  def searchFuncInClass(self, cname, fname, args):\n    symbol = makeSymbolName(cname, fname, args)\n    ret    = symbol_dict.search(symbol)\n    if ret == None: return False\n    return True\n\n  def findSymbolType(self, tree):\n    # to find in arguments\n    arguments = self.info['@arguments']\n    if arguments.has_key(tree):\n      return arguments[tree]\n    return self.getType(tree)\n\n  def genRandomVariable(self, ret_type):\n    basestr = \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\"\n    name = \"__\" + \"\".join([basestr[self.random.randrange(0, len(basestr))] for i in range(0, 10)])\n    return {'@name': name,\n            '@type': ret_type,\n            '@representation': 'identifier'}\n\n  def evalFunc(self, tree):\n    if not isinstance(tree, ASTDeclFunc):\n      info = {'@argument_symbols': {}}\n\n      args = tree.info['@arguments']\n      for var_name in args:\n        info['@argument_symbols'][var_name] = args[var_name]\n\n      print \"argument = \", info['@argument_symbols']\n      sys.exit(-1)\n\n  def eval(self, tree):\n    innerSymbolTbl = {}\n    while True:\n      print tree\n      if isinstance(tree, ASTDeclFunc):\n        self.evalFunc(tree)\n      elif isinstance(tree, ASTWord):\n        if tree.type == 'id':\n          # find at symbol table of function\n          ret = None\n          type = self.findSymbolType(tree.value)\n          return {\"@name\": tree.value, \n                  \"@type\": convertName(type), \n                  \"@representation\": 'identifier'}\n        else:\n          return {\"@name\": tree.value, \n                  \"@type\": convertName(tree.type.split('.')),\n                  \"@representation\": 'value'}\n      elif isinstance(tree, ASTExprs):\n        for subtree in tree.exprs:\n          self.eval(subtree)\n      elif isinstance(tree, ASTExpr):\n        self.eval(tree.expr)\n      elif isinstance(tree, ASTSimpleExprs):\n        for expr in tree.exprs:\n          self.eval(expr)\n      elif isinstance(tree, ASTOperator):\n        ltype = self.eval(tree.left)\n        rtype = self.eval(tree.right)\n\n        func  = self.searchFuncInClass(cname = ltype['@type'], fname = tree.name, args = [rtype['@type']])\n        if func == None:\n          # if fname is None, fname will be the class name.\n          casting_func = self.searchFuncInClass(cname = ltype['@type'], fname = None, args = [rtype['@type']])\n          if casting_func == None:\n            print \"Compiler doesn't know how to convert %s into %s\" % (recoverName(ltype), recoverName(rtype))\n            sys.exit(-1)\n\n          tmpval = self.genRandomVariable(casting_func['@return'])\n          IR.emitCall(casting_func['@name'], args = [rtype['@name']], retval = tmpval['@name'])\n          rtype  = tmpval\n          \n          func   = self.searchFuncInClass(cname = ltype['@type'], fname = tree.name, args = [rtype['@type']])\n        \n        tmpval = self.genRandomVariable(func['@return'])\n        IR.emitCall(func['@name'], args = [ltype['@name'], rtype['@name']], retval = tmpval['@name'])\n\n        return tmpval\n      else:\n        if not tree.has_key('@type'):\n          print tree\n          break\n\n        if tree['@type'] == 'function':\n          info = {'@arguments': {}}\n\n          for name in tree['@arguments']:\n            info['@arguments'][name] = convertType(tree['@arguments'][name])\n\n          info['@return'] = convertType(tree['@rettype'])\n\n          print \"arguments = \", info['@arguments']\n          print \"return    = \", info['@return']\n\n          self.info = info\n\n          self.eval(tree['@body'])\n        else:\n          break\n\nir = IR()\nir.eval(symbol_dict.hierarchy['add'])\n\n\n",
+			"file": "parser.py",
+			"file_size": 42592,
+			"file_write_time": 1347680611000000,
+			"settings":
+			{
+				"buffer_size": 42186,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "Token.py",
+			"settings":
+			{
+				"buffer_size": 4737,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 67.0,
+		"selected_items":
+		[
+			[
+				"ssc++",
+				"Set Syntax: C++"
+			]
+		],
+		"width": 392.0
+	},
+	"console":
+	{
+		"height": 0.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/dyanos/Documents/Projects/cnf/cnf.cpp",
+		"/Users/dyanos/Documents/Projects/cnf/cnf.h"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"push",
+			"evaluate",
+			"-0.0",
+			"delete_safe"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 40,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "ASTAlias.py",
+					"settings":
+					{
+						"buffer_size": 310,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "AST.py",
+					"settings":
+					{
+						"buffer_size": 92,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "ASTArgItem.py",
+					"settings":
+					{
+						"buffer_size": 364,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "ASTArgList.py",
+					"settings":
+					{
+						"buffer_size": 256,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "ASTAttribute.py",
+					"settings":
+					{
+						"buffer_size": 126,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "ASTBlock.py",
+					"settings":
+					{
+						"buffer_size": 200,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "ASTCase.py",
+					"settings":
+					{
+						"buffer_size": 315,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "ASTCases.py",
+					"settings":
+					{
+						"buffer_size": 220,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "ASTClass.py",
+					"settings":
+					{
+						"buffer_size": 658,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "ASTDeclFunc.py",
+					"settings":
+					{
+						"buffer_size": 254,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "ASTEmpty.py",
+					"settings":
+					{
+						"buffer_size": 108,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "ASTExpr.py",
+					"settings":
+					{
+						"buffer_size": 160,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "ASTExprs.py",
+					"settings":
+					{
+						"buffer_size": 189,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "ASTFalse.py",
+					"settings":
+					{
+						"buffer_size": 108,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "ASTFor.py",
+					"settings":
+					{
+						"buffer_size": 293,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "ASTFuncCall.py",
+					"settings":
+					{
+						"buffer_size": 339,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "ASTIf.py",
+					"settings":
+					{
+						"buffer_size": 291,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "ASTIndexing.py",
+					"settings":
+					{
+						"buffer_size": 344,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 18,
+					"file": "ASTListGenerateType1.py",
+					"settings":
+					{
+						"buffer_size": 316,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 19,
+					"file": "ASTListValue.py",
+					"settings":
+					{
+						"buffer_size": 237,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 20,
+					"file": "ASTNames.py",
+					"settings":
+					{
+						"buffer_size": 350,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 21,
+					"file": "ASTNamespace.py",
+					"settings":
+					{
+						"buffer_size": 501,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "ASTOperator.py",
+					"settings":
+					{
+						"buffer_size": 383,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 23,
+					"file": "ASTPatternMatch.py",
+					"settings":
+					{
+						"buffer_size": 323,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 24,
+					"file": "ASTRankSpecs.py",
+					"settings":
+					{
+						"buffer_size": 304,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 25,
+					"file": "ASTReturn.py",
+					"settings":
+					{
+						"buffer_size": 203,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 26,
+					"file": "ASTSet.py",
+					"settings":
+					{
+						"buffer_size": 265,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 27,
+					"file": "ASTSimpleExprs.py",
+					"settings":
+					{
+						"buffer_size": 195,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 28,
+					"file": "ASTTemplate.py",
+					"settings":
+					{
+						"buffer_size": 257,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 29,
+					"file": "ASTTemplateList.py",
+					"settings":
+					{
+						"buffer_size": 323,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 30,
+					"file": "ASTTrue.py",
+					"settings":
+					{
+						"buffer_size": 105,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 31,
+					"file": "ASTType.py",
+					"settings":
+					{
+						"buffer_size": 588,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 32,
+					"file": "ASTUse.py",
+					"settings":
+					{
+						"buffer_size": 197,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 33,
+					"file": "ASTVal.py",
+					"settings":
+					{
+						"buffer_size": 373,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 34,
+					"file": "ASTVar.py",
+					"settings":
+					{
+						"buffer_size": 373,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 35,
+					"file": "ASTWord.py",
+					"settings":
+					{
+						"buffer_size": 575,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 36,
+					"file": "ASTWrap.py",
+					"settings":
+					{
+						"buffer_size": 169,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 37,
+					"file": "IR.py",
+					"settings":
+					{
+						"buffer_size": 235,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 38,
+					"file": "mangle.py",
+					"settings":
+					{
+						"buffer_size": 4755,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 39,
+					"file": "parser_new.py",
+					"settings":
+					{
+						"buffer_size": 1072,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 40,
+					"file": "parser.py",
+					"settings":
+					{
+						"buffer_size": 42186,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								36412,
+								36412
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 20665.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 41,
+					"file": "Token.py",
+					"settings":
+					{
+						"buffer_size": 4737,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+import traceback
+
+class AST:
+  def printXML(self):
+    print "Empty"
+

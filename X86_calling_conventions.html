@@ -1,0 +1,848 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" dir="ltr" class="client-nojs" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>x86 calling conventions - Wikipedia, the free encyclopedia</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta name="generator" content="MediaWiki 1.18wmf1" />
+<link rel="alternate" type="application/x-wiki" title="Edit this page" href="/w/index.php?title=X86_calling_conventions&amp;action=edit" />
+<link rel="edit" title="Edit this page" href="/w/index.php?title=X86_calling_conventions&amp;action=edit" />
+<link rel="apple-touch-icon" href="//en.wikipedia.org/apple-touch-icon.png" />
+<link rel="shortcut icon" href="/favicon.ico" />
+<link rel="search" type="application/opensearchdescription+xml" href="/w/opensearch_desc.php" title="Wikipedia (en)" />
+<link rel="EditURI" type="application/rsd+xml" href="//en.wikipedia.org/w/api.php?action=rsd" />
+<link rel="copyright" href="//creativecommons.org/licenses/by-sa/3.0/" />
+<link rel="alternate" type="application/atom+xml" title="Wikipedia Atom feed" href="/w/index.php?title=Special:RecentChanges&amp;feed=atom" />
+<link rel="stylesheet" href="//bits.wikimedia.org/en.wikipedia.org/load.php?debug=false&amp;lang=en&amp;modules=ext.wikihiero%7Cmediawiki.legacy.commonPrint%2Cshared%7Cskins.vector&amp;only=styles&amp;skin=vector&amp;*" type="text/css" media="all" />
+<meta name="ResourceLoaderDynamicStyles" content="" />
+<link rel="stylesheet" href="//bits.wikimedia.org/en.wikipedia.org/load.php?debug=false&amp;lang=en&amp;modules=site&amp;only=styles&amp;skin=vector&amp;*" type="text/css" media="all" />
+<style type="text/css" media="all">a:lang(ar),a:lang(ckb),a:lang(fa),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}a.new,#quickbar a.new{color:#ba0000}
+
+/* cache key: enwiki:resourceloader:filter:minify-css:4:c88e2bcd56513749bec09a7e29cb3ffa */</style>
+<script src="//bits.wikimedia.org/en.wikipedia.org/load.php?debug=false&amp;lang=en&amp;modules=startup&amp;only=scripts&amp;skin=vector&amp;*" type="text/javascript"></script>
+<script type="text/javascript">if ( window.mediaWiki ) {
+	mw.config.set({"wgCanonicalNamespace": "", "wgCanonicalSpecialPageName": false, "wgNamespaceNumber": 0, "wgPageName": "X86_calling_conventions", "wgTitle": "X86 calling conventions", "wgCurRevisionId": 454716076, "wgArticleId": 6817415, "wgIsArticle": true, "wgAction": "view", "wgUserName": null, "wgUserGroups": ["*"], "wgCategories": ["Articles to be expanded from June 2008", "All articles to be expanded", "Articles lacking in-text citations from February 2008", "All articles lacking in-text citations", "X86 architecture"], "wgBreakFrames": false, "wgRestrictionEdit": [], "wgRestrictionMove": [], "wgSearchNamespaces": [0], "wgFlaggedRevsParams": {"tags": {"status": {"levels": 1, "quality": 2, "pristine": 3}}}, "wgStableRevisionId": null, "wgVectorEnabledModules": {"collapsiblenav": true, "collapsibletabs": true, "editwarning": true, "expandablesearch": false, "footercleanup": false, "sectioneditlinks": false, "simplesearch": true, "experiments": true}, "wgWikiEditorEnabledModules": {"toolbar": true, "dialogs": true, "hidesig": true, "templateEditor": false, "templates": false, "preview": false, "previewDialog": false, "publish": false, "toc": false}, "wgTrackingToken": "6973267c86b8199926e47a62b3fbb58c", "wikilove-recipient": "", "wikilove-edittoken": "+\\", "wikilove-anon": 0, "mbEditToken": "+\\", "Geo": {"city": "", "country": ""}, "wgNoticeProject": "wikipedia"});
+}
+</script><script type="text/javascript">if ( window.mediaWiki ) {
+	mw.loader.load(["mediawiki.page.startup"]);
+}
+</script>
+<style type="text/css">/*<![CDATA[*/
+.source-c {line-height: normal;}
+.source-c li, .source-c pre {
+	line-height: normal; border: 0px none white;
+}
+/**
+ * GeSHi Dynamically Generated Stylesheet
+ * --------------------------------------
+ * Dynamically generated stylesheet for c
+ * CSS class: source-c, CSS id: 
+ * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann
+ * (http://qbnz.com/highlighter/ and http://geshi.org/)
+ * --------------------------------------
+ */
+.c.source-c .de1, .c.source-c .de2 {font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;}
+.c.source-c  {font-family:monospace;}
+.c.source-c .imp {font-weight: bold; color: red;}
+.c.source-c li, .c.source-c .li1 {font-weight: normal; vertical-align:top;}
+.c.source-c .ln {width:1px;text-align:right;margin:0;padding:0 2px;vertical-align:top;}
+.c.source-c .li2 {font-weight: bold; vertical-align:top;}
+.c.source-c .kw1 {color: #b1b100;}
+.c.source-c .kw2 {color: #000000; font-weight: bold;}
+.c.source-c .kw3 {color: #000066;}
+.c.source-c .kw4 {color: #993333;}
+.c.source-c .co1 {color: #666666; font-style: italic;}
+.c.source-c .co2 {color: #339933;}
+.c.source-c .coMULTI {color: #808080; font-style: italic;}
+.c.source-c .es0 {color: #000099; font-weight: bold;}
+.c.source-c .es1 {color: #000099; font-weight: bold;}
+.c.source-c .es2 {color: #660099; font-weight: bold;}
+.c.source-c .es3 {color: #660099; font-weight: bold;}
+.c.source-c .es4 {color: #660099; font-weight: bold;}
+.c.source-c .es5 {color: #006699; font-weight: bold;}
+.c.source-c .br0 {color: #009900;}
+.c.source-c .sy0 {color: #339933;}
+.c.source-c .st0 {color: #ff0000;}
+.c.source-c .nu0 {color: #0000dd;}
+.c.source-c .nu6 {color: #208080;}
+.c.source-c .nu8 {color: #208080;}
+.c.source-c .nu12 {color: #208080;}
+.c.source-c .nu16 {color:#800080;}
+.c.source-c .nu17 {color:#800080;}
+.c.source-c .nu18 {color:#800080;}
+.c.source-c .nu19 {color:#800080;}
+.c.source-c .me1 {color: #202020;}
+.c.source-c .me2 {color: #202020;}
+.c.source-c .ln-xtra, .c.source-c li.ln-xtra, .c.source-c div.ln-xtra {background-color: #ffc;}
+.c.source-c span.xtra { display:block; }
+
+/*]]>*/
+</style>
+<style type="text/css">/*<![CDATA[*/
+@import "/w/index.php?title=MediaWiki:Geshi.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=2678400";
+/*]]>*/
+</style><style type="text/css">/*<![CDATA[*/
+.source-asm {line-height: normal;}
+.source-asm li, .source-asm pre {
+	line-height: normal; border: 0px none white;
+}
+/**
+ * GeSHi Dynamically Generated Stylesheet
+ * --------------------------------------
+ * Dynamically generated stylesheet for asm
+ * CSS class: source-asm, CSS id: 
+ * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann
+ * (http://qbnz.com/highlighter/ and http://geshi.org/)
+ * --------------------------------------
+ */
+.asm.source-asm .de1, .asm.source-asm .de2 {font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;}
+.asm.source-asm  {font-family:monospace;}
+.asm.source-asm .imp {font-weight: bold; color: red;}
+.asm.source-asm li, .asm.source-asm .li1 {font-weight: normal; vertical-align:top;}
+.asm.source-asm .ln {width:1px;text-align:right;margin:0;padding:0 2px;vertical-align:top;}
+.asm.source-asm .li2 {font-weight: bold; vertical-align:top;}
+.asm.source-asm .kw1 {color: #00007f; font-weight: bold;}
+.asm.source-asm .kw2 {color: #0000ff; font-weight: bold;}
+.asm.source-asm .kw3 {color: #00007f;}
+.asm.source-asm .kw4 {color: #000000; font-weight: bold;}
+.asm.source-asm .kw5 {color: #000000; font-weight: bold;}
+.asm.source-asm .co1 {color: #666666; font-style: italic;}
+.asm.source-asm .co2 {color: #adadad; font-style: italic;}
+.asm.source-asm .es0 {color: #000099; font-weight: bold;}
+.asm.source-asm .br0 {color: #009900; font-weight: bold;}
+.asm.source-asm .sy0 {color: #339933;}
+.asm.source-asm .st0 {color: #7f007f;}
+.asm.source-asm .nu0 {color: #0000ff;}
+.asm.source-asm .ln-xtra, .asm.source-asm li.ln-xtra, .asm.source-asm div.ln-xtra {background-color: #ffc;}
+.asm.source-asm span.xtra { display:block; }
+
+/*]]>*/
+</style>
+<style type="text/css">/*<![CDATA[*/
+@import "/w/index.php?title=MediaWiki:Geshi.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=2678400";
+/*]]>*/
+</style><style type="text/css">/*<![CDATA[*/
+.source-pascal {line-height: normal;}
+.source-pascal li, .source-pascal pre {
+	line-height: normal; border: 0px none white;
+}
+/**
+ * GeSHi Dynamically Generated Stylesheet
+ * --------------------------------------
+ * Dynamically generated stylesheet for pascal
+ * CSS class: source-pascal, CSS id: 
+ * GeSHi (C) 2004 - 2007 Nigel McNie, 2007 - 2008 Benny Baumann
+ * (http://qbnz.com/highlighter/ and http://geshi.org/)
+ * --------------------------------------
+ */
+.pascal.source-pascal .de1, .pascal.source-pascal .de2 {font: normal normal 1em/1.2em monospace; margin:0; padding:0; background:none; vertical-align:top;}
+.pascal.source-pascal  {font-family:monospace;}
+.pascal.source-pascal .imp {font-weight: bold; color: red;}
+.pascal.source-pascal li, .pascal.source-pascal .li1 {font-weight: normal; vertical-align:top;}
+.pascal.source-pascal .ln {width:1px;text-align:right;margin:0;padding:0 2px;vertical-align:top;}
+.pascal.source-pascal .li2 {font-weight: bold; vertical-align:top;}
+.pascal.source-pascal .kw1 {color: #000000; font-weight: bold;}
+.pascal.source-pascal .kw2 {color: #000000; font-weight: bold;}
+.pascal.source-pascal .kw3 {color: #000066;}
+.pascal.source-pascal .kw4 {color: #000066; font-weight: bold;}
+.pascal.source-pascal .co1 {color: #666666; font-style: italic;}
+.pascal.source-pascal .coMULTI {color: #666666; font-style: italic;}
+.pascal.source-pascal .es0 {color: #000099; font-weight: bold;}
+.pascal.source-pascal .es_h {color: #000099; font-weight: bold;}
+.pascal.source-pascal .br0 {color: #009900;}
+.pascal.source-pascal .sy0 {color: #339933;}
+.pascal.source-pascal .st0 {color: #ff0000;}
+.pascal.source-pascal .st_h {color: #ff0000;}
+.pascal.source-pascal .nu0 {color: #cc66cc;}
+.pascal.source-pascal .me1 {color: #0066ee;}
+.pascal.source-pascal .ln-xtra, .pascal.source-pascal li.ln-xtra, .pascal.source-pascal div.ln-xtra {background-color: #ffc;}
+.pascal.source-pascal span.xtra { display:block; }
+
+/*]]>*/
+</style>
+<style type="text/css">/*<![CDATA[*/
+@import "/w/index.php?title=MediaWiki:Geshi.css&usemsgcache=yes&action=raw&ctype=text/css&smaxage=2678400";
+/*]]>*/
+</style><!--[if lt IE 7]><style type="text/css">body{behavior:url("/w/skins-1.18/vector/csshover.min.htc")}</style><![endif]--></head>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-X86_calling_conventions action-view skin-vector">
+		<div id="mw-page-base" class="noprint"></div>
+		<div id="mw-head-base" class="noprint"></div>
+		<!-- content -->
+		<div id="content">
+			<a id="top"></a>
+			<div id="mw-js-message" style="display:none;"></div>
+						<!-- sitenotice -->
+			<div id="siteNotice"><!-- centralNotice loads here --></div>
+			<!-- /sitenotice -->
+						<!-- firstHeading -->
+			<h1 id="firstHeading" class="firstHeading">x86 calling conventions</h1>
+			<!-- /firstHeading -->
+			<!-- bodyContent -->
+			<div id="bodyContent">
+								<!-- tagline -->
+				<div id="siteSub">From Wikipedia, the free encyclopedia</div>
+				<!-- /tagline -->
+								<!-- subtitle -->
+				<div id="contentSub"></div>
+				<!-- /subtitle -->
+																<!-- jumpto -->
+				<div id="jump-to-nav">
+					Jump to: <a href="#mw-head">navigation</a>,
+					<a href="#p-search">search</a>
+				</div>
+				<!-- /jumpto -->
+								<!-- bodycontent -->
+				<div lang="en" dir="ltr" class="mw-content-ltr"><p>This article describes the <b><a href="/wiki/Calling_convention" title="Calling convention">calling conventions</a></b> used on the <b><a href="/wiki/X86" title="X86">x86</a></b> architecture.</p>
+<p>Calling conventions describe the interface of called code:</p>
+<ul>
+<li>The order in which atomic (scalar) parameters, or individual parts of a complex parameter, are allocated</li>
+<li>How parameters are passed (pushed on the stack, placed in registers, or a mix of both)</li>
+<li>Which registers may be used by the callee without first being saved (i.e. pushed)</li>
+<li>How the task of setting up for and restoring the stack after a function call is divided between the caller and the callee</li>
+</ul>
+<p>This is intimately related with the assignment of sizes and formats to programming-language types. Another closely related topic is <a href="/wiki/Name_mangling" title="Name mangling">name mangling</a>, which determines how symbol names in the code map to symbol names used by the linker. Calling conventions, type representations, and name mangling are all part of what is known as an <a href="/wiki/Application_Binary_Interface" title="Application Binary Interface" class="mw-redirect">Application Binary Interface</a> (ABI).</p>
+<p>There are often subtle differences in how various compilers implement these conventions, so it is often difficult to interface code which is compiled by different compilers. On the other hand, conventions which are used as an API standard (such as stdcall) are necessarily very uniformly implemented.</p>
+<table id="toc" class="toc">
+<tr>
+<td>
+<div id="toctitle">
+<h2>Contents</h2>
+</div>
+<ul>
+<li class="toclevel-1 tocsection-1"><a href="#Historical_background"><span class="tocnumber">1</span> <span class="toctext">Historical background</span></a></li>
+<li class="toclevel-1 tocsection-2"><a href="#Caller_clean-up"><span class="tocnumber">2</span> <span class="toctext">Caller clean-up</span></a>
+<ul>
+<li class="toclevel-2 tocsection-3"><a href="#cdecl"><span class="tocnumber">2.1</span> <span class="toctext">cdecl</span></a></li>
+<li class="toclevel-2 tocsection-4"><a href="#syscall"><span class="tocnumber">2.2</span> <span class="toctext">syscall</span></a></li>
+<li class="toclevel-2 tocsection-5"><a href="#optlink"><span class="tocnumber">2.3</span> <span class="toctext">optlink</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-6"><a href="#Callee_clean-up"><span class="tocnumber">3</span> <span class="toctext">Callee clean-up</span></a>
+<ul>
+<li class="toclevel-2 tocsection-7"><a href="#pascal"><span class="tocnumber">3.1</span> <span class="toctext">pascal</span></a></li>
+<li class="toclevel-2 tocsection-8"><a href="#register"><span class="tocnumber">3.2</span> <span class="toctext">register</span></a></li>
+<li class="toclevel-2 tocsection-9"><a href="#stdcall"><span class="tocnumber">3.3</span> <span class="toctext">stdcall</span></a></li>
+<li class="toclevel-2 tocsection-10"><a href="#fastcall"><span class="tocnumber">3.4</span> <span class="toctext">fastcall</span></a>
+<ul>
+<li class="toclevel-3 tocsection-11"><a href="#Microsoft_fastcall"><span class="tocnumber">3.4.1</span> <span class="toctext">Microsoft fastcall</span></a></li>
+<li class="toclevel-3 tocsection-12"><a href="#Borland_fastcall"><span class="tocnumber">3.4.2</span> <span class="toctext">Borland fastcall</span></a></li>
+<li class="toclevel-3 tocsection-13"><a href="#Watcom_register_based_calling_convention"><span class="tocnumber">3.4.3</span> <span class="toctext">Watcom register based calling convention</span></a></li>
+<li class="toclevel-3 tocsection-14"><a href="#TopSpeed_.2F_Clarion_.2F_JPI"><span class="tocnumber">3.4.4</span> <span class="toctext">TopSpeed / Clarion / JPI</span></a></li>
+</ul>
+</li>
+<li class="toclevel-2 tocsection-15"><a href="#safecall"><span class="tocnumber">3.5</span> <span class="toctext">safecall</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-16"><a href="#Either_caller_or_callee_clean-up"><span class="tocnumber">4</span> <span class="toctext">Either caller or callee clean-up</span></a>
+<ul>
+<li class="toclevel-2 tocsection-17"><a href="#thiscall"><span class="tocnumber">4.1</span> <span class="toctext">thiscall</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-18"><a href="#Intel_ABI"><span class="tocnumber">5</span> <span class="toctext">Intel ABI</span></a></li>
+<li class="toclevel-1 tocsection-19"><a href="#x86-64_calling_conventions"><span class="tocnumber">6</span> <span class="toctext">x86-64 calling conventions</span></a>
+<ul>
+<li class="toclevel-2 tocsection-20"><a href="#Microsoft_x64_calling_convention"><span class="tocnumber">6.1</span> <span class="toctext">Microsoft x64 calling convention</span></a></li>
+<li class="toclevel-2 tocsection-21"><a href="#System_V_AMD64_ABI_convention"><span class="tocnumber">6.2</span> <span class="toctext">System V AMD64 ABI convention</span></a></li>
+</ul>
+</li>
+<li class="toclevel-1 tocsection-22"><a href="#Thunks_and_calling_conventions"><span class="tocnumber">7</span> <span class="toctext">Thunks and calling conventions</span></a></li>
+<li class="toclevel-1 tocsection-23"><a href="#Table_of_x86_calling_conventions.5B1.5D"><span class="tocnumber">8</span> <span class="toctext">Table of x86 calling conventions<sup>[1]</sup></span></a></li>
+<li class="toclevel-1 tocsection-24"><a href="#References"><span class="tocnumber">9</span> <span class="toctext">References</span></a></li>
+<li class="toclevel-1 tocsection-25"><a href="#Further_reading"><span class="tocnumber">10</span> <span class="toctext">Further reading</span></a></li>
+</ul>
+</td>
+</tr>
+</table>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=1" title="Edit section: Historical background">edit</a>]</span> <span class="mw-headline" id="Historical_background">Historical background</span></h2>
+<p>Previous to <a href="/wiki/Microcomputer" title="Microcomputer">microcomputers</a>, the machine manufacturer generally provided an <a href="/wiki/Operating_system" title="Operating system">operating system</a> and <a href="/wiki/Compilers" title="Compilers" class="mw-redirect">compilers</a> for several <a href="/wiki/Programming_languages" title="Programming languages" class="mw-redirect">programming languages</a>. The <a href="/wiki/Calling_conventions" title="Calling conventions" class="mw-redirect">calling conventions</a> adopted for the platform were those defined by the manufacturer's software implementation.</p>
+<p>Early microcomputers before <a href="/wiki/Apple_II_series" title="Apple II series">Apple II Computers</a> generally came "bare" of an OS or compilers, as did the <a href="/wiki/IBM_PC" title="IBM PC" class="mw-redirect">IBM PC</a>. The only hardware <a href="/wiki/Technical_standard" title="Technical standard">standard</a> for <a href="/wiki/IBM_PC_compatible" title="IBM PC compatible">IBM PC compatible</a> machines was defined by the <a href="/wiki/Intel_processor" title="Intel processor" class="mw-redirect">Intel processors</a> (8086, 80386) and the literal hardware IBM shipped. Hardware extensions and all <a href="/wiki/Standards_(software)" title="Standards (software)" class="mw-redirect">software standards</a> (save for a <a href="/wiki/BIOS" title="BIOS">BIOS</a> calling convention) were thrown open to market competition.</p>
+<p>A multitude of independent software firms offered operating systems, compilers for many programming languages, and applications. Many different calling schemes were implemented by the firms, often mutually exclusive, based on different requirements, historical practices, and programmer creativity.</p>
+<p>After the IBM compatible market shakeout, <a href="/wiki/Microsoft" title="Microsoft">Microsoft</a> operating systems and programming tools (with differing conventions) predominated, while second tier firms like <a href="/wiki/Borland" title="Borland">Borland</a> and <a href="/wiki/Novell" title="Novell">Novell</a>, and open source projects like <a href="/wiki/GNU_Compiler_Collection" title="GNU Compiler Collection">GCC</a>, still maintained their own standards. Provisions for <a href="/wiki/Inter-operability" title="Inter-operability" class="mw-redirect">inter-operability</a> between vendors and products were eventually adopted, simplifying the problem of choosing a viable convention.<sup id="cite_ref-fog_0-0" class="reference"><a href="#cite_note-fog-0"><span>[</span>1<span>]</span></a></sup></p>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=2" title="Edit section: Caller clean-up">edit</a>]</span> <span class="mw-headline" id="Caller_clean-up">Caller clean-up</span></h2>
+<p>In these conventions the caller cleans the arguments from the stack, which allows for <a href="/wiki/Variable_argument_list" title="Variable argument list" class="mw-redirect">variable argument lists</a>, eg. <code>printf()</code>.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=3" title="Edit section: cdecl">edit</a>]</span> <span class="mw-headline" id="cdecl">cdecl</span></h3>
+<p>The <b>cdecl</b> calling convention is used by many <a href="/wiki/C_programming_language" title="C programming language" class="mw-redirect">C</a> systems for the <a href="/wiki/X86_architecture" title="X86 architecture" class="mw-redirect">x86 architecture</a>.<sup id="cite_ref-fog_0-1" class="reference"><a href="#cite_note-fog-0"><span>[</span>1<span>]</span></a></sup> In cdecl, function parameters are pushed on the <a href="/wiki/Call_stack" title="Call stack">stack</a> in a right-to-left order. Function return values are returned in the EAX <a href="/wiki/Processor_register" title="Processor register">register</a> (except for floating point values, which are returned in the x87 register ST0). Registers EAX, ECX, and EDX are available for use in the function.</p>
+<p>On Linux, gcc sets the de-facto standard for calling conventions. Since gcc 4.5 the stack must be aligned to a 16-byte boundary when calling a function (previous versions only required a 4-byte alignment).</p>
+<p>For instance, the following C code function prototype and function call:</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="c source-c">
+<pre class="de1">
+<span class="kw4">int</span> function_name<span class="br0">(</span><span class="kw4">int</span><span class="sy0">,</span> <span class="kw4">int</span><span class="sy0">,</span> <span class="kw4">int</span><span class="br0">)</span><span class="sy0">;</span>
+<span class="kw4">int</span> a<span class="sy0">,</span> b<span class="sy0">,</span> c<span class="sy0">,</span> x<span class="sy0">;</span>
+...
+<span class="me1">x</span> <span class="sy0">=</span> function_name<span class="br0">(</span>a<span class="sy0">,</span> b<span class="sy0">,</span> c<span class="br0">)</span><span class="sy0">;</span>
+</pre></div>
+</div>
+<p>will produce the following <a href="/wiki/X86_assembly_language" title="X86 assembly language">x86 Assembly code</a> (written in <a href="/wiki/MASM" title="MASM" class="mw-redirect">MASM</a> (<a href="/wiki/Intel" title="Intel">intel</a>) syntax, with destination first):</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="asm source-asm">
+<pre class="de1">
+<span class="kw1">push</span> <span class="kw5">c</span>             <span class="co1">; arg 3</span>
+<span class="kw1">push</span> b             <span class="co1">; arg 2</span>
+<span class="kw1">push</span> a             <span class="co1">; arg 1</span>
+<span class="kw1">call</span> function_name <span class="co1">; jump to function_name's code</span>
+<span class="kw1">add</span> <span class="kw3">esp</span><span class="sy0">,</span> <span class="nu0">12</span>        <span class="co1">; pop function args (a, b, c) off the stack</span>
+<span class="kw1">mov</span> x<span class="sy0">,</span> <span class="kw3">eax</span>         <span class="co1">; fetch function return value</span>
+</pre></div>
+</div>
+<p>The calling function cleans the stack after the function call returns.</p>
+<p>There are some variations in the interpretation of cdecl, particularly in how to return values. As a result, x86 programs compiled for different operating system platforms and/or by different compilers can be incompatible, even if they both use the "cdecl" convention and do not call out to the underlying environment. Some compilers return simple data structures with the length of 2 registers or less in EAX:EDX, and larger structures and class objects requiring special treatment by the exception handler (e.g., a defined constructor, destructor, or assignment) are returned in memory. To pass "in memory", the caller allocates memory and passes a pointer to it as a hidden first parameter; the callee populates the memory and returns the pointer, popping the hidden pointer when returning.</p>
+<p>In Linux/GCC, double/floating point values should be pushed on the stack via the <a href="/wiki/X87" title="X87">x87</a> pseudo-stack. Like so:</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="asm source-asm">
+<pre class="de1">
+<span class="kw1">sub</span> <span class="kw3">esp</span><span class="sy0">,</span><span class="nu0">8</span><span class="co1">;    make room for the double</span>
+<span class="kw2">fld</span> <span class="br0">[</span><span class="kw3">ebp</span><span class="sy0">+</span>x<span class="br0">]</span><span class="co1">; load our double onto the floating point stack</span>
+<span class="kw2">fstp</span> <span class="br0">[</span><span class="kw3">esp</span><span class="br0">]</span><span class="co1">;  push our double onto the stack</span>
+<span class="kw1">call</span> func<span class="co1">;</span>
+<span class="kw1">add</span> <span class="kw3">esp</span><span class="sy0">,</span><span class="nu0">8</span><span class="co1">;</span>
+</pre></div>
+</div>
+<p>Using this method ensures it is pushed on the stack in the correct format.</p>
+<p>The <b>cdecl</b> calling convention is usually the default calling convention for x86 C <a href="/wiki/Compilers" title="Compilers" class="mw-redirect">compilers</a>, although many compilers provide options to automatically change the calling conventions used. To manually define a function to be cdecl, some support the following syntax:</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="c source-c">
+<pre class="de1">
+<span class="kw4">void</span> _cdecl function_name<span class="br0">(</span>params<span class="br0">)</span><span class="sy0">;</span>
+</pre></div>
+</div>
+<p>The <b>_cdecl</b> modifier must be included in the function prototype, and in the function declaration to override any other settings that might be in place.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=4" title="Edit section: syscall">edit</a>]</span> <span class="mw-headline" id="syscall">syscall</span></h3>
+<p>This is similar to cdecl in that arguments are pushed right to left. EAX, ECX, and EDX are not preserved. The size of the parameter list in doublewords is passed in AL.</p>
+<p>Syscall is the standard calling convention for 32 bit <a href="/wiki/OS/2" title="OS/2">OS/2</a> API.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=5" title="Edit section: optlink">edit</a>]</span> <span class="mw-headline" id="optlink">optlink</span></h3>
+<p>Arguments are pushed right to left. The three lexically first (leftmost) arguments are passed in EAX, EDX, and ECX and up to four floating-point arguments are passed in ST(0) through ST(3), although space for them is reserved in the argument list on the stack. Results are returned in EAX or ST(0). Registers EBP, EBX, ESI, and EDI are preserved.</p>
+<p>Optlink is used by the <a href="/wiki/IBM" title="IBM">IBM</a> <a href="/wiki/VisualAge" title="VisualAge" class="mw-redirect">VisualAge</a> compilers.</p>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=6" title="Edit section: Callee clean-up">edit</a>]</span> <span class="mw-headline" id="Callee_clean-up">Callee clean-up</span></h2>
+<p>When the callee cleans the arguments from the stack it needs to be known at compile time how many bytes the stack needs to be adjusted. Therefore, these calling conventions are not compatible with <a href="/wiki/Variable_argument_list" title="Variable argument list" class="mw-redirect">variable argument lists</a>, eg. printf(). They may be, however, more space efficient, as the code needed to unwind the stack does not need to be generated for each call.</p>
+<p>Functions which utilize these conventions are easy to recognize in ASM code because they will unwind the stack prior to returning. The x86 <tt>ret</tt> instruction allows an optional 16-bit parameter that specifies the number of stack bytes to unwind before returning to the caller. Such code looks like this:</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="asm source-asm">
+<pre class="de1">
+ <span class="kw1">ret</span> <span class="nu0">12</span>
+</pre></div>
+</div>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=7" title="Edit section: pascal">edit</a>]</span> <span class="mw-headline" id="pascal">pascal</span></h3>
+<p>Based on the <a href="/wiki/Pascal_(programming_language)" title="Pascal (programming language)">Pascal programming language</a>'s calling convention, the parameters are pushed on the stack in left-to-right order (opposite of cdecl), and the callee is responsible for balancing the stack before return.</p>
+<p>This calling convention was common in the following 16-bit APIs: <a href="/wiki/OS/2" title="OS/2">OS/2</a> 1.x , <a href="/wiki/Microsoft_Windows" title="Microsoft Windows">Microsoft Windows</a> 3.x, and <a href="/wiki/Borland_Delphi" title="Borland Delphi" class="mw-redirect">Borland Delphi</a> version 1.x.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=8" title="Edit section: register">edit</a>]</span> <span class="mw-headline" id="register">register</span></h3>
+<p>An alias for <a href="#Borland_fastcall">Borland fastcall</a>.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=9" title="Edit section: stdcall">edit</a>]</span> <span class="mw-headline" id="stdcall">stdcall</span></h3>
+<p>The stdcall<sup id="cite_ref-1" class="reference"><a href="#cite_note-1"><span>[</span>2<span>]</span></a></sup> calling convention is a variation on the pascal calling convention in which the callee is responsible for cleaning up the stack, but the parameters are pushed onto the stack in right-to-left order, as in the _cdecl calling convention. Registers EAX, ECX, and EDX are designated for use within the function. Return values are stored in the EAX register.</p>
+<p>stdcall is the standard calling convention for the Microsoft <a href="/wiki/Win32" title="Win32" class="mw-redirect">Win32</a> <a href="/wiki/API" title="API" class="mw-redirect">API</a> and for Open Watcom C++.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=10" title="Edit section: fastcall">edit</a>]</span> <span class="mw-headline" id="fastcall">fastcall</span></h3>
+<p>Conventions entitled <b>fastcall</b> have not been standardized, and have been implemented differently, depending on the compiler vendor.<sup id="cite_ref-fog_0-2" class="reference"><a href="#cite_note-fog-0"><span>[</span>1<span>]</span></a></sup> Typically fastcall calling conventions pass one or more arguments in registers which reduces the number of memory accesses required for the call.</p>
+<h4><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=11" title="Edit section: Microsoft fastcall">edit</a>]</span> <span class="mw-headline" id="Microsoft_fastcall">Microsoft fastcall</span></h4>
+<p>Microsoft or <a href="/wiki/GNU_Compiler_Collection" title="GNU Compiler Collection">GCC</a><sup id="cite_ref-2" class="reference"><a href="#cite_note-2"><span>[</span>3<span>]</span></a></sup> <tt>__fastcall</tt><sup id="cite_ref-3" class="reference"><a href="#cite_note-3"><span>[</span>4<span>]</span></a></sup> convention (aka <tt>__msfastcall</tt>) passes the first two arguments (evaluated left to right) that fit into ECX and EDX. Remaining arguments are pushed onto the stack from right to left.</p>
+<h4><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=12" title="Edit section: Borland fastcall">edit</a>]</span> <span class="mw-headline" id="Borland_fastcall">Borland fastcall</span></h4>
+<p>Evaluating arguments from left to right, it passes three arguments via EAX, EDX, ECX. Remaining arguments are pushed onto the stack, also left to right.<sup id="cite_ref-4" class="reference"><a href="#cite_note-4"><span>[</span>5<span>]</span></a></sup></p>
+<p>It is the default calling convention of the 32 bit compiler of <a href="/wiki/Embarcadero_Delphi" title="Embarcadero Delphi">Embarcadero Delphi</a>, where it is known as <i>register</i>.</p>
+<h4><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=13" title="Edit section: Watcom register based calling convention">edit</a>]</span> <span class="mw-headline" id="Watcom_register_based_calling_convention">Watcom register based calling convention</span></h4>
+<p><a href="/wiki/Watcom" title="Watcom">Watcom</a> does not support the <i>__fastcall</i> keyword except to alias it to null. The register calling convention may be selected by command line switch. (However, <a href="/wiki/Interactive_Disassembler" title="Interactive Disassembler">IDA</a> uses <i>__fastcall</i> anyway for uniformity)</p>
+<p>Up to 4 registers are assigned to arguments in the order eax, edx, ebx, ecx. Arguments are assigned to registers from left to right. If any argument cannot be assigned to a register (say it is too large) it, and all subsequent arguments, are assigned to the stack. Arguments assigned to the stack are pushed from right to left. Names are mangled by adding a suffixed underscore.</p>
+<p>Variadic functions fall back to the Watcom stack based calling convention.</p>
+<p>The Watcom C/C++ compiler also uses the <tt>#pragma aux</tt><sup id="cite_ref-5" class="reference"><a href="#cite_note-5"><span>[</span>6<span>]</span></a></sup> directive that allows the user to specify his own calling convention. As its manual states, "Very few users are likely to need this method, but if it is needed, it can be a lifesaver".</p>
+<h4><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=14" title="Edit section: TopSpeed / Clarion / JPI">edit</a>]</span> <span class="mw-headline" id="TopSpeed_.2F_Clarion_.2F_JPI">TopSpeed / Clarion / JPI</span></h4>
+<p>The first four integer parameters are passed in registers eax, ebx, ecx and edx. Floating point parameters are passed on the floating point stack – registers st0, st1, st2, st3, st4, st5 and st6. Structure parameters are always passed on the stack. Additional parameters are passed on the stack after registers are exhausted. Integer values are returned in eax, pointers in edx and floating point types in st0.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=15" title="Edit section: safecall">edit</a>]</span> <span class="mw-headline" id="safecall">safecall</span></h3>
+<p>In <a href="/wiki/Embarcadero_Delphi" title="Embarcadero Delphi">Embarcadero Delphi</a> and <a href="/wiki/Free_Pascal" title="Free Pascal">Free Pascal</a> on <a href="/wiki/Microsoft_Windows" title="Microsoft Windows">Microsoft Windows</a>, the safecall calling convention encapsulates COM (<a href="/wiki/Component_Object_Model" title="Component Object Model">Component Object Model</a>) error handling, thus exceptions aren't leaked out to the caller, but are reported in the <a href="/wiki/HRESULT" title="HRESULT">HRESULT</a> return value, as required by COM/OLE. When calling a safecall function from Delphi code, Delphi also automatically checks the returned HRESULT and raises an exception if necessary.</p>
+<p>The safecall calling convention is the same as the stdcall calling convention, except that exceptions are passed back to the caller in EAX as a HResult (instead of in FS:[0]), while the function result is passed by reference on the stack as though it were a final "out" parameter. When calling a Delphi function from Delphi this calling convention will appear just like any other calling convention, because although exceptions are passed back in EAX, they are automatically converted back to proper exceptions by the caller. When using COM objects created in other languages, the HResults will be automatically raised as exceptions, and the result for Get functions is in the result rather than a parameter. When creating COM objects in Delphi with safecall, there is no need to worry about HResults, as exceptions can be raised as normal but will be seen as HResults in other languages.</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="pascal source-pascal">
+<pre class="de1">
+<span class="kw1">function</span> function_name<span class="br0">(</span>a<span class="sy0">:</span> DWORD<span class="br0">)</span><span class="sy0">:</span> DWORD; safecall;
+</pre></div>
+</div>
+<p>Returns a result and raises exceptions like a normal Delphi function, but it passes values and exceptions as though it was:</p>
+<div dir="ltr" class="mw-geshi" style="text-align: left;">
+<div class="pascal source-pascal">
+<pre class="de1">
+<span class="kw1">function</span> function_name<span class="br0">(</span>a<span class="sy0">:</span> DWORD; out Result<span class="sy0">:</span> DWORD<span class="br0">)</span><span class="sy0">:</span> HResult; <span class="kw1">stdcall</span>;
+</pre></div>
+</div>
+<table class="metadata plainlinks ambox mbox-small-left ambox-notice" style="">
+<tr>
+<td class="mbox-image"><a href="/wiki/File:Wiki_letter_w_cropped.svg" class="image"><img alt="Wiki letter w cropped.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Wiki_letter_w_cropped.svg/20px-Wiki_letter_w_cropped.svg.png" width="20" height="14" /></a></td>
+<td class="mbox-text" style="">This section requires <a class="external text" href="//en.wikipedia.org/w/index.php?title=X86_calling_conventions&amp;action=edit">expansion</a>.</td>
+</tr>
+</table>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=16" title="Edit section: Either caller or callee clean-up">edit</a>]</span> <span class="mw-headline" id="Either_caller_or_callee_clean-up">Either caller or callee clean-up</span></h2>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=17" title="Edit section: thiscall">edit</a>]</span> <span class="mw-headline" id="thiscall">thiscall</span></h3>
+<p>This calling convention is used for calling C++ non-static member functions. There are two primary versions of <b>thiscall</b> used depending on the compiler and whether or not the function uses variable arguments.</p>
+<p>For the GCC compiler, <b>thiscall</b> is almost identical to <b>cdecl</b>: the calling function cleans the stack, and the parameters are passed in right-to-left order. The difference is the addition of the <b>this</b> pointer, which is pushed onto the stack last, as if it were the first parameter in the function prototype.</p>
+<p>On the Microsoft Visual C++ compiler, the <b>this</b> pointer is passed in ECX and it is the <i>callee</i> that cleans the stack, mirroring the <b>stdcall</b> convention used in C for this compiler and in Windows API functions. When functions use a variable number of arguments, it is the caller that cleans the stack (cf. <b>cdecl</b>).</p>
+<p>The <b>thiscall</b> calling convention can only be explicitly specified on Microsoft Visual C++ 2005 and later. On any other compiler <i>thiscall</i> is not a keyword. (Disassemblers like <a href="/wiki/Interactive_Disassembler" title="Interactive Disassembler">IDA</a>, however, have to specify it anyway. So IDA uses keyword <i>__thiscall</i> for this.)</p>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=18" title="Edit section: Intel ABI">edit</a>]</span> <span class="mw-headline" id="Intel_ABI">Intel ABI</span></h2>
+<p>According to the Intel ABI, the EAX, EDX, and ECX are to be free for use within a procedure or function, and need not be preserved.</p>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=19" title="Edit section: x86-64 calling conventions">edit</a>]</span> <span class="mw-headline" id="x86-64_calling_conventions">x86-64 calling conventions</span></h2>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=20" title="Edit section: Microsoft x64 calling convention">edit</a>]</span> <span class="mw-headline" id="Microsoft_x64_calling_convention">Microsoft x64 calling convention</span></h3>
+<p>The Microsoft x64 calling convention<sup id="cite_ref-ms_6-0" class="reference"><a href="#cite_note-ms-6"><span>[</span>7<span>]</span></a></sup> (for <a href="/wiki/Long_mode" title="Long mode">long mode</a> on <a href="/wiki/X86-64" title="X86-64">x86-64</a>) takes advantage of additional register space in the <a href="/wiki/AMD64" title="AMD64" class="mw-redirect">AMD64</a>/<a href="/wiki/Intel_64" title="Intel 64" class="mw-redirect">Intel 64</a> platform. The registers RCX, RDX, R8, R9 are used for integer and pointer arguments (in that order left to right), and XMM0, XMM1, XMM2, XMM3 are used for floating point arguments. Additional arguments are pushed onto the stack (right to left). Integer return values (similar to x86) are returned in RAX if 64 bits or less. Floating point return values are returned in XMM0. Parameters less than 64 bits long are not zero extended; the high bits contain garbage.</p>
+<p>When compiling for the x64 architecture in a Windows context (whether using Microsoft or non-Microsoft tools), there is only one calling convention — the one described here, so that stdcall, thiscall, cdecl, fastcall, etc., are now all one and the same.</p>
+<p>In the Microsoft x64 calling convention, it's the caller's responsibility to allocate 32 bytes of "shadow space" on the stack right before calling the function (regardless of the actual number of parameters used), and to pop the stack after the call. The shadow space is used to spill RCX, RDX, R8, and R9.<sup id="cite_ref-7" class="reference"><a href="#cite_note-7"><span>[</span>8<span>]</span></a></sup></p>
+<p>For example, a function taking 5 integer arguments will take the first to fourth in registers, and the fifth will be pushed on the top of the shadow space. So the stack will be composed (in ascendant order) by the shadow space (32 bytes) followed by the fifth parameter.</p>
+<p>In <a href="/wiki/X86-64" title="X86-64">x86-64</a>, Visual Studio 2008 stores floating point numbers in XMM6 and XMM7 (as well as XMM8 through XMM15); consequently, for <a href="/wiki/X86-64" title="X86-64">x86-64</a>, user-written assembly language routines must preserve XMM6 and XMM7 (as compared to <a href="/wiki/X86" title="X86">x86</a> wherein user-written assembly language routines did not need to preserve XMM6 and XMM7). In other words, user-written assembly language routines must be updated to save/restore XMM6 and XMM7 before/after the function when being ported from <a href="/wiki/X86" title="X86">x86</a> to <a href="/wiki/X86-64" title="X86-64">x86-64</a>.</p>
+<h3><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=21" title="Edit section: System V AMD64 ABI convention">edit</a>]</span> <span class="mw-headline" id="System_V_AMD64_ABI_convention">System V AMD64 ABI convention</span></h3>
+<p>The calling convention of the <a href="/wiki/System_V" title="System V" class="mw-redirect">System V</a> AMD64 <a href="/wiki/Application_binary_interface" title="Application binary interface">application binary interface</a><sup id="cite_ref-AMD_8-0" class="reference"><a href="#cite_note-AMD-8"><span>[</span>9<span>]</span></a></sup> is followed on <a href="/wiki/Linux" title="Linux">Linux</a> and other non-<a href="/wiki/Microsoft" title="Microsoft">Microsoft</a> operating systems. The registers RDI, RSI, RDX, RCX, R8 and R9 are used for integer and pointer arguments while XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6 and XMM7 are used for floating point arguments. For system calls, R10 is used instead of RCX.<sup id="cite_ref-AMD_8-1" class="reference"><a href="#cite_note-AMD-8"><span>[</span>9<span>]</span></a></sup> As in the <a href="/wiki/Microsoft" title="Microsoft">Microsoft</a> x64 calling convention, additional arguments are pushed onto the stack and the return value is stored in RAX.</p>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=22" title="Edit section: Thunks and calling conventions">edit</a>]</span> <span class="mw-headline" id="Thunks_and_calling_conventions">Thunks and calling conventions</span></h2>
+<p>A "thunk" means a small block of code, which can be generated dynamically at runtime, in order to be executed before calling the "actual" function. This is sometimes very useful. One common scenario is to convert a C++ functor object to a normal pointer to a function. In general, doing so requires to insert an additional pointer which presents the "this" pointer to the functor object.</p>
+<p>To write such a thunk, understanding of the calling convention the compiler is using is fundamental. One can easily imagine how to provide a general way to adjust the stack for <a href="#stdcall">stdcall</a> to <a href="#thiscall">thiscall</a>, because stdcall does not use registers and the additional parameter is to be passed through ecx, which is free to use. But how about for example fastcall or x64 calling convention? Those calling conventions uses registers to pass arguments, usually harder to predict the actual size and/or correct register for a specific parameter. However, it does not mean it cannot be done.</p>
+<p>For example, if the compiler is using <a href="#Microsoft_x64_calling_convention">Microsoft x64 calling convention</a>, what we need to do is to look at the convention. It says that 4 integer register and 4 floating point registers were selected as 4 parameter slot, and each parameter must occupy exactly one slot. If you have more than 4 parameters, additional parameters is passed by stack, with 8 bytes for each parameter.</p>
+<p>Thus if the number of parameters is from 0 to 3, although we do not know if they occupy the integer registers or the floating point registers, we can shift them both, and result in a general solution.</p>
+<p>For function objects that have at least 4 parameters, we need to detect the fourth parameter type. if it is a floating point then we push XMMS3, otherwise push R9. In this case, we can use templates and type traits feature to detect the exact parameter type.</p>
+<p>For all other conventions we can do the same. The solution and implementation difficulty may be different, but the concept remains the same.</p>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=23" title="Edit section: Table of x86 calling conventions[1]">edit</a>]</span> <span class="mw-headline" id="Table_of_x86_calling_conventions.5B1.5D">Table of x86 calling conventions<sup id="cite_ref-fog_0-3" class="reference"><a href="#cite_note-fog-0"><span>[</span>1<span>]</span></a></sup></span></h2>
+<p><i><b>Note</b></i>. <i>This is conventions primarily intended for C/C++ compilers (especially the 64-bit part below), and thus largely special cases. Other languages may use other formats and conventions in their implementations.</i></p>
+<table class="wikitable">
+<tr>
+<th>Architecture</th>
+<th>Calling convention name</th>
+<th>Operating system, Compiler</th>
+<th>Parameters in registers</th>
+<th>Parameter order on stack</th>
+<th>Stack cleanup by</th>
+<th>Notes</th>
+</tr>
+<tr>
+<td rowspan="6">16bit</td>
+<td>cdecl</td>
+<td></td>
+<td></td>
+<td>RTL (C)</td>
+<td>caller</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="/wiki/Pascal_(programming_language)" title="Pascal (programming language)">pascal</a></td>
+<td></td>
+<td></td>
+<td>LTR (Pascal)</td>
+<td>function</td>
+<td></td>
+</tr>
+<tr>
+<td>fastcall</td>
+<td>Microsoft (non-member)</td>
+<td>ax, dx, bx</td>
+<td>LTR (Pascal)</td>
+<td>function</td>
+<td>return pointer in bx</td>
+</tr>
+<tr>
+<td>fastcall</td>
+<td>Microsoft (member function)</td>
+<td>ax, dx</td>
+<td>LTR (Pascal)</td>
+<td>function</td>
+<td>"this" on stack low address. return pointer in ax</td>
+</tr>
+<tr>
+<td>fastcall</td>
+<td><a href="/wiki/Turbo_C" title="Turbo C" class="mw-redirect">Borland compiler</a><sup id="cite_ref-borland_9-0" class="reference"><a href="#cite_note-borland-9"><span>[</span>10<span>]</span></a></sup></td>
+<td>ax, dx, bx</td>
+<td>LTR (Pascal)</td>
+<td>function</td>
+<td>"this" on stack low address. return ptr on stack high address.</td>
+</tr>
+<tr>
+<td></td>
+<td><a href="/wiki/Watcom" title="Watcom">Watcom compiler</a></td>
+<td>ax, dx, bx, cx</td>
+<td>RTL (C)</td>
+<td>function</td>
+<td>return pointer in si</td>
+</tr>
+<tr>
+<td rowspan="8"><a href="/wiki/IA-32" title="IA-32">32bit</a></td>
+<td>cdecl</td>
+<td></td>
+<td></td>
+<td>RTL (C)</td>
+<td>caller</td>
+<td></td>
+</tr>
+<tr>
+<td>stdcall</td>
+<td></td>
+<td></td>
+<td>RTL (C)</td>
+<td>function</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td><a href="/wiki/GNU_Compiler_Collection" title="GNU Compiler Collection">GCC</a></td>
+<td></td>
+<td>RTL (C)</td>
+<td>hybrid</td>
+<td>Stack possibly on 16 bytes aligned.</td>
+</tr>
+<tr>
+<td>fastcall</td>
+<td>Microsoft</td>
+<td>ecx, edx</td>
+<td>RTL (C)</td>
+<td>function</td>
+<td>return pointer on stack if not member function</td>
+</tr>
+<tr>
+<td>fastcall</td>
+<td>GCC</td>
+<td>ecx, edx</td>
+<td>RTL (C)</td>
+<td>function</td>
+<td></td>
+</tr>
+<tr>
+<td>fastcall</td>
+<td>Borland/Embarcadero compiler</td>
+<td>eax, edx, ecx</td>
+<td>LTR (Pascal)</td>
+<td>function</td>
+<td></td>
+</tr>
+<tr>
+<td>thiscall</td>
+<td>Microsoft</td>
+<td>ecx</td>
+<td>RTL (C)</td>
+<td>function</td>
+<td>default for member functions</td>
+</tr>
+<tr>
+<td></td>
+<td>Watcom compiler</td>
+<td>eax, edx, ebx, ecx</td>
+<td>RTL (C)</td>
+<td>function</td>
+<td>return pointer in esi</td>
+</tr>
+<tr>
+<td rowspan="2"><a href="/wiki/X86-64" title="X86-64">64bit</a></td>
+<td>Microsoft x64 calling convention<sup id="cite_ref-ms_6-1" class="reference"><a href="#cite_note-ms-6"><span>[</span>7<span>]</span></a></sup></td>
+<td>Windows (<a href="/wiki/Microsoft_Visual_C%2B%2B" title="Microsoft Visual C++" class="mw-redirect">Microsoft compiler</a>, <a href="/wiki/Intel_C%2B%2B_Compiler" title="Intel C++ Compiler">Intel compiler</a>, Embarcadero compiler)</td>
+<td>rcx/xmm0, rdx/xmm1, r8/xmm2, r9/xmm3</td>
+<td>RTL (C)</td>
+<td>caller</td>
+<td>Stack aligned on 16 bytes. 32 bytes shadow space on stack. The specified 8 registers can only be used for parameter number 1,2,3 and 4.</td>
+</tr>
+<tr>
+<td>System V AMD64 ABI convention<sup id="cite_ref-AMD_8-2" class="reference"><a href="#cite_note-AMD-8"><span>[</span>9<span>]</span></a></sup></td>
+<td>Linux, BSD, Mac (GCC, Intel compiler)</td>
+<td>rdi, rsi, rdx, rcx, r8, r9, xmm0-7</td>
+<td>RTL (C)</td>
+<td>caller</td>
+<td>Stack aligned on 16 bytes. Red zone below stack.</td>
+</tr>
+</table>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=24" title="Edit section: References">edit</a>]</span> <span class="mw-headline" id="References">References</span></h2>
+<table class="metadata plainlinks ambox ambox-style ambox-No_footnotes" style="">
+<tr>
+<td class="mbox-image">
+<div style="width: 52px;"><img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Text_document_with_red_question_mark.svg/40px-Text_document_with_red_question_mark.svg.png" width="40" height="40" /></div>
+</td>
+<td class="mbox-text" style="">This article includes a <a href="/wiki/Wikipedia:Citing_sources" title="Wikipedia:Citing sources">list of references</a>, related reading or <a href="/wiki/Wikipedia:External_links" title="Wikipedia:External links">external links</a>, but <b>its sources remain unclear because it lacks <a href="/wiki/Wikipedia:Citing_sources#Inline_citations" title="Wikipedia:Citing sources">inline citations</a></b>. Please <a href="/wiki/Wikipedia:WikiProject_Fact_and_Reference_Check" title="Wikipedia:WikiProject Fact and Reference Check">improve</a> this article by introducing more precise citations. <small><i>(February 2008)</i></small></td>
+</tr>
+</table>
+<div class="reflist" style="list-style-type: decimal;">
+<ol class="references">
+<li id="cite_note-fog-0">^ <a href="#cite_ref-fog_0-0"><sup><i><b>a</b></i></sup></a> <a href="#cite_ref-fog_0-1"><sup><i><b>b</b></i></sup></a> <a href="#cite_ref-fog_0-2"><sup><i><b>c</b></i></sup></a> <a href="#cite_ref-fog_0-3"><sup><i><b>d</b></i></sup></a> <span class="citation Journal">Agner Fog (2010-02-16) (PDF). <a rel="nofollow" class="external text" href="http://agner.org./optimize/calling_conventions.pdf"><i>Calling conventions for different C++ compilers and operating systems</i></a><span class="printonly">. <a rel="nofollow" class="external free" href="http://agner.org./optimize/calling_conventions.pdf">http://agner.org./optimize/calling_conventions.pdf</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=book&amp;rft.btitle=Calling+conventions+for+different+C%2B%2B+compilers+and+operating+systems&amp;rft.aulast=Agner+Fog&amp;rft.au=Agner+Fog&amp;rft.date=2010-02-16&amp;rft_id=http%3A%2F%2Fagner.org.%2Foptimize%2Fcalling_conventions.pdf&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-1"><b><a href="#cite_ref-1">^</a></b> <a rel="nofollow" class="external free" href="http://msdn2.microsoft.com/en-us/library/zxk0tw93(vs.71).aspx">http://msdn2.microsoft.com/en-us/library/zxk0tw93(vs.71).aspx</a></li>
+<li id="cite_note-2"><b><a href="#cite_ref-2">^</a></b> <span class="citation web">Ohse, Uwe. <a rel="nofollow" class="external text" href="http://www.ohse.de/uwe/articles/gcc-attributes.html#func-fastcall">"gcc attribute overview: function fastcall"</a>. ohse.de<span class="printonly">. <a rel="nofollow" class="external free" href="http://www.ohse.de/uwe/articles/gcc-attributes.html#func-fastcall">http://www.ohse.de/uwe/articles/gcc-attributes.html#func-fastcall</a></span><span class="reference-accessdate">. Retrieved 2010-09-27</span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=gcc+attribute+overview%3A+function+fastcall&amp;rft.atitle=&amp;rft.aulast=Ohse&amp;rft.aufirst=Uwe&amp;rft.au=Ohse%2C%26%2332%3BUwe&amp;rft.pub=ohse.de&amp;rft_id=http%3A%2F%2Fwww.ohse.de%2Fuwe%2Farticles%2Fgcc-attributes.html%23func-fastcall&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-3"><b><a href="#cite_ref-3">^</a></b> <span class="citation web"><a rel="nofollow" class="external text" href="http://msdn2.microsoft.com/en-us/library/Aa271991">"__fastcall"</a>. msdn.microsoft.com<span class="printonly">. <a rel="nofollow" class="external free" href="http://msdn2.microsoft.com/en-us/library/Aa271991">http://msdn2.microsoft.com/en-us/library/Aa271991</a></span><span class="reference-accessdate">. Retrieved 2010-09-27</span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=__fastcall&amp;rft.atitle=&amp;rft.pub=msdn.microsoft.com&amp;rft_id=http%3A%2F%2Fmsdn2.microsoft.com%2Fen-us%2Flibrary%2FAa271991&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-4"><b><a href="#cite_ref-4">^</a></b> <span class="citation web"><a rel="nofollow" class="external text" href="http://docwiki.embarcadero.com/RADStudio/en/Program_Control#Register_Convention">"Program Control: Register Convention"</a>. docwiki.embarcadero.com. 2010-06-01<span class="printonly">. <a rel="nofollow" class="external free" href="http://docwiki.embarcadero.com/RADStudio/en/Program_Control#Register_Convention">http://docwiki.embarcadero.com/RADStudio/en/Program_Control#Register_Convention</a></span><span class="reference-accessdate">. Retrieved 2010-09-27</span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Program+Control%3A+Register+Convention&amp;rft.atitle=&amp;rft.date=2010-06-01&amp;rft.pub=docwiki.embarcadero.com&amp;rft_id=http%3A%2F%2Fdocwiki.embarcadero.com%2FRADStudio%2Fen%2FProgram_Control%23Register_Convention&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-5"><b><a href="#cite_ref-5">^</a></b> <span class="citation web"><a rel="nofollow" class="external text" href="http://www.openwatcom.org/index.php/Calling_Conventions#Specifying_Calling_Conventions_the_Watcom_Way">"Calling_Conventions: Specifying_Calling_Conventions_the_Watcom_Way"</a>. openwatcom.org. 2010-04-27<span class="printonly">. <a rel="nofollow" class="external free" href="http://www.openwatcom.org/index.php/Calling_Conventions#Specifying_Calling_Conventions_the_Watcom_Way">http://www.openwatcom.org/index.php/Calling_Conventions#Specifying_Calling_Conventions_the_Watcom_Way</a></span><span class="reference-accessdate">. Retrieved 2010-09-27</span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Calling_Conventions%3A+Specifying_Calling_Conventions_the_Watcom_Way&amp;rft.atitle=&amp;rft.date=2010-04-27&amp;rft.pub=openwatcom.org&amp;rft_id=http%3A%2F%2Fwww.openwatcom.org%2Findex.php%2FCalling_Conventions%23Specifying_Calling_Conventions_the_Watcom_Way&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-ms-6">^ <a href="#cite_ref-ms_6-0"><sup><i><b>a</b></i></sup></a> <a href="#cite_ref-ms_6-1"><sup><i><b>b</b></i></sup></a> <span class="citation web"><a rel="nofollow" class="external text" href="http://msdn.microsoft.com/en-us/library/9b372w95%28v=VS.80%29.aspx">"x64 Software Conventions: Calling Conventions"</a>. msdn.microsoft.com. 2010<span class="printonly">. <a rel="nofollow" class="external free" href="http://msdn.microsoft.com/en-us/library/9b372w95%28v=VS.80%29.aspx">http://msdn.microsoft.com/en-us/library/9b372w95%28v=VS.80%29.aspx</a></span><span class="reference-accessdate">. Retrieved 2010-09-27</span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=x64+Software+Conventions%3A+Calling+Conventions&amp;rft.atitle=&amp;rft.date=2010&amp;rft.pub=msdn.microsoft.com&amp;rft_id=http%3A%2F%2Fmsdn.microsoft.com%2Fen-us%2Flibrary%2F9b372w95%2528v%3DVS.80%2529.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-7"><b><a href="#cite_ref-7">^</a></b> <span class="citation web"><a rel="nofollow" class="external text" href="http://msdn.microsoft.com/en-us/library/ew5tede7(v=VS.90).aspx">"x64 Software Conventions - Stack Allocation"</a>. Microsoft<span class="printonly">. <a rel="nofollow" class="external free" href="http://msdn.microsoft.com/en-us/library/ew5tede7(v=VS.90).aspx">http://msdn.microsoft.com/en-us/library/ew5tede7(v=VS.90).aspx</a></span><span class="reference-accessdate">. Retrieved 2010-03-31</span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=x64+Software+Conventions+-+Stack+Allocation&amp;rft.atitle=&amp;rft.pub=Microsoft&amp;rft_id=http%3A%2F%2Fmsdn.microsoft.com%2Fen-us%2Flibrary%2Few5tede7%28v%3DVS.90%29.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-AMD-8">^ <a href="#cite_ref-AMD_8-0"><sup><i><b>a</b></i></sup></a> <a href="#cite_ref-AMD_8-1"><sup><i><b>b</b></i></sup></a> <a href="#cite_ref-AMD_8-2"><sup><i><b>c</b></i></sup></a> <span class="citation Journal">Michael Matz, Jan Hubicka, Andreas Jaeger, and Mark Mitchell (2010-01-13). <a rel="nofollow" class="external text" href="http://x86-64.org/documentation/abi.pdf"><i>System V Application Binary Interface AMD64 Architecture Processor Supplement</i></a>. 0.99.4<span class="printonly">. <a rel="nofollow" class="external free" href="http://x86-64.org/documentation/abi.pdf">http://x86-64.org/documentation/abi.pdf</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=book&amp;rft.btitle=System+V+Application+Binary+Interface+AMD64+Architecture+Processor+Supplement&amp;rft.aulast=Michael+Matz%2C+Jan+Hubicka%2C+Andreas+Jaeger%2C+and+Mark+Mitchell&amp;rft.au=Michael+Matz%2C+Jan+Hubicka%2C+Andreas+Jaeger%2C+and+Mark+Mitchell&amp;rft.date=2010-01-13&amp;rft.series=0.99.4&amp;rft_id=http%3A%2F%2Fx86-64.org%2Fdocumentation%2Fabi.pdf&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li id="cite_note-borland-9"><b><a href="#cite_ref-borland_9-0">^</a></b> <span class="citation book">(PDF) <a rel="nofollow" class="external text" href="http://bitsavers.org./pdf/borland/Borland_C%2B%2B_Version_3.1_Users_Guide_1992.pdf"><i>Borland C/C++ version 3.1 User Guide</i></a>. Borland. 1992. pp.&#160;158,189–191<span class="printonly">. <a rel="nofollow" class="external free" href="http://bitsavers.org./pdf/borland/Borland_C%2B%2B_Version_3.1_Users_Guide_1992.pdf">http://bitsavers.org./pdf/borland/Borland_C%2B%2B_Version_3.1_Users_Guide_1992.pdf</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=book&amp;rft.btitle=Borland+C%2FC%2B%2B+version+3.1+User+Guide&amp;rft.date=1992&amp;rft.pages=pp.%26nbsp%3B158%2C189%26ndash%3B191&amp;rft.pub=Borland&amp;rft_id=http%3A%2F%2Fbitsavers.org.%2Fpdf%2Fborland%2FBorland_C%252B%252B_Version_3.1_Users_Guide_1992.pdf&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+</ol>
+</div>
+<ul>
+<li><span class="citation Journal">(PDF) <a rel="nofollow" class="external text" href="http://sco.com./developers/devspecs/abi386-4.pdf"><i>SYSTEM V APPLICATION BINARY INTERFACE Intel386 Architecture Processor Supplement</i></a> (4th ed.). The Santa Cruz Operation, Inc.. 1997-03-19<span class="printonly">. <a rel="nofollow" class="external free" href="http://sco.com./developers/devspecs/abi386-4.pdf">http://sco.com./developers/devspecs/abi386-4.pdf</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=book&amp;rft.btitle=SYSTEM+V+APPLICATION+BINARY+INTERFACE+Intel386+Architecture+Processor+Supplement&amp;rft.date=1997-03-19&amp;rft.edition=4th&amp;rft.pub=The+Santa+Cruz+Operation%2C+Inc.&amp;rft_id=http%3A%2F%2Fsco.com.%2Fdevelopers%2Fdevspecs%2Fabi386-4.pdf&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation web">Nemanja Trifunovic (2001-07-22). <a rel="nofollow" class="external text" href="http://www.codeproject.com/cpp/calling_conventions_demystified.asp">"Calling Conventions Demystified"</a>. In Sean Ewington. <i>The Code Project</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://www.codeproject.com/cpp/calling_conventions_demystified.asp">http://www.codeproject.com/cpp/calling_conventions_demystified.asp</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Calling+Conventions+Demystified&amp;rft.atitle=The+Code+Project&amp;rft.aulast=Nemanja+Trifunovic&amp;rft.au=Nemanja+Trifunovic&amp;rft.date=2001-07-22&amp;rft_id=http%3A%2F%2Fwww.codeproject.com%2Fcpp%2Fcalling_conventions_demystified.asp&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation web">Stephen J. Friedl. <a rel="nofollow" class="external text" href="http://www.unixwiz.net/techtips/win32-callconv-asm.html">"Intel x86 Function-call Conventions — Assembly View"</a>. <i>Steve Friedl's Unixwiz.net Tech Tips</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://www.unixwiz.net/techtips/win32-callconv-asm.html">http://www.unixwiz.net/techtips/win32-callconv-asm.html</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Intel+x86+Function-call+Conventions+%26mdash%3B+Assembly+View&amp;rft.atitle=Steve+Friedl%27s+Unixwiz.net+Tech+Tips&amp;rft.aulast=Stephen+J.+Friedl&amp;rft.au=Stephen+J.+Friedl&amp;rft_id=http%3A%2F%2Fwww.unixwiz.net%2Ftechtips%2Fwin32-callconv-asm.html&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation web"><a rel="nofollow" class="external text" href="http://msdn.microsoft.com/en-us/library/k2b2ssfy.aspx">"Visual Studio 2010 — Visual C++ Calling Convention"</a>. <i><a href="/wiki/MSDN_Library" title="MSDN Library">MSDN Library</a></i>. Microsoft. 2010<span class="printonly">. <a rel="nofollow" class="external free" href="http://msdn.microsoft.com/en-us/library/k2b2ssfy.aspx">http://msdn.microsoft.com/en-us/library/k2b2ssfy.aspx</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Visual+Studio+2010+%26mdash%3B+Visual+C%2B%2B+Calling+Convention&amp;rft.atitle=%5B%5BMSDN+Library%5D%5D&amp;rft.date=2010&amp;rft.pub=Microsoft&amp;rft_id=http%3A%2F%2Fmsdn.microsoft.com%2Fen-us%2Flibrary%2Fk2b2ssfy.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation web">Andreas Jonsson (2005-02-13). <a rel="nofollow" class="external text" href="http://www.angelcode.com/dev/callconv/callconv.html">"Calling conventions on the x86 platform"</a><span class="printonly">. <a rel="nofollow" class="external free" href="http://www.angelcode.com/dev/callconv/callconv.html">http://www.angelcode.com/dev/callconv/callconv.html</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Calling+conventions+on+the+x86+platform&amp;rft.atitle=&amp;rft.aulast=Andreas+Jonsson&amp;rft.au=Andreas+Jonsson&amp;rft.date=2005-02-13&amp;rft_id=http%3A%2F%2Fwww.angelcode.com%2Fdev%2Fcallconv%2Fcallconv.html&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation Journal">Raymond Chen (2004-01-02). <a rel="nofollow" class="external text" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/02/47184.aspx">"The history of calling conventions, part 1"</a>. <i>The Old New Thing</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/02/47184.aspx">http://blogs.msdn.com/oldnewthing/archive/2004/01/02/47184.aspx</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=The+history+of+calling+conventions%2C+part+1&amp;rft.jtitle=The+Old+New+Thing&amp;rft.aulast=Raymond+Chen&amp;rft.au=Raymond+Chen&amp;rft.date=2004-01-02&amp;rft_id=http%3A%2F%2Fblogs.msdn.com%2Foldnewthing%2Farchive%2F2004%2F01%2F02%2F47184.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation Journal">Raymond Chen (2004-01-07). <a rel="nofollow" class="external text" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/07/48303.aspx">"The history of calling conventions, part 2"</a>. <i>The Old New Thing</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/07/48303.aspx">http://blogs.msdn.com/oldnewthing/archive/2004/01/07/48303.aspx</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=The+history+of+calling+conventions%2C+part+2&amp;rft.jtitle=The+Old+New+Thing&amp;rft.aulast=Raymond+Chen&amp;rft.au=Raymond+Chen&amp;rft.date=2004-01-07&amp;rft_id=http%3A%2F%2Fblogs.msdn.com%2Foldnewthing%2Farchive%2F2004%2F01%2F07%2F48303.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation Journal">Raymond Chen (2004-01-08). <a rel="nofollow" class="external text" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/08/48616.aspx">"The history of calling conventions, part 3"</a>. <i>The Old New Thing</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/08/48616.aspx">http://blogs.msdn.com/oldnewthing/archive/2004/01/08/48616.aspx</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=The+history+of+calling+conventions%2C+part+3&amp;rft.jtitle=The+Old+New+Thing&amp;rft.aulast=Raymond+Chen&amp;rft.au=Raymond+Chen&amp;rft.date=2004-01-08&amp;rft_id=http%3A%2F%2Fblogs.msdn.com%2Foldnewthing%2Farchive%2F2004%2F01%2F08%2F48616.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation Journal">Raymond Chen (2004-01-13). <a rel="nofollow" class="external text" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/13/58199.aspx">"The history of calling conventions, part 4: ia64"</a>. <i>The Old New Thing</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/13/58199.aspx">http://blogs.msdn.com/oldnewthing/archive/2004/01/13/58199.aspx</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=The+history+of+calling+conventions%2C+part+4%3A+ia64&amp;rft.jtitle=The+Old+New+Thing&amp;rft.aulast=Raymond+Chen&amp;rft.au=Raymond+Chen&amp;rft.date=2004-01-13&amp;rft_id=http%3A%2F%2Fblogs.msdn.com%2Foldnewthing%2Farchive%2F2004%2F01%2F13%2F58199.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation Journal">Raymond Chen (2004-01-14). <a rel="nofollow" class="external text" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/14/58579.aspx">"The history of calling conventions, part 5; amd64"</a>. <i>The Old New Thing</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://blogs.msdn.com/oldnewthing/archive/2004/01/14/58579.aspx">http://blogs.msdn.com/oldnewthing/archive/2004/01/14/58579.aspx</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Ajournal&amp;rft.genre=article&amp;rft.atitle=The+history+of+calling+conventions%2C+part+5%3B+amd64&amp;rft.jtitle=The+Old+New+Thing&amp;rft.aulast=Raymond+Chen&amp;rft.au=Raymond+Chen&amp;rft.date=2004-01-14&amp;rft_id=http%3A%2F%2Fblogs.msdn.com%2Foldnewthing%2Farchive%2F2004%2F01%2F14%2F58579.aspx&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+</ul>
+<h2><span class="editsection">[<a href="/w/index.php?title=X86_calling_conventions&amp;action=edit&amp;section=25" title="Edit section: Further reading">edit</a>]</span> <span class="mw-headline" id="Further_reading">Further reading</span></h2>
+<ul>
+<li><span class="citation web">Jonathan de Boyne Pollard (2010). <a rel="nofollow" class="external text" href="http://homepage.ntlworld.com./jonathan.deboynepollard/FGA/function-calling-conventions.html">"The gen on function calling conventions"</a>. <i>Frequently Given Answers</i><span class="printonly">. <a rel="nofollow" class="external free" href="http://homepage.ntlworld.com./jonathan.deboynepollard/FGA/function-calling-conventions.html">http://homepage.ntlworld.com./jonathan.deboynepollard/FGA/function-calling-conventions.html</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=The+gen+on+function+calling+conventions&amp;rft.atitle=Frequently+Given+Answers&amp;rft.aulast=Jonathan+de+Boyne+Pollard&amp;rft.au=Jonathan+de+Boyne+Pollard&amp;rft.date=2010&amp;rft_id=http%3A%2F%2Fhomepage.ntlworld.com.%2Fjonathan.deboynepollard%2FFGA%2Ffunction-calling-conventions.html&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation book">Kip R. Irvine (2007). "Advanced Procedures". <i>Assembly language for intel-based computers</i> (5th ed.). Prentice Hall. <a href="/wiki/International_Standard_Book_Number" title="International Standard Book Number">ISBN</a>&#160;<a href="/wiki/Special:BookSources/9780132383103" title="Special:BookSources/9780132383103">9780132383103</a>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=Advanced+Procedures&amp;rft.atitle=Assembly+language+for+intel-based+computers&amp;rft.aulast=Kip+R.+Irvine&amp;rft.au=Kip+R.+Irvine&amp;rft.date=2007&amp;rft.edition=5th&amp;rft.pub=Prentice+Hall&amp;rft.isbn=9780132383103&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation book">(PDF) <a rel="nofollow" class="external text" href="http://bitsavers.org./pdf/borland/Borland_C%2B%2B_Version_3.1_Users_Guide_1992.pdf"><i>Borland C/C++ version 3.1 User Guide</i></a>. Borland. 1992. pp.&#160;158,189–191<span class="printonly">. <a rel="nofollow" class="external free" href="http://bitsavers.org./pdf/borland/Borland_C%2B%2B_Version_3.1_Users_Guide_1992.pdf">http://bitsavers.org./pdf/borland/Borland_C%2B%2B_Version_3.1_Users_Guide_1992.pdf</a></span>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=book&amp;rft.btitle=Borland+C%2FC%2B%2B+version+3.1+User+Guide&amp;rft.date=1992&amp;rft.pages=pp.%26nbsp%3B158%2C189%26ndash%3B191&amp;rft.pub=Borland&amp;rft_id=http%3A%2F%2Fbitsavers.org.%2Fpdf%2Fborland%2FBorland_C%252B%252B_Version_3.1_Users_Guide_1992.pdf&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+<li><span class="citation book">Thomas Lauer (1995). "The New __stdcall Calling Sequence". <i>Porting to Win32: A Guide to Making Your Applications Ready for the 32-Bit Future of Windows</i>. Springer. <a href="/wiki/International_Standard_Book_Number" title="International Standard Book Number">ISBN</a>&#160;<a href="/wiki/Special:BookSources/9780387945729" title="Special:BookSources/9780387945729">9780387945729</a>.</span><span class="Z3988" title="ctx_ver=Z39.88-2004&amp;rft_val_fmt=info%3Aofi%2Ffmt%3Akev%3Amtx%3Abook&amp;rft.genre=bookitem&amp;rft.btitle=The+New+__stdcall+Calling+Sequence&amp;rft.atitle=Porting+to+Win32%3A+A+Guide+to+Making+Your+Applications+Ready+for+the+32-Bit+Future+of+Windows&amp;rft.aulast=Thomas+Lauer&amp;rft.au=Thomas+Lauer&amp;rft.date=1995&amp;rft.pub=Springer&amp;rft.isbn=9780387945729&amp;rfr_id=info:sid/en.wikipedia.org:X86_calling_conventions"><span style="display: none;">&#160;</span></span></li>
+</ul>
+<table class="navbox" cellspacing="0" style=";">
+<tr>
+<td style="padding:2px;">
+<table cellspacing="0" class="nowraplinks collapsible autocollapse" style="width:100%;background:transparent;color:inherit;;">
+<tr>
+<th style="background:#BDF;background:#9BF;" colspan="2" class="navbox-title"><span style="float:left;width:6em;text-align:left;"><span class="noprint plainlinks navbar" style=""><span style="white-space:nowrap;word-spacing:-.12em;"><a href="/wiki/Template:X86_assembly_topics" title="Template:X86 assembly topics"><span style="background:#BDF;background:#9BF;;background:none transparent;border:none;font-size:100%;" title="View this template">v</span></a> <span style="background:#BDF;background:#9BF;;background:none transparent;border:none;font-size:100%;"><b>·</b></span> <a href="/wiki/Template_talk:X86_assembly_topics" title="Template talk:X86 assembly topics"><span style="background:#BDF;background:#9BF;;background:none transparent;border:none;font-size:100%;" title="Discuss this template">d</span></a> <span style="background:#BDF;background:#9BF;;background:none transparent;border:none;font-size:100%;"><b>·</b></span> <a class="external text" href="//en.wikipedia.org/w/index.php?title=Template:X86_assembly_topics&amp;action=edit"><span style="background:#BDF;background:#9BF;;background:none transparent;border:none;font-size:100%;" title="Edit this template">e</span></a></span></span></span><span class="" style="font-size:110%;">x86 assembly topics</span></th>
+</tr>
+<tr style="height:2px;">
+<td></td>
+</tr>
+<tr>
+<td class="navbox-group" style="background:#BDF;;">Topics</td>
+<td style="text-align:left;border-left-width:2px;border-left-style:solid;width:100%;padding:0px;;;" class="navbox-list navbox-odd">
+<div style="padding:0em 0.25em">
+<div><a href="/wiki/Assembly_language" title="Assembly language">Assembly language</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Comparison_of_assemblers" title="Comparison of assemblers">Comparison of assemblers</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Disassembler" title="Disassembler">Disassembler</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Instruction_set" title="Instruction set">Microprocessor instruction set</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Low-level_programming_language" title="Low-level programming language">Low-level programming language</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Machine_code" title="Machine code">Machine code</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Microassembler" title="Microassembler">Microassembler</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/X86_assembly_language" title="X86 assembly language">x86 assembly language</a></div>
+</div>
+</td>
+</tr>
+<tr style="height:2px">
+<td></td>
+</tr>
+<tr>
+<td class="navbox-group" style="background:#BDF;;"><a href="/wiki/Comparison_of_assemblers#x86_assemblers" title="Comparison of assemblers">x86 Assemblers</a></td>
+<td style="text-align:left;border-left-width:2px;border-left-style:solid;width:100%;padding:0px;;;" class="navbox-list navbox-even">
+<div style="padding:0em 0.25em">
+<div><a href="/wiki/A86_(software)" title="A86 (software)">A86/A386</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/FASM" title="FASM">FASM</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/GNU_Assembler" title="GNU Assembler">GAS</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/High_Level_Assembly" title="High Level Assembly">HLA</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Microsoft_Macro_Assembler" title="Microsoft Macro Assembler">MASM</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Netwide_Assembler" title="Netwide Assembler">NASM</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Turbo_Assembler" title="Turbo Assembler">TASM</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Open_Watcom_Assembler" title="Open Watcom Assembler">WASM</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Yasm" title="Yasm">YASM</a></div>
+</div>
+</td>
+</tr>
+<tr style="height:2px">
+<td></td>
+</tr>
+<tr>
+<td class="navbox-group" style="background:#BDF;;">Programming issues</td>
+<td style="text-align:left;border-left-width:2px;border-left-style:solid;width:100%;padding:0px;;;" class="navbox-list navbox-odd">
+<div style="padding:0em 0.25em">
+<div><a href="/wiki/Call_stack" title="Call stack">Call stack</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/FLAGS_register_(computing)" title="FLAGS register (computing)">Flags</a> (<a href="/wiki/Carry_flag" title="Carry flag">Carry flag</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Overflow_flag" title="Overflow flag">Overflow flag</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Zero_flag" title="Zero flag">Zero flag</a>)&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Opcode" title="Opcode">Opcode</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Program_counter" title="Program counter">Program counter</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/Processor_register" title="Processor register">Processor register</a>&#160;<span style="font-weight:bold;">·</span>  <strong class="selflink">x86 calling conventions</strong>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/X86_instruction_listings" title="X86 instruction listings">x86 instruction listings</a>&#160;<span style="font-weight:bold;">·</span>  <a href="/wiki/X86#x86_registers" title="X86">x86 registers</a></div>
+</div>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+</table>
+
+
+<!-- 
+NewPP limit report
+Preprocessor node count: 15493/1000000
+Post-expand include size: 107004/2048000 bytes
+Template argument size: 39414/2048000 bytes
+Expensive parser function count: 2/500
+-->
+
+<!-- Saved in parser cache with key enwiki:pcache:idhash:6817415-0!*!0!!en!4!* and timestamp 20111110184730 -->
+</div>				<!-- /bodycontent -->
+								<!-- printfooter -->
+				<div class="printfooter">
+				Retrieved from "<a href="http://en.wikipedia.org/w/index.php?title=X86_calling_conventions&amp;oldid=454716076">http://en.wikipedia.org/w/index.php?title=X86_calling_conventions&amp;oldid=454716076</a>"				</div>
+				<!-- /printfooter -->
+												<!-- catlinks -->
+				<div id='catlinks' class='catlinks'><div id="mw-normal-catlinks"><a href="/wiki/Special:Categories" title="Special:Categories">Categories</a>: <ul><li><a href="/wiki/Category:X86_architecture" title="Category:X86 architecture">X86 architecture</a></li></ul></div><div id="mw-hidden-catlinks" class="mw-hidden-cats-hidden">Hidden categories: <ul><li><a href="/wiki/Category:Articles_to_be_expanded_from_June_2008" title="Category:Articles to be expanded from June 2008">Articles to be expanded from June 2008</a></li><li><a href="/wiki/Category:All_articles_to_be_expanded" title="Category:All articles to be expanded">All articles to be expanded</a></li><li><a href="/wiki/Category:Articles_lacking_in-text_citations_from_February_2008" title="Category:Articles lacking in-text citations from February 2008">Articles lacking in-text citations from February 2008</a></li><li><a href="/wiki/Category:All_articles_lacking_in-text_citations" title="Category:All articles lacking in-text citations">All articles lacking in-text citations</a></li></ul></div></div>				<!-- /catlinks -->
+												<div class="visualClear"></div>
+				<!-- debughtml -->
+								<!-- /debughtml -->
+			</div>
+			<!-- /bodyContent -->
+		</div>
+		<!-- /content -->
+		<!-- header -->
+		<div id="mw-head" class="noprint">
+			
+<!-- 0 -->
+<div id="p-personal" class="">
+	<h5>Personal tools</h5>
+	<ul>
+		<li id="pt-login"><a href="/w/index.php?title=Special:UserLogin&amp;returnto=X86_calling_conventions" title="You are encouraged to log in; however, it is not mandatory. [o]" accesskey="o">Log in / create account</a></li>
+	</ul>
+</div>
+
+<!-- /0 -->
+			<div id="left-navigation">
+				
+<!-- 0 -->
+<div id="p-namespaces" class="vectorTabs">
+	<h5>Namespaces</h5>
+	<ul>
+					<li  id="ca-nstab-main" class="selected"><span><a href="/wiki/X86_calling_conventions"  title="View the content page [c]" accesskey="c">Article</a></span></li>
+					<li  id="ca-talk"><span><a href="/wiki/Talk:X86_calling_conventions"  title="Discussion about the content page [t]" accesskey="t">Discussion</a></span></li>
+			</ul>
+</div>
+
+<!-- /0 -->
+
+<!-- 1 -->
+<div id="p-variants" class="vectorMenu emptyPortlet">
+		<h5><span>Variants</span><a href="#"></a></h5>
+	<div class="menu">
+		<ul>
+					</ul>
+	</div>
+</div>
+
+<!-- /1 -->
+			</div>
+			<div id="right-navigation">
+				
+<!-- 0 -->
+<div id="p-views" class="vectorTabs">
+	<h5>Views</h5>
+	<ul>
+					<li id="ca-view" class="selected"><span><a href="/wiki/X86_calling_conventions" >Read</a></span></li>
+					<li id="ca-edit"><span><a href="/w/index.php?title=X86_calling_conventions&amp;action=edit"  title="You can edit this page. &#10;Please use the preview button before saving. [e]" accesskey="e">Edit</a></span></li>
+					<li id="ca-history" class="collapsible"><span><a href="/w/index.php?title=X86_calling_conventions&amp;action=history"  title="Past versions of this page [h]" accesskey="h">View history</a></span></li>
+			</ul>
+</div>
+
+<!-- /0 -->
+
+<!-- 1 -->
+<div id="p-cactions" class="vectorMenu emptyPortlet">
+	<h5><span>Actions</span><a href="#"></a></h5>
+	<div class="menu">
+		<ul>
+					</ul>
+	</div>
+</div>
+
+<!-- /1 -->
+
+<!-- 2 -->
+<div id="p-search">
+	<h5><label for="searchInput">Search</label></h5>
+	<form action="/w/index.php" id="searchform">
+		<input type='hidden' name="title" value="Special:Search"/>
+				<div id="simpleSearch">
+						<input type="text" name="search" value="" title="Search Wikipedia [f]" accesskey="f" id="searchInput" />						<button type="submit" name="button" title="Search Wikipedia for this text" id="searchButton"><img src="//bits.wikimedia.org/skins-1.18/vector/images/search-ltr.png?303-4" alt="Search" /></button>					</div>
+			</form>
+</div>
+
+<!-- /2 -->
+			</div>
+		</div>
+		<!-- /header -->
+		<!-- panel -->
+			<div id="mw-panel" class="noprint">
+				<!-- logo -->
+					<div id="p-logo"><a style="background-image: url(//upload.wikimedia.org/wikipedia/en/b/bc/Wiki.png);" href="/wiki/Main_Page"  title="Visit the main page"></a></div>
+				<!-- /logo -->
+				
+<!-- navigation -->
+<div class="portal" id='p-navigation'>
+	<h5>Navigation</h5>
+	<div class="body">
+		<ul>
+			<li id="n-mainpage-description"><a href="/wiki/Main_Page" title="Visit the main page [z]" accesskey="z">Main page</a></li>
+			<li id="n-contents"><a href="/wiki/Portal:Contents" title="Guides to browsing Wikipedia">Contents</a></li>
+			<li id="n-featuredcontent"><a href="/wiki/Portal:Featured_content" title="Featured content – the best of Wikipedia">Featured content</a></li>
+			<li id="n-currentevents"><a href="/wiki/Portal:Current_events" title="Find background information on current events">Current events</a></li>
+			<li id="n-randompage"><a href="/wiki/Special:Random" title="Load a random article [x]" accesskey="x">Random article</a></li>
+			<li id="n-sitesupport"><a href="//wikimediafoundation.org/wiki/Special:Landingcheck?landing_page=WMFJA085&amp;language=en&amp;utm_source=donate&amp;utm_medium=sidebar&amp;utm_campaign=20101204SB002" title="Support us">Donate to Wikipedia</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /navigation -->
+
+<!-- SEARCH -->
+
+<!-- /SEARCH -->
+
+<!-- interaction -->
+<div class="portal" id='p-interaction'>
+	<h5>Interaction</h5>
+	<div class="body">
+		<ul>
+			<li id="n-help"><a href="/wiki/Help:Contents" title="Guidance on how to use and edit Wikipedia">Help</a></li>
+			<li id="n-aboutsite"><a href="/wiki/Wikipedia:About" title="Find out about Wikipedia">About Wikipedia</a></li>
+			<li id="n-portal"><a href="/wiki/Wikipedia:Community_portal" title="About the project, what you can do, where to find things">Community portal</a></li>
+			<li id="n-recentchanges"><a href="/wiki/Special:RecentChanges" title="A list of recent changes in the wiki [r]" accesskey="r">Recent changes</a></li>
+			<li id="n-contact"><a href="/wiki/Wikipedia:Contact_us" title="How to contact Wikipedia">Contact Wikipedia</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /interaction -->
+
+<!-- TOOLBOX -->
+<div class="portal" id='p-tb'>
+	<h5>Toolbox</h5>
+	<div class="body">
+		<ul>
+			<li id="t-whatlinkshere"><a href="/wiki/Special:WhatLinksHere/X86_calling_conventions" title="List of all English Wikipedia pages containing links to this page [j]" accesskey="j">What links here</a></li>
+			<li id="t-recentchangeslinked"><a href="/wiki/Special:RecentChangesLinked/X86_calling_conventions" title="Recent changes in pages linked from this page [k]" accesskey="k">Related changes</a></li>
+			<li id="t-upload"><a href="/wiki/Wikipedia:Upload" title="Upload files [u]" accesskey="u">Upload file</a></li>
+			<li id="t-specialpages"><a href="/wiki/Special:SpecialPages" title="A list of all special pages [q]" accesskey="q">Special pages</a></li>
+			<li id="t-permalink"><a href="/w/index.php?title=X86_calling_conventions&amp;oldid=454716076" title="Permanent link to this revision of the page">Permanent link</a></li>
+<li id="t-cite"><a href="/w/index.php?title=Special:Cite&amp;page=X86_calling_conventions&amp;id=454716076" title="Information on how to cite this page">Cite this page</a></li>		</ul>
+	</div>
+</div>
+
+<!-- /TOOLBOX -->
+
+<!-- coll-print_export -->
+<div class="portal" id='p-coll-print_export'>
+	<h5>Print/export</h5>
+	<div class="body">
+		<ul id="collectionPortletList"><li id="coll-create_a_book"><a href="/w/index.php?title=Special:Book&amp;bookcmd=book_creator&amp;referer=X86+calling+conventions" title="Create a book or page collection" rel="nofollow">Create a book</a></li><li id="coll-download-as-rl"><a href="/w/index.php?title=Special:Book&amp;bookcmd=render_article&amp;arttitle=X86+calling+conventions&amp;oldid=454716076&amp;writer=rl" title="Download a PDF version of this wiki page" rel="nofollow">Download as PDF</a></li><li id="t-print"><a href="/w/index.php?title=X86_calling_conventions&amp;printable=yes" title="Printable version of this page [p]" accesskey="p">Printable version</a></li></ul>	</div>
+</div>
+
+<!-- /coll-print_export -->
+
+<!-- LANGUAGES -->
+<div class="portal" id='p-lang'>
+	<h5>Languages</h5>
+	<div class="body">
+		<ul>
+			<li class="interwiki-de"><a href="//de.wikipedia.org/wiki/Aufrufkonvention">Deutsch</a></li>
+		</ul>
+	</div>
+</div>
+
+<!-- /LANGUAGES -->
+			</div>
+		<!-- /panel -->
+		<!-- footer -->
+		<div id="footer">
+							<ul id="footer-info">
+											<li id="footer-info-lastmod"> This page was last modified on 9 October 2011 at 14:58.<br /></li>
+											<li id="footer-info-copyright">Text is available under the <a rel="license" href="//en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License">Creative Commons Attribution-ShareAlike License</a><a rel="license" href="//creativecommons.org/licenses/by-sa/3.0/" style="display:none;"></a>;
+additional terms may apply.
+See <a href="//wikimediafoundation.org/wiki/Terms_of_use">Terms of use</a> for details.<br/>
+Wikipedia&reg; is a registered trademark of the <a href="//www.wikimediafoundation.org/">Wikimedia Foundation, Inc.</a>, a non-profit organization.<br /></li><li class="noprint"><a class='internal' href="//en.wikipedia.org/wiki/Wikipedia:Contact_us">Contact us</a></li>
+									</ul>
+							<ul id="footer-places">
+											<li id="footer-places-privacy"><a href="//wikimediafoundation.org/wiki/Privacy_policy" title="wikimedia:Privacy policy">Privacy policy</a></li>
+											<li id="footer-places-about"><a href="/wiki/Wikipedia:About" title="Wikipedia:About">About Wikipedia</a></li>
+											<li id="footer-places-disclaimer"><a href="/wiki/Wikipedia:General_disclaimer" title="Wikipedia:General disclaimer">Disclaimers</a></li>
+											<li id="footer-places-mobileview"><a href='/w/index.php?title=X86_calling_conventions&amp;useformat=mobile'>Mobile view</a></li>
+									</ul>
+										<ul id="footer-icons" class="noprint">
+					<li id="footer-copyrightico">
+						<a href="//wikimediafoundation.org/"><img src="//bits.wikimedia.org/images/wikimedia-button.png" width="88" height="31" alt="Wikimedia Foundation"/></a>
+					</li>
+					<li id="footer-poweredbyico">
+						<a href="//www.mediawiki.org/"><img src="//bits.wikimedia.org/skins-1.18/common/images/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" width="88" height="31" /></a>
+					</li>
+				</ul>
+						<div style="clear:both"></div>
+		</div>
+		<!-- /footer -->
+		<!-- fixalpha -->
+		<script type="text/javascript"> if ( window.isMSIE55 ) fixalpha(); </script>
+		<!-- /fixalpha -->
+		<script src="//bits.wikimedia.org/en.wikipedia.org/load.php?debug=false&amp;lang=en&amp;modules=skins.vector&amp;only=scripts&amp;skin=vector&amp;*" type="text/javascript"></script>
+<script type="text/javascript">if ( window.mediaWiki ) {
+	mw.loader.load(["mediawiki.user", "mediawiki.util", "mediawiki.page.ready", "mediawiki.legacy.wikibits", "mediawiki.legacy.ajax", "mediawiki.legacy.mwsuggest", "ext.gadget.wmfFR2011Style", "ext.vector.collapsibleNav", "ext.vector.collapsibleTabs", "ext.vector.editWarning", "ext.vector.simpleSearch", "ext.UserBuckets", "ext.articleFeedback.startup"]);
+}
+</script>
+<script src="/w/index.php?title=Special:BannerController&amp;cache=/cn.js&amp;303-4" type="text/javascript"></script>
+<script src="//bits.wikimedia.org/en.wikipedia.org/load.php?debug=false&amp;lang=en&amp;modules=site&amp;only=scripts&amp;skin=vector&amp;*" type="text/javascript"></script>
+<script type="text/javascript">if ( window.mediaWiki ) {
+	mw.user.options.set({"ccmeonemails":0,"cols":80,"date":"default","diffonly":0,"disablemail":0,"disablesuggest":0,"editfont":"default","editondblclick":0,"editsection":1,"editsectiononrightclick":0,"enotifminoredits":0,"enotifrevealaddr":0,"enotifusertalkpages":1,"enotifwatchlistpages":0,"extendwatchlist":0,"externaldiff":0,"externaleditor":0,"fancysig":0,"forceeditsummary":0,"gender":"unknown","hideminor":0,"hidepatrolled":0,"highlightbroken":1,"imagesize":2,"justify":0,"math":1,"minordefault":0,"newpageshidepatrolled":0,"nocache":0,"noconvertlink":0,"norollbackdiff":0,"numberheadings":0,"previewonfirst":0,"previewontop":1,"quickbar":5,"rcdays":7,"rclimit":50,"rememberpassword":0,"rows":25,"searchlimit":20,"showhiddencats":false,"showjumplinks":1,"shownumberswatching":1,"showtoc":1,"showtoolbar":1,"skin":"vector","stubthreshold":0,"thumbsize":4,"underline":2,"uselivepreview":0,"usenewrc":0,"watchcreations":1,"watchdefault":0,"watchdeletion":0,"watchlistdays":3,"watchlisthideanons":0,
+	"watchlisthidebots":0,"watchlisthideliu":0,"watchlisthideminor":0,"watchlisthideown":0,"watchlisthidepatrolled":0,"watchmoves":0,"wllimit":250,"flaggedrevssimpleui":1,"flaggedrevsstable":0,"flaggedrevseditdiffs":true,"flaggedrevsviewdiffs":false,"vector-simplesearch":1,"useeditwarning":1,"vector-collapsiblenav":1,"usebetatoolbar":1,"usebetatoolbar-cgd":1,"wikilove-enabled":1,"variant":"en","language":"en","searchNs0":true,"searchNs1":false,"searchNs2":false,"searchNs3":false,"searchNs4":false,"searchNs5":false,"searchNs6":false,"searchNs7":false,"searchNs8":false,"searchNs9":false,"searchNs10":false,"searchNs11":false,"searchNs12":false,"searchNs13":false,"searchNs14":false,"searchNs15":false,"searchNs100":false,"searchNs101":false,"searchNs108":false,"searchNs109":false,"gadget-wmfFR2011Style":1});;mw.user.tokens.set({"editToken":"+\\","watchToken":false});;mw.loader.state({"user.options":"ready","user.tokens":"ready"});
+	
+	/* cache key: enwiki:resourceloader:filter:minify-js:4:b41a86ec4e0fe8329bc3ce917e792339 */
+}
+</script><script src="//geoiplookup.wikimedia.org/" type="text/javascript"></script><!-- Served by srv270 in 0.065 secs. -->
+	</body>
+</html>
