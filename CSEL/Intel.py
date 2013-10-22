@@ -274,20 +274,63 @@ def calculateInterferenceGraph(lst):
     #pp.pprint(graph)
     return graph
 
-def SD(edges, colored):
+def SD(adjected, colored):
     cnt = 0
-    for c in colored:
-        if c in edges:
-            cnt += 1
+    diffSet = set(adjected) - set(colored)
 
     #print "SD value = %d" % (cnt)
 
-    return cnt
+    return len(adjected) - len(diffSet)
+
+def chooseColor(colors, colored):
+    minVal, minNumColor = 999999999, None
+    for color in colors:
+        cnt = 0
+        for selected in colored:
+            if selected == color:
+                cnt += 1
+        if minVal > cnt:
+            minVal = cnt
+            minNumColor = color
+
+    return minNumColor
+
+def newColoringAlgorithm(graph):
+    #colors=['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
+    colors=['rax','rbx','rcx','rdx']
+
+    colored = {}
+    nodes = graph.keys()
+    m = len(nodes)
+    while len(colored) < m:
+        maxVal = -1
+        for node in nodes:
+            index = None
+            if not colored.has_key(node):
+                d = SD(graph[node], colored.keys())
+                print "1", d, maxVal
+                if d > maxVal:
+                    maxVal = d
+                    index = node
+                print "2", d, maxVal, index
+                if d == maxVal:
+                    if len(graph[node]) > len(graph[index]):
+                        index = node
+    
+            if index != None:
+                colored[index] = chooseColor(colors, colored.values()) # coloring
+            else:
+                raise Exception('err', 'err')
+
+    return colored
 
 def mapcolour(lst):
     G = calculateInterferenceGraph(lst)
 
-    colors=['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
+    print newColoringAlgorithm(G)
+
+    #colors=['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
+    colors=['rax','rbx','rcx','rdx']
     inputList = G.keys()
     colorset=set(colors)
     final={}
@@ -310,6 +353,7 @@ def mapcolour(lst):
         if reg in colors:
             flag[pos] = 1
             final[pos] = reg
+            assigncol[pos] = pos
 
     #print "before =", final
     while(j<len(inputList)):
@@ -320,10 +364,15 @@ def mapcolour(lst):
         for a in adj[j]:
             if flag[a] == 1:
                 colord.append(assigncol[a])
+
         colordset=set(colord)
         availset=colorset-colordset
         availlist=list(availset)
-        assigncol[j]=availlist[0]
+        if len(availlist) == 0:
+            assigncol[j]=None
+        else:
+            assigncol[j]=availlist[0]
+
         flag[j]=1
         final[j]=assigncol[j]
         colord=[0]*len(inputList)
