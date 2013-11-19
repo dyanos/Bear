@@ -766,58 +766,54 @@ def mapcolour(lst, args = []):
             matrix[pos][ind] = True
             matrix[ind][pos] = True
 
-    availColorList = set(colors) - set(symbols)
+    assignedColor = {}
+    colored = [False] * len(symbols)
+    for pos, symbol in enumerate(symbols):
+        if symbol in colors:
+            assignedColor[symbol] = symbol
+            colored[pos] = True
 
-    colorset=set(colors)
-    final={}
-    nodes=[0]*len(symbols)
-    adj=[0]*len(symbols)
-    flag=[0]*len(symbols)
-    assigncol=[0]*len(symbols)
-    colord=[0]*len(symbols)
-    i=0
-    j=0
-    m=0
-    while(i<len(symbols)):
-        nodes[i]=i
-        flag[i]=0
-        adj[i]=map(lambda x: symbols.index(x), G[symbols[i]])
-        i+=1
+    while len(filter(lambda x: x == True, colored)) != len(symbols):
+        maxval, maxpos = -999999999999, None
+        for rowpos, col in enumerate(matrix):
+            if colored[rowpos] == True:
+                continue
 
-    for pos, reg in enumerate(symbols):
-        #print reg, pos
-        if reg in colors:
-            flag[pos] = 1
-            final[pos] = reg
-            assigncol[pos] = pos
+            number = 0
+            for colpos, value in enumerate(col):
+                if colored[colpos] == True:
+                    continue
 
-    #print "before =", final
-    while(j<len(inputList)):
-        if flag[j] == 1:
-            j += 1
-            continue
+                if value == True:
+                    number += 1
 
-        for a in adj[j]:
-            if flag[a] == 1:
-                colord.append(assigncol[a])
+            if maxval < number:
+                maxval = number
+                maxpos = rowpos
 
-        colordset=set(colord)
-        availset=colorset-colordset
-        availlist=list(availset)
-        if len(availlist) == 0:
-            assigncol[j]=None
-        else:
-            assigncol[j]=availlist[0]
+        symbol = symbols[maxpos]
 
-        flag[j]=1
-        final[j]=assigncol[j]
-        colord=[0]*len(inputList)
-        j+=1
+        # to find available registers
+        precolored = []
+        if symbol in colors:
+            precolored.append(symbol)
 
-    retVal = {}
-    for pos, reg in enumerate(inputList):
-        retVal[reg] = final[pos]
-    return retVal
+        for colpos, value in enumerate(matrix[maxpos]):
+            if value == False:
+                continue
+
+            sym = symbols[colpos]
+            if assignedColor.has_key(sym):
+                precolored.append(assignedColor[sym])
+
+        availColorList = list(set(colors) - set(precolored))
+
+        assignedColor[symbol] = availColorList[0]
+        #print symbol, assignedColor[symbol], availColorList[0]
+
+        colored[maxpos] = True
+
+    return assignedColor
 
 def allocateRegister(lst, args):
     #print "called newRegisterAssignAlogrithm"

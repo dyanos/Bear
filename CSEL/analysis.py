@@ -68,18 +68,23 @@ class Context:
 
     def emitCall(self, target, args):
         parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
+        pushedRegisters = []
         for regnum in range(0, len(args)):
             if len(args) >= len(parameterList):
                 # stack을
                 self.emitMove(args[regnum], IMem(IReg('rbp'), None, None))
             else:
                 self.emitPush(parameterList[regnum])
+                pushedRegisters.append(parameterList[regnum])
                 self.emitMove(args[regnum], parameterList[regnum])
 
         operand = self.machine.OpCall(target, len(args))
         self.context.append(operand)
 
         print "call %s" % (target)
+
+        for reg in reversed(pushedRegisters):
+            self.emitPop(reg)
 
     def emitComp(self, target1, target2):
         operand = self.machine.OpComp(target1, target2)
