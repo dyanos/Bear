@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import random
 
 class Operand:
   def __init__(self):
@@ -70,7 +71,12 @@ class IMem(IStorage):
     self.imm  = imm
 
   def __str__(self):
-    return "%s * %d + %d" % (self.base, self.indx, self.imm)
+    s = "%s" % (self.base)
+    if self.indx != None:
+      s += " * %s" % (self.indx)
+    if self.imm != None:
+      s += " + %d" % (self.imm)
+    return s
 
   def __eq__(self, right):
     if not isinstance(right, IMem):
@@ -148,3 +154,15 @@ def isTemporaryRegister(reg):
       return True
 
   return False
+
+firstCharOfVar = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@"
+fullCharOfVar = firstCharOfVar + "0123456789#$%"
+lengthOfVar = 16
+
+def genTemporaryString():
+    l = [firstCharOfVar[random.randint(0, len(firstCharOfVar) - 1)]]
+    l += [fullCharOfVar[random.randint(0, len(fullCharOfVar) - 1)] for i in range(1, lengthOfVar)] 
+    return "".join(l)
+
+def genTempRegister():
+    return IUserReg(genTemporaryString())

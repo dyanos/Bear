@@ -1,3 +1,5 @@
+// 함수 이름에 대한 encoding기능이 현재 미구현
+//def add(a:int):int = a + 4;
 def add(a:int, b:int):int = a + b;
 def sum(from:int, to:int):int {
   var r = 0, i = 0;

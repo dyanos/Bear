@@ -7,22 +7,8 @@ from mangle import *
 from context import *
 from Operand import *
 import Intel
-import random
 
 Seperator = '$'
-
-firstCharOfVar = "_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@"
-fullCharOfVar = firstCharOfVar + "0123456789#$%"
-lengthOfVar = 16
-
-def genTemporaryString():
-    l = [firstCharOfVar[random.randint(0, len(firstCharOfVar) - 1)]]
-    l += [fullCharOfVar[random.randint(0, len(fullCharOfVar) - 1)] for i in range(1, lengthOfVar)] 
-    return "".join(l)
-
-def genTempRegister():
-    return IUserReg(genTemporaryString())
-
 
 # value는 그냥 값을 가지고 있으면 되공,
 # data는 data section의 위치를 가지고 있으면 되공...
@@ -81,8 +67,14 @@ class Context:
         print "push %s" % (target)
 
     def emitCall(self, target, args):
+        parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
         for regnum in range(0, len(args)):
-            self.emitMove(args[regnum], self.machine.IReg("arg%d" % (regnum)))
+            if len(args) >= len(parameterList):
+                # stack을
+                self.emitMove(args[regnum], IMem(IReg('rbp'), None, None))
+            else:
+                self.emitPush(parameterList[regnum])
+                self.emitMove(args[regnum], parameterList[regnum])
 
         operand = self.machine.OpCall(target, len(args))
         self.context.append(operand)
@@ -116,8 +108,8 @@ class Context:
     def calStackSize(self):
         pass
 
-    def getRegisterAllocation(self):
-        self.machine.allocateRegister(self.context)
+    def getRegisterAllocation(self, args):
+        self.machine.allocateRegister(self.context, args)
 
     # register 재배치 알고리즘을 돌린 결과
     def reallocRegisters(self):
@@ -163,11 +155,13 @@ class Translate:
             localSymbolTable = self.getRecentSymbolTable()
 
             # 인자를 등록합니다.
+            argNameList = []
             for arg in funcinfo.args:
                 localSymbolTable.registerVariable(arg.name, arg.type)
+                argNameList.append(arg.name)
 
             funcbody = funcinfo.body
-            self.procFunc(funcbody)
+            self.procFunc(funcbody, argNameList)
 
             # remove last one
             self.symbolTable.pop()
@@ -175,7 +169,7 @@ class Translate:
     def getLastContext(self):
         return self.context[-1]
 
-    def procFunc(self, tree):
+    def procFunc(self, tree, args):
         context = Context()
         self.context.append(context)
 
@@ -189,7 +183,7 @@ class Translate:
             print tree, type(tree)
             raise Exception("procFunc", "Not implemented some feature")
 
-        self.getLastContext().getRegisterAllocation()
+        self.getLastContext().getRegisterAllocation(args)
 
         self.context.pop()
 
