@@ -20,10 +20,10 @@ class Value:
 class Context: 
     def __init__(self):
         self.context = []
-        # usage history of temporary registers
-        self.undef = {} 
 
         self.machine = Intel
+        self.sizeOfMachineRegister = 8 # bytes
+        self.reservedStackSize = 0
 
     def checkTemporaryReg(self, regList, loc):
         for elem in regList:
@@ -35,6 +35,13 @@ class Context:
             self.undef[name] = [loc]
         else:
             self.undef[name].append(loc)
+
+    def increaseReservedStackSize(self):
+        self.reservedStackSize += self.sizeOfMachineRegister
+
+    # 일단 늘어나면 안 줄어들텐데...
+    def decreaseReservedStackSize(self):
+        self.reservedStackSize -= self.sizeOfMachineRegister
 
     def emitMove(self, src, dst):
         operand = self.machine.OpMove(src, dst)
@@ -177,6 +184,15 @@ class Translate:
     def procFunc(self, tree, args):
         context = Context()
         self.context.append(context)
+
+        # 일단 함수 인자들을 machine stack에 밀어넣는다.
+        context = self.getLastContext()
+        for pos, arg in enumerate(args):
+            memReg = IMem(IReg('rbp'), None, pos * context.sizeOfMachineRegister)
+            context.emitMove(arg, memReg)
+
+            # we will suppose that alignment's size is 8 bytes.
+            context.increaseReservedStackSize()
 
         if isinstance(tree, ASTExprs):
             self.procExprs(tree)

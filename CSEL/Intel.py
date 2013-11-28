@@ -773,12 +773,15 @@ def mapcolour(lst, args = []):
             assignedColor[symbol] = symbol
             colored[pos] = True
 
+    # using heuristic algorithm
     while len(filter(lambda x: x == True, colored)) != len(symbols):
         maxval, maxpos = -999999999999, None
         for rowpos, col in enumerate(matrix):
+            # is already colored?
             if colored[rowpos] == True:
                 continue
 
+            # To calculate SD value
             number = 0
             for colpos, value in enumerate(col):
                 if colored[colpos] == True:
@@ -807,8 +810,10 @@ def mapcolour(lst, args = []):
                 precolored.append(assignedColor[sym])
 
         availColorList = list(set(colors) - set(precolored))
-
-        assignedColor[symbol] = availColorList[0]
+        if not availColorList:
+            raise Exception('Spilling', 'Spilling')
+        else:
+            assignedColor[symbol] = availColorList[0]
         #print symbol, assignedColor[symbol], availColorList[0]
 
         colored[maxpos] = True
