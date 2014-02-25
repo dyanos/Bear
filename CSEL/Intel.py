@@ -606,7 +606,6 @@ def newRegisterAssignAlogrithm(lst, args):
         elif isinstance(inst, OpCall):
             succ[real] |= set([real + 1])
             pred[real + 1] |= set([real])
-
     #print "succ=",succ
     #print "pred=",pred
     #print "def1=",def1
@@ -628,6 +627,7 @@ def newRegisterAssignAlogrithm(lst, args):
             for succNodeNum in succ[real]:
                 if succNodeNum < 0 or succNodeNum >= nlst:
                     continue
+
                 newOut[real] |= newIn[succNodeNum]
             newIn[real] = use2[real] | (newOut[real] - def2[real])
             #print real,"=",newIn[real],newOut[real]
