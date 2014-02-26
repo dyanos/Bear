@@ -64,7 +64,7 @@ class Context:
         operand = self.machine.OpPop(target)
         self.context.append(operand)
 
-        print "push %s" % (target)
+        print "pop %s" % (target)
 
     def emitCall(self, target, args):
         parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
