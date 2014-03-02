@@ -71,7 +71,7 @@ class Context:
         operand = self.machine.OpPop(target)
         self.context.append(operand)
 
-        print "push %s" % (target)
+        print "pop %s" % (target)
 
     def emitCall(self, target, args):
         parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
@@ -85,6 +85,9 @@ class Context:
                 pushedRegisters.append(parameterList[regnum])
                 self.emitMove(args[regnum], parameterList[regnum])
 
+        # return 변수가 있을 경우, 일단 있다고 가정...
+        #self.context.append(self.machine.OpPush(IReg('rax')))
+        #self.context.append(self.machine.OpMove(IImm(0), IReg('rax')))
         operand = self.machine.OpCall(target, len(args))
         self.context.append(operand)
 
@@ -258,20 +261,24 @@ class Translate:
                 # 일단 지금은 물어본다.
                 # 나중에 함수 하나로 어떻게 안될까낭?? (가장 nice한 방법은 python처럼 yield keyword가 있는 구조라고 생각된다.)
                 funcname = ret.type + '.' + 'end'
+                context.emitPush(self.machine.getRetReg())
                 context.emitCall(funcname, [ret.reg])
 
                 # return이 1이면, end로 가야한다.
                 context.emitComp(self.machine.getRetReg(), self.machine.IInteger(1))
+                context.emitPop(self.machine.getRetReg())   # control bit가 바뀌지 않을지 걱정해야 한다.
 
                 # zero flag가 1이면(즉, 0)
                 context.emitJumpZeroFlag(lastLabelStr)
 
                 # 보통 오른쪽에 있는 것은 iterator가 가능한 object가 됨
+                context.emitPush(self.machine.getRetReg())
                 funcname = ret.type + '.' + 'getNext'
                 context.emitCall(funcname, [ret.reg])
 
                 left = self.procSimpleExpr(cond.left)
                 context.emitMove(self.machine.getRetReg(), left.reg)
+                context.emitPop(self.machine.getRetReg())
             else:
                 print tree, type(tree)
                 raise Exception('procForCond', 'Not implemented')
@@ -307,11 +314,13 @@ class Translate:
         right = self.procSimpleExpr(tree.end)
 
         context = self.getLastContext()
+        context.emitPush(self.machine.getRetReg())
         # template일 경우 어떻게 이름을 정해야 할지...
         context.emitCall('System.lang.Array.toRange', [left.reg, right.reg])
 
         tmpReg = genTempRegister()
         context.emitMove(self.machine.getRetReg(), tmpReg)
+        context.emitPop(self.machine.getRetReg())
 
         return Value(type = 'System.lang.Array', reg = tmpReg)
 
@@ -353,10 +362,12 @@ class Translate:
             if left.type == 'System.lang.String':
                 fn = self.makeFName(left.type, tree.name)
 
+                context.emitPush(self.machine.getRetReg())
                 context.emitCall(fn, [left.reg, right.reg])
 
                 tmpReg = genTempRegister()
                 context.emitMove(self.machine.getRetReg(), tmpReg)
+                context.emitPop(self.machine.getRetReg())
 
                 return Value(type = left.type, reg = tmpReg)
             else:
@@ -405,8 +416,10 @@ class Translate:
             return Value(type = left.type, reg = tmpReg)
         else:
             opName = self.makeFName(left.type, tree.name)
+            context.emitPush(self.machine.getRetReg())
             context.emitCall(opName, [left.reg, right.reg])
             context.emitMove(self.machine.getRetReg(), tmpReg)
+            context.emitPop(self.machine.getRetReg())
 
             retType = left.type
 
