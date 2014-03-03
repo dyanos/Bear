@@ -820,7 +820,7 @@ def mapcolour(lst, args = []):
     #colors=['rax','rbx','rcx','rdx'] 
     symbols = G.keys()
 
-    # make a matrix
+    # make a adjacency matrix to represent the interference graph
     matrix = [[False for i in range(0, len(symbols))] for i in range(0, len(symbols))]
     for pos, regname in enumerate(symbols):
         neighbors = G[regname]
@@ -835,6 +835,13 @@ def mapcolour(lst, args = []):
         if symbol in colors:
             assignedColor[symbol] = symbol
             colored[pos] = True
+
+    # 1. SD가 가장 큰 것을 찾는다.
+    # 2. 할당되었는지 확인 후 되어있다면, 1번으로 돌아간다.
+    # 3. 그것과 인접된 노드들을 찾는다.
+    # 4. 이미 어떤 것들이 할당되어 있는지 확인한다.
+    # 5. 그것들을 제외한 나머지 것들을 본다.
+    # 6. 없다면 spilling
 
     # using heuristic algorithm
     while len(filter(lambda x: x == True, colored)) != len(symbols):
@@ -861,9 +868,10 @@ def mapcolour(lst, args = []):
 
         # to find available registers
         precolored = []
-        if symbol in colors:
+        if symbol in colors: # 이미 위에서 이러한 것들을 한번 체크함... # 의미 없는 듯 
             precolored.append(symbol)
 
+        # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
         for colpos, value in enumerate(matrix[maxpos]):
             if value == False:
                 continue
@@ -872,6 +880,7 @@ def mapcolour(lst, args = []):
             if assignedColor.has_key(sym):
                 precolored.append(assignedColor[sym])
 
+        # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
         availColorList = list(set(colors) - set(precolored))
         if not availColorList:
             raise Exception('Spilling', 'Spilling')
