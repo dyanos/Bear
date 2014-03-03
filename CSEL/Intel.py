@@ -524,12 +524,12 @@ def calculateInterferenceGraph2(lst, outLive, args):
 def newRegisterAssignAlogrithm(lst, args):
     nlst = len(lst)
 
-    succ = [set([]) for i in range(0, nlst+1)]
-    pred = [set([]) for i in range(0, nlst+1)]
+    succ = dict([(i, set([])) for i in range(0, nlst+1)]) # 후손에 남겨주는 경우
+    pred = dict([(i, set([])) for i in range(0, nlst+1)]) # 선조로부터 오는 경우
     def1 = {}
-    def2 = [set([]) for i in range(0, nlst+1)]
+    def2 = dict([(i, set([])) for i in range(0, nlst+1)])
     use1 = {}
-    use2 = [set([]) for i in range(0, nlst+1)]
+    use2 = dict([(i, set([])) for i in range(0, nlst+1)])
 
     def registerDefVar(reg, pos):
         if not isRegister(reg):
@@ -613,6 +613,65 @@ def newRegisterAssignAlogrithm(lst, args):
     #print "use1=",use1
     #print "use2=",use2
 
+    def removeFirstOpcodeWith(rn, pos):
+        for idx, node in enumerate(lst):
+            if idx <= pos: 
+                continue
+
+            if isinstance(node, OpPop):
+                if rn == str(node.target):
+                    print "must remove opcode", node, "at", idx
+                    return idx
+
+        return -1
+
+    def reorder(pos):
+        prevPos = pos - 1
+        while prevPos >= 0:
+            if succ.has_key(prevPos):
+                break
+
+            prevPos -= 1
+
+        nextPos = pos + 1
+        while nextPos < len(lst):
+            if pred.has_key(nextPos):
+                break
+
+            nextPos += 1
+
+        if nextPos < len(lst):
+            succ[prevPos] |= set([nextPos])
+        succ[prevPos] -= set([pos])
+        if prevPos >= 0:
+            pred[nextPos] |= set([prevPos])
+        pred[nextPos] -= set([pos])
+
+        del succ[pos]
+        del pred[pos]
+
+    # 의미없이 register를 push하는 경우에 대한 삭제 코드 삽입 필요, 짝인 pop도 삭제
+    reduntantOpcodeList = []
+    for pos, node in enumerate(lst):
+        if isinstance(node, OpPush):
+            cross = filter(lambda x: x <= pos, def1[str(node.target)])
+            if len(cross) == 0:
+                print "must remove opcode", node, "at",pos
+
+                # remove pop after this
+                posOfPop = removeFirstOpcodeWith(str(node.target), pos)
+
+                use1[str(node.target)] -= set([pos])
+                del use2[pos]
+                def1[str(node.target)] -= set([posOfPop])
+                del def2[posOfPop]
+
+                reorder(pos)
+                reorder(posOfPop)
+
+                reduntantOpcodeList.append(pos)
+                reduntantOpcodeList.append(posOfPop)
+
     nullSet = set([])
     oldIn, newIn = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
     oldOut, newOut = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
@@ -624,12 +683,13 @@ def newRegisterAssignAlogrithm(lst, args):
             oldIn[real] = newIn[real]
             oldOut[real] = newOut[real]
             newOut[real] = set([])
-            for succNodeNum in succ[real]:
-                if succNodeNum < 0 or succNodeNum >= nlst:
-                    continue
+            if succ.has_key(real):
+                for succNodeNum in succ[real]:
+                    if succNodeNum < 0 or succNodeNum >= nlst:
+                        continue
 
-                newOut[real] |= newIn[succNodeNum]
-            newIn[real] = use2[real] | (newOut[real] - def2[real])
+                    newOut[real] |= newIn[succNodeNum]
+                newIn[real] = use2[real] | (newOut[real] - def2[real])
             #print real,"=",newIn[real],newOut[real]
             #print "succ[real]",succ[real]
             #print newOut[n], def2[n]
@@ -646,10 +706,13 @@ def newRegisterAssignAlogrithm(lst, args):
 
         ind += 1
 
+    reduntantOpcodeList.sort()
+    for pos in reversed(reduntantOpcodeList):
+        del lst[pos]
     #print newIn
     #print newOut
 
-    print newIn[0]
+    #print newIn[0]
 
     G = calculateInterferenceGraph2(lst, newOut, args)
     s = list(newIn[0])

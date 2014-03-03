@@ -25,6 +25,9 @@ class Context:
         self.sizeOfMachineRegister = 8 # bytes
         self.reservedStackSize = 0
 
+        # 이건 머징??
+        self.undef = {}
+
     def checkTemporaryReg(self, regList, loc):
         for elem in regList:
             if self.machine.isTemporaryRegister(elem) == True:
