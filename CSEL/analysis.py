@@ -41,6 +41,8 @@ class Context:
         self.arguments[name] = IMem(base=IReg('rbp'), imm=self.narguments)
         self.narguments += 8
 
+        return self.arguments[name]
+
     def registerLoc(self, name, loc):
         if not self.undef.has_key(name):
             self.undef[name] = [loc]
@@ -217,14 +219,15 @@ class Translate:
 
         # 일단 함수 인자들을 machine stack에 밀어넣는다.
         context = self.getLastContext()
-        #for pos, arg in enumerate(args):
-            #memReg = IMem(IReg('rbp'), None, pos * context.sizeOfMachineRegister)
-            #context.emitMove(arg, memReg)
+
+        for arg in args:
+            memReg = context.setArgVar(arg)
+            opcode = context.machine.OpMove(IUserReg(arg), memReg)
+            context.context.append(opcode)
+            print "mov %s, %s" % (str(memReg), arg)
 
             # we will suppose that alignment's size is 8 bytes.
-            #context.increaseReservedStackSize()
-        for arg in args:
-            context.setArgVar(arg)
+            context.increaseReservedStackSize()
 
         if isinstance(tree, ASTExprs):
             self.procExprs(tree)
