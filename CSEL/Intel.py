@@ -102,7 +102,7 @@ class MarkLabel(Operand):
         return "%s:" % (self.label)
 
 def isRegister(storage):
-    if isinstance(storage, IReg) or isinstance(storage, IUserReg) or isinstance(storage, IMem):
+    if isinstance(storage, IReg) or isinstance(storage, IUserReg):
         return True
 
     return False
@@ -613,7 +613,7 @@ def newRegisterAssignAlogrithm(lst, args):
             for i in range(inst.numargs):
                 registerUseVar(parameterList[i], real)
             registerDefVar(IReg('rax'), real)
-            
+
     #print "succ=",succ
     #print "pred=",pred
     #print "def1=",def1
@@ -825,8 +825,8 @@ def mapcolour(lst, args = []):
     #print newColoringAlgorithm(G)
 
     registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
-    colors = registerList[::-1]
-    #colors = ['rax','rbx','rcx','rdx'] 
+    #colors = registerList[::-1]
+    colors = ['rax','rbx','rcx','rdx'] 
     symbols = G.keys()
 
     # make a adjacency matrix to represent the interference graph
