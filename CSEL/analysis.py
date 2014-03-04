@@ -193,12 +193,12 @@ class Translate:
 
         # 일단 함수 인자들을 machine stack에 밀어넣는다.
         context = self.getLastContext()
-        for pos, arg in enumerate(args):
-            memReg = IMem(IReg('rbp'), None, pos * context.sizeOfMachineRegister)
-            context.emitMove(arg, memReg)
+        #for pos, arg in enumerate(args):
+            #memReg = IMem(IReg('rbp'), None, pos * context.sizeOfMachineRegister)
+            #context.emitMove(arg, memReg)
 
             # we will suppose that alignment's size is 8 bytes.
-            context.increaseReservedStackSize()
+            #context.increaseReservedStackSize()
 
         if isinstance(tree, ASTExprs):
             self.procExprs(tree)
