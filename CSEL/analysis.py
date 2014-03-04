@@ -97,7 +97,7 @@ class Context:
 
         print "pop %s" % (target)
 
-    def emitCall(self, target, args):
+    def emitCall(self, target, args, ret = False):
         parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
         pushedRegisters = []
         for regnum in range(0, len(args)):
@@ -112,7 +112,7 @@ class Context:
         # return 변수가 있을 경우, 일단 있다고 가정...
         #self.context.append(self.machine.OpPush(IReg('rax')))
         #self.context.append(self.machine.OpMove(IImm(0), IReg('rax')))
-        operand = self.machine.OpCall(target, len(args))
+        operand = self.machine.OpCall(target, len(args), ret = ret)
         self.context.append(operand)
 
         print "call %s" % (target)
@@ -291,7 +291,7 @@ class Translate:
                 # 나중에 함수 하나로 어떻게 안될까낭?? (가장 nice한 방법은 python처럼 yield keyword가 있는 구조라고 생각된다.)
                 funcname = ret.type + '.' + 'end'
                 context.emitPush(self.machine.getRetReg())
-                context.emitCall(funcname, [ret.reg])
+                context.emitCall(funcname, [ret.reg], ret = True)
 
                 # return이 1이면, end로 가야한다.
                 context.emitComp(self.machine.getRetReg(), self.machine.IInteger(1))
@@ -303,7 +303,7 @@ class Translate:
                 # 보통 오른쪽에 있는 것은 iterator가 가능한 object가 됨
                 context.emitPush(self.machine.getRetReg())
                 funcname = ret.type + '.' + 'getNext'
-                context.emitCall(funcname, [ret.reg])
+                context.emitCall(funcname, [ret.reg], ret = True)
 
                 left = self.procSimpleExpr(cond.left)
                 context.emitMove(self.machine.getRetReg(), left.reg)
@@ -345,7 +345,7 @@ class Translate:
         context = self.getLastContext()
         context.emitPush(self.machine.getRetReg())
         # template일 경우 어떻게 이름을 정해야 할지...
-        context.emitCall('System.lang.Array.toRange', [left.reg, right.reg])
+        context.emitCall('System.lang.Array.toRange', [left.reg, right.reg], ret = True)
 
         tmpReg = genTempRegister()
         context.emitMove(self.machine.getRetReg(), tmpReg)
@@ -392,7 +392,7 @@ class Translate:
                 fn = self.makeFName(left.type, tree.name)
 
                 context.emitPush(self.machine.getRetReg())
-                context.emitCall(fn, [left.reg, right.reg])
+                context.emitCall(fn, [left.reg, right.reg], ret = True)
 
                 tmpReg = genTempRegister()
                 context.emitMove(self.machine.getRetReg(), tmpReg)
@@ -446,7 +446,7 @@ class Translate:
         else:
             opName = self.makeFName(left.type, tree.name)
             context.emitPush(self.machine.getRetReg())
-            context.emitCall(opName, [left.reg, right.reg])
+            context.emitCall(opName, [left.reg, right.reg], ret = True)
             context.emitMove(self.machine.getRetReg(), tmpReg)
             context.emitPop(self.machine.getRetReg())
 

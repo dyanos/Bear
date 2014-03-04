@@ -58,9 +58,13 @@ class OpPop(Operand):
         return "pop %s" % (self.target)
 
 class OpCall(Operand):
-    def __init__(self, target, numargs):
+    def __init__(self, target, numargs, ret = False):
         self.target = target
         self.numargs = numargs
+        self.ret = ret
+
+    def isReturn(self):
+        return self.ret
 
     def __str__(self):
         return "call %s" % (self.target)
@@ -612,7 +616,8 @@ def newRegisterAssignAlogrithm(lst, args):
             # function call이 register를 필요로 하는지에 대한 정보가 필요
             for i in range(inst.numargs):
                 registerUseVar(parameterList[i], real)
-            registerDefVar(IReg('rax'), real)
+            if inst.isReturn() == True:
+                registerDefVar(IReg('rax'), real)
 
     #print "succ=",succ
     #print "pred=",pred
