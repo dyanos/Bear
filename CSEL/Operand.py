@@ -76,7 +76,7 @@ class IMem(IStorage):
       s += " * %s" % (self.indx)
     if self.imm != None:
       s += " + %d" % (self.imm)
-    return s
+    return "[%s]" % (s)
 
   def __eq__(self, right):
     if not isinstance(right, IMem):

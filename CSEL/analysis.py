@@ -17,18 +17,29 @@ class Value:
         for key, value in kargs.iteritems():
             setattr(self, key, value)
 
+# 3-state machine code
 class Context: 
     def __init__(self):
         self.context = []
-        # usage history of temporary registers
-        self.undef = {} 
 
         self.machine = Intel
+        self.sizeOfMachineRegister = 8 # bytes
+        self.reservedStackSize = 0
+
+        # 이건 머징??
+        self.undef = {}
+
+        self.arguments = {}
+        self.narguments = 8
 
     def checkTemporaryReg(self, regList, loc):
         for elem in regList:
             if self.machine.isTemporaryRegister(elem) == True:
                 self.registerLoc(elem.name, loc)
+
+    def setArgVar(self, name):
+        self.arguments[name] = IMem(base=IReg('rbp'), imm=self.narguments)
+        self.narguments += 8
 
     def registerLoc(self, name, loc):
         if not self.undef.has_key(name):
@@ -36,7 +47,21 @@ class Context:
         else:
             self.undef[name].append(loc)
 
+    def increaseReservedStackSize(self):
+        self.reservedStackSize += self.sizeOfMachineRegister
+
+    # 일단 늘어나면 안 줄어들텐데...
+    def decreaseReservedStackSize(self):
+        self.reservedStackSize -= self.sizeOfMachineRegister
+
+    def convertReg(self, name):
+        if self.arguments.has_key(str(name)):
+            return self.arguments[str(name)]
+        return name
+
     def emitMove(self, src, dst):
+        src = self.convertReg(src)
+        dst = self.convertReg(dst)
         operand = self.machine.OpMove(src, dst)
         self.context.append(operand)
         self.checkTemporaryReg(regList = [src, dst], loc = len(self.context))
@@ -44,6 +69,10 @@ class Context:
         print "mov %s, %s" % (dst, src)
 
     def emitAdd(self, srcA, srcB, dst):
+        srcA = self.convertReg(srcA)
+        srcB = self.convertReg(srcB)
+        dst = self.convertReg(dst)
+
         context = self.context
         if self.machine == Intel:
             tmpReg = genTempRegister()
@@ -55,18 +84,20 @@ class Context:
             print "add %s, %s, %s" % (dst, srcB, srcA)
 
     def emitPush(self, target):
+        target = self.convertReg(target)
         operand = self.machine.OpPush(target)
         self.context.append(operand)
 
         print "push %s" % (target)
 
     def emitPop(self, target):
+        target = self.convertReg(target)
         operand = self.machine.OpPop(target)
         self.context.append(operand)
 
-        print "push %s" % (target)
+        print "pop %s" % (target)
 
-    def emitCall(self, target, args):
+    def emitCall(self, target, args, ret = False):
         parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
         pushedRegisters = []
         for regnum in range(0, len(args)):
@@ -78,7 +109,10 @@ class Context:
                 pushedRegisters.append(parameterList[regnum])
                 self.emitMove(args[regnum], parameterList[regnum])
 
-        operand = self.machine.OpCall(target, len(args))
+        # return 변수가 있을 경우, 일단 있다고 가정...
+        #self.context.append(self.machine.OpPush(IReg('rax')))
+        #self.context.append(self.machine.OpMove(IImm(0), IReg('rax')))
+        operand = self.machine.OpCall(target, len(args), ret = ret)
         self.context.append(operand)
 
         print "call %s" % (target)
@@ -87,6 +121,8 @@ class Context:
             self.emitPop(reg)
 
     def emitComp(self, target1, target2):
+        target1 = self.convertReg(target1)
+        target2 = self.convertReg(target2)
         operand = self.machine.OpComp(target1, target2)
         self.context.append(operand)
         print "cmp %s, %s" % (target1, target2)
@@ -102,6 +138,7 @@ class Context:
         print "jz %s" % (label)
 
     def emitJumpUsingReg(self, reg):
+        reg = self.convertReg(reg)
         operand = self.machine.OpJumpToReg(reg)
         self.context.append(operand)
         print "jmp %s" % (reg)
@@ -178,6 +215,17 @@ class Translate:
         context = Context()
         self.context.append(context)
 
+        # 일단 함수 인자들을 machine stack에 밀어넣는다.
+        context = self.getLastContext()
+        #for pos, arg in enumerate(args):
+            #memReg = IMem(IReg('rbp'), None, pos * context.sizeOfMachineRegister)
+            #context.emitMove(arg, memReg)
+
+            # we will suppose that alignment's size is 8 bytes.
+            #context.increaseReservedStackSize()
+        for arg in args:
+            context.setArgVar(arg)
+
         if isinstance(tree, ASTExprs):
             self.procExprs(tree)
         elif isinstance(tree, ASTExpr):
@@ -242,20 +290,24 @@ class Translate:
                 # 일단 지금은 물어본다.
                 # 나중에 함수 하나로 어떻게 안될까낭?? (가장 nice한 방법은 python처럼 yield keyword가 있는 구조라고 생각된다.)
                 funcname = ret.type + '.' + 'end'
-                context.emitCall(funcname, [ret.reg])
+                context.emitPush(self.machine.getRetReg())
+                context.emitCall(funcname, [ret.reg], ret = True)
 
                 # return이 1이면, end로 가야한다.
                 context.emitComp(self.machine.getRetReg(), self.machine.IInteger(1))
+                context.emitPop(self.machine.getRetReg())   # control bit가 바뀌지 않을지 걱정해야 한다.
 
                 # zero flag가 1이면(즉, 0)
                 context.emitJumpZeroFlag(lastLabelStr)
 
                 # 보통 오른쪽에 있는 것은 iterator가 가능한 object가 됨
+                context.emitPush(self.machine.getRetReg())
                 funcname = ret.type + '.' + 'getNext'
-                context.emitCall(funcname, [ret.reg])
+                context.emitCall(funcname, [ret.reg], ret = True)
 
                 left = self.procSimpleExpr(cond.left)
                 context.emitMove(self.machine.getRetReg(), left.reg)
+                context.emitPop(self.machine.getRetReg())
             else:
                 print tree, type(tree)
                 raise Exception('procForCond', 'Not implemented')
@@ -291,11 +343,13 @@ class Translate:
         right = self.procSimpleExpr(tree.end)
 
         context = self.getLastContext()
+        context.emitPush(self.machine.getRetReg())
         # template일 경우 어떻게 이름을 정해야 할지...
-        context.emitCall('System.lang.Array.toRange', [left.reg, right.reg])
+        context.emitCall('System.lang.Array.toRange', [left.reg, right.reg], ret = True)
 
         tmpReg = genTempRegister()
         context.emitMove(self.machine.getRetReg(), tmpReg)
+        context.emitPop(self.machine.getRetReg())
 
         return Value(type = 'System.lang.Array', reg = tmpReg)
 
@@ -337,10 +391,12 @@ class Translate:
             if left.type == 'System.lang.String':
                 fn = self.makeFName(left.type, tree.name)
 
-                context.emitCall(fn, [left.reg, right.reg])
+                context.emitPush(self.machine.getRetReg())
+                context.emitCall(fn, [left.reg, right.reg], ret = True)
 
                 tmpReg = genTempRegister()
                 context.emitMove(self.machine.getRetReg(), tmpReg)
+                context.emitPop(self.machine.getRetReg())
 
                 return Value(type = left.type, reg = tmpReg)
             else:
@@ -389,8 +445,10 @@ class Translate:
             return Value(type = left.type, reg = tmpReg)
         else:
             opName = self.makeFName(left.type, tree.name)
-            context.emitCall(opName, [left.reg, right.reg])
+            context.emitPush(self.machine.getRetReg())
+            context.emitCall(opName, [left.reg, right.reg], ret = True)
             context.emitMove(self.machine.getRetReg(), tmpReg)
+            context.emitPop(self.machine.getRetReg())
 
             retType = left.type
 

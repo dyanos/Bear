@@ -58,9 +58,13 @@ class OpPop(Operand):
         return "pop %s" % (self.target)
 
 class OpCall(Operand):
-    def __init__(self, target, numargs):
+    def __init__(self, target, numargs, ret = False):
         self.target = target
         self.numargs = numargs
+        self.ret = ret
+
+    def isReturn(self):
+        return self.ret
 
     def __str__(self):
         return "call %s" % (self.target)
@@ -522,14 +526,17 @@ def calculateInterferenceGraph2(lst, outLive, args):
     return graph
 
 def newRegisterAssignAlogrithm(lst, args):
+    parameterList = ['rcx', 'rdx', 'r8', 'r9']
+    parameterListForFloating = ['xmm0', 'xmm1', 'xmm2', 'xmm3']
+
     nlst = len(lst)
 
-    succ = [set([]) for i in range(0, nlst+1)]
-    pred = [set([]) for i in range(0, nlst+1)]
+    succ = dict([(i, set([])) for i in range(0, nlst+1)]) # 후손에 남겨주는 경우
+    pred = dict([(i, set([])) for i in range(0, nlst+1)]) # 선조로부터 오는 경우
     def1 = {}
-    def2 = [set([]) for i in range(0, nlst+1)]
+    def2 = dict([(i, set([])) for i in range(0, nlst+1)])
     use1 = {}
-    use2 = [set([]) for i in range(0, nlst+1)]
+    use2 = dict([(i, set([])) for i in range(0, nlst+1)])
 
     def registerDefVar(reg, pos):
         if not isRegister(reg):
@@ -606,6 +613,11 @@ def newRegisterAssignAlogrithm(lst, args):
         elif isinstance(inst, OpCall):
             succ[real] |= set([real + 1])
             pred[real + 1] |= set([real])
+            # function call이 register를 필요로 하는지에 대한 정보가 필요
+            for i in range(inst.numargs):
+                registerUseVar(parameterList[i], real)
+            if inst.isReturn() == True:
+                registerDefVar(IReg('rax'), real)
 
     #print "succ=",succ
     #print "pred=",pred
@@ -613,6 +625,65 @@ def newRegisterAssignAlogrithm(lst, args):
     #print "def2=",def2
     #print "use1=",use1
     #print "use2=",use2
+
+    # def removeFirstOpcodeWith(rn, pos):
+    #     for idx, node in enumerate(lst):
+    #         if idx <= pos: 
+    #             continue
+
+    #         if isinstance(node, OpPop):
+    #             if rn == str(node.target):
+    #                 print "must remove opcode", node, "at", idx
+    #                 return idx
+
+    #     return -1
+
+    # def reorder(pos):
+    #     prevPos = pos - 1
+    #     while prevPos >= 0:
+    #         if succ.has_key(prevPos):
+    #             break
+
+    #         prevPos -= 1
+
+    #     nextPos = pos + 1
+    #     while nextPos < len(lst):
+    #         if pred.has_key(nextPos):
+    #             break
+
+    #         nextPos += 1
+
+    #     if nextPos < len(lst):
+    #         succ[prevPos] |= set([nextPos])
+    #     succ[prevPos] -= set([pos])
+    #     if prevPos >= 0:
+    #         pred[nextPos] |= set([prevPos])
+    #     pred[nextPos] -= set([pos])
+
+    #     del succ[pos]
+    #     del pred[pos]
+
+    # # 의미없이 register를 push하는 경우에 대한 삭제 코드 삽입 필요, 짝인 pop도 삭제
+    # reduntantOpcodeList = []
+    # for pos, node in enumerate(lst):
+    #     if isinstance(node, OpPush):
+    #         cross = filter(lambda x: x <= pos, def1[str(node.target)])
+    #         if len(cross) == 0:
+    #             print "must remove opcode", node, "at",pos
+
+    #             # remove pop after this
+    #             posOfPop = removeFirstOpcodeWith(str(node.target), pos)
+
+    #             use1[str(node.target)] -= set([pos])
+    #             del use2[pos]
+    #             def1[str(node.target)] -= set([posOfPop])
+    #             del def2[posOfPop]
+
+    #             reorder(pos)
+    #             reorder(posOfPop)
+
+    #             reduntantOpcodeList.append(pos)
+    #             reduntantOpcodeList.append(posOfPop)
 
     nullSet = set([])
     oldIn, newIn = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
@@ -625,11 +696,13 @@ def newRegisterAssignAlogrithm(lst, args):
             oldIn[real] = newIn[real]
             oldOut[real] = newOut[real]
             newOut[real] = set([])
-            for succNodeNum in succ[real]:
-                if succNodeNum < 0 or succNodeNum >= nlst:
-                    continue
-                newOut[real] |= newIn[succNodeNum]
-            newIn[real] = use2[real] | (newOut[real] - def2[real])
+            if succ.has_key(real):
+                for succNodeNum in succ[real]:
+                    if succNodeNum < 0 or succNodeNum >= nlst:
+                        continue
+
+                    newOut[real] |= newIn[succNodeNum]
+                newIn[real] = use2[real] | (newOut[real] - def2[real])
             #print real,"=",newIn[real],newOut[real]
             #print "succ[real]",succ[real]
             #print newOut[n], def2[n]
@@ -646,10 +719,13 @@ def newRegisterAssignAlogrithm(lst, args):
 
         ind += 1
 
+    # reduntantOpcodeList.sort()
+    # for pos in reversed(reduntantOpcodeList):
+    #     del lst[pos]
     #print newIn
     #print newOut
 
-    print newIn[0]
+    #print newIn[0]
 
     G = calculateInterferenceGraph2(lst, newOut, args)
     s = list(newIn[0])
@@ -663,7 +739,7 @@ def newRegisterAssignAlogrithm(lst, args):
                 G[reg] = set([s[j]])
                 G[s[j]] = set([reg])
 
-    return G
+    return G, def1, def2, use1, use2
 
 def reassign(lst, args):
     parameterList = ['rcx', 'rdx', 'r8', 'r9']
@@ -748,16 +824,17 @@ def mapcolour(lst, args = []):
     #for op in lst: print op
     #print "="*80
     #G = calculateInterferenceGraph(lst, args)
-    G = newRegisterAssignAlogrithm(lst, args)
+    G, def1, def2, use1, use2 = newRegisterAssignAlogrithm(lst, args)
 
     print "G=",G
     #print newColoringAlgorithm(G)
 
-    colors=['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15'][::-1]
-    #colors=['rax','rbx','rcx','rdx'] 
+    registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
+    #colors = registerList[::-1]
+    colors = ['rax','rbx','rcx','rdx'] 
     symbols = G.keys()
 
-    # make a matrix
+    # make a adjacency matrix to represent the interference graph
     matrix = [[False for i in range(0, len(symbols))] for i in range(0, len(symbols))]
     for pos, regname in enumerate(symbols):
         neighbors = G[regname]
@@ -773,12 +850,24 @@ def mapcolour(lst, args = []):
             assignedColor[symbol] = symbol
             colored[pos] = True
 
+    # 1. SD가 가장 큰 것을 찾는다.
+    # 2. 할당되었는지 확인 후 되어있다면, 1번으로 돌아간다.
+    # 3. 그것과 인접된 노드들을 찾는다.
+    # 4. 이미 어떤 것들이 할당되어 있는지 확인한다.
+    # 5. 그것들을 제외한 나머지 것들을 본다.
+    # 6. 없다면 spilling
+
+    spilling = {}
+
+    # using heuristic algorithm
     while len(filter(lambda x: x == True, colored)) != len(symbols):
         maxval, maxpos = -999999999999, None
         for rowpos, col in enumerate(matrix):
+            # is already colored?
             if colored[rowpos] == True:
                 continue
 
+            # To calculate SD value
             number = 0
             for colpos, value in enumerate(col):
                 if colored[colpos] == True:
@@ -795,9 +884,10 @@ def mapcolour(lst, args = []):
 
         # to find available registers
         precolored = []
-        if symbol in colors:
+        if symbol in colors: # 이미 위에서 이러한 것들을 한번 체크함... # 의미 없는 듯 
             precolored.append(symbol)
 
+        # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
         for colpos, value in enumerate(matrix[maxpos]):
             if value == False:
                 continue
@@ -806,21 +896,43 @@ def mapcolour(lst, args = []):
             if assignedColor.has_key(sym):
                 precolored.append(assignedColor[sym])
 
+        # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
         availColorList = list(set(colors) - set(precolored))
+        if not availColorList or len(availColorList) == 0: # 가용 레지스터가 없을 경우
+            # use회수가 가장 적은걸 spill하려고 하는데,
+            # 이 symbol이 use회수가 가장 적은 symbol과 연결되어 있지 않다면, 의미가 없다.
+            symbolIndx = [pos for pos in range(len(matrix[ind])) if matrix[ind][pos] == True] #filter(lambda x: matrix[ind][x], range(len(matrix[ind])))
+            outReg = min(map(lambda x: (len(use1[symbols[x]]), symbols[x]), symbolIndx))[1]
+            
+            ind = symbols.index(outReg)
+            
+            for i in range(len(matrix[ind])):
+                matrix[ind][i] = False
+                matrix[i][ind] = False
 
-        assignedColor[symbol] = availColorList[0]
+            tmp = assignedColor[outReg]
+            del assignedColor[outReg]
+            
+            assignedColor[symbol] = tmp
+            
+            spilling[outReg] = IMem(base = IReg('rbp'), imm = 10)
+            
+            #raise Exception('Spilling', 'Spilling')
+        else:
+            assignedColor[symbol] = availColorList[0]
         #print symbol, assignedColor[symbol], availColorList[0]
 
         colored[maxpos] = True
 
-    return assignedColor
+    return assignedColor, spilling
 
 def allocateRegister(lst, args):
     #print "called newRegisterAssignAlogrithm"
     #newRegisterAssignAlogrithm(lst, args)
 
-    ret = mapcolour(lst, args)
+    ret, spilling = mapcolour(lst, args)
     keys = ret.keys()
+    skeys = spilling.keys()
     for operand in lst:
         if isinstance(operand, OpMove) \
             or isinstance(operand, OpAdd) \
@@ -831,14 +943,25 @@ def allocateRegister(lst, args):
                 operand.src = ret[str(operand.src)]
             if str(operand.dst) in keys:
                 operand.dst = ret[str(operand.dst)]
+            if str(operand.src) in skeys:
+                operand.src = spilling[str(operand.src)]
+            if str(operand.dst) in skeys:
+                operand.dst = spilling[str(operand.dst)]
         elif isinstance(operand, OpCall):
             if str(operand.target) is keys:
                 operand.target = ret[str(operand.target)]
+            if str(operand.target) is skeys:
+                operand.target = spilling[str(operand.target)]
         elif isinstance(operand, OpComp):
             if str(operand.target1) in keys:
                 operand.target1 = ret[str(operand.target1)]
             if str(operand.target2) in keys:
                 operand.target2 = ret[str(operand.target2)]
+
+            if str(operand.target1) in skeys:
+                operand.target1 = spilling[str(operand.target1)]
+            if str(operand.target2) in skeys:
+                operand.target2 = spilling[str(operand.target2)]
         elif isinstance(operand, OpJump):
             pass
         elif isinstance(operand, OpJumpZeroFlag):
