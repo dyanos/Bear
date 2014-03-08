@@ -109,6 +109,8 @@ class Parser:
     # 일단 구현할께 function밖에 없으니 ...
 
   def parse(self):
+    root = self.getRootSymbolTable()
+    
     parsingList = []
     while not self.isEnd():
       tree = None
@@ -120,13 +122,7 @@ class Parser:
       elif self.same('template'):
         result = self.parseTemplate()
       elif self.same('def'):
-        info = self.parseDef()
-        parsingList.append(tree)
-        #print tree
-        #print info['body']
-        #info['body'].printXML()
-        self.getRootSymbolTable().registerFunction(info['name'], info['args'], info['rettype'], info['body'])
-        self.mustcompile.append(self.getRootSymbolTable()[info['name']])
+        self.parseDef()
       elif self.same('native'):
         # 예는 push로..
         self.directive.append(value)
@@ -186,7 +182,7 @@ class Parser:
     type = "typename" # 일단 임시로
     if self.match(':'):
       type = self.getNames()
-    return ASTTEmplateArg(name, type)
+    return ASTTemplateArg(name, type)
 
   # 함수 선언 형태
   # def func(argname1: argtype1, argname2: argtype2, ...) = expr
@@ -204,6 +200,17 @@ class Parser:
 
     return ".".join(self.depthNamespaceString + [fn])
 
+  def parseDefBody(self):
+    body = None
+    
+    if self.match('='):
+      body = self.parseExpr()
+    elif self.match('{'):
+      body = self.parseExprs()
+      self.match('}')
+      
+    return body
+      
   def parseDef(self):
     if not self.match('def'):
       return None
@@ -213,6 +220,8 @@ class Parser:
     #print "Function name : %s" % (fn)
 
     # 함수용 symbol table을 만듭니다.
+    parentSymTbl = self.getRecentSymbolTable()
+    
     self.stackSymbolList.append(SymbolTable())
     localSymTbl = self.getRecentSymbolTable()
 
@@ -230,16 +239,19 @@ class Parser:
     #localSymTbl.printDoc()
 
     rettype = self.parseReturnType()
-
-    if self.match('='):
-      body = self.parseExpr()
-      if rettype != 'void':
+    body = self.parseDefBody()
+    if body == None:
+      print "function's body is empty"
+      sys.exit(-1)
+      
+    if rettype != 'void':
+      if isinstance(body, ASTExpr):
         body = ASTReturn(body)
-    elif self.match('{'):
-      body = self.parseExprs()
-      self.match('}')
-    else:
-      body = None
+      else:
+        # return을 명시적으로 적지 않았다면, 마지막 expression의 결과를 return값으로 한다.
+        lastExpr = body.exprs[-1]
+        if not isinstance(lastExpr, ASTReturn):
+          body.exprs[-1] = ASTReturn(lastExpr)
 
     for directive in self.directive:
       if directive == 'native':
@@ -247,14 +259,11 @@ class Parser:
 
     self.directive = []
 
-    ret = {'name': fn, 'rettype': rettype}
-    if args == None:
-      ret['body'] = body
-    else:
-      ret['args'] = args
-      ret['body'] = body
+    # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
+    # 일단 지금은 영향을 받지 않는다고 가정한다.
+    parentSymTbl.registerFunction(fname = fn, args = args, rettype = rettype, body = body)
 
-    return ret
+    self.mustcompile.append(parentSymTbl[fn])
 
   def parseFuncArgumentList(self):
     if not self.match('('):

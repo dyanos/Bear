@@ -233,11 +233,10 @@ class Translate:
             self.procExprs(tree)
         elif isinstance(tree, ASTExpr):
             self.procExpr(tree)
-        elif isinstance(tree, ASTReturn):
-            self.procReturn(tree)
         else:
-            print tree, type(tree)
-            raise Exception("procFunc", "Not implemented some feature")
+            #print tree, type(tree)
+            #raise Exception("procFunc", "Not implemented some feature")
+            self.procExpr(tree)
 
         self.getLastContext().getRegisterAllocation(args)
 
@@ -247,7 +246,14 @@ class Translate:
         retval = self.procExpr(tree.expr)
         
         context = self.getLastContext()
-        context.emitMove(retval.reg, self.machine.getRetReg())
+        if retval == None:
+            # 되돌려지는게 없다면, return type에 맞추어서 무엇인가를 보내야한다? TODO
+            context.emitMove(IImm(0), self.machine.getRetReg())
+        else:
+            context.emitMove(retval.reg, self.machine.getRetReg())
+        
+        # 끝이기 때문에 별도로 되돌려줄 무엇인가가 없다          
+        return None
 
     def procExprs(self, tree):
         result = None
@@ -267,6 +273,8 @@ class Translate:
         elif isinstance(tree, ASTOperator):
             # 여기 이렇게 놓으면 안될듯한 느낌이..
             return self.procOperator(tree)
+        elif isinstance(tree, ASTReturn):
+            self.procReturn(tree)
         else:
             print tree, type(tree)
             raise Exception("procExpr", "Not Implemented")
