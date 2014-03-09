@@ -77,7 +77,7 @@ class SymbolTable:
         self.symbolTable[name] = VariableSymbol(type)
         return self.symbolTable[name]
     
-    def search(self, path):
+    def getRealname(self, path):
         _path = path
         if self.aliasSymbolTable.has_key(_path):
             _path = self.aliasSymbolTable[_path]

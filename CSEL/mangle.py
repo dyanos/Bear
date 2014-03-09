@@ -5,6 +5,7 @@ from random import Random
 
 from AST import *
 from ASTAlias import *
+from ASTType import *
 from ASTArgItem import *
 from ASTArgList import *
 from ASTAttribute import *
@@ -23,7 +24,6 @@ from ASTOperator import *
 from ASTRankSpecs import *
 from ASTSimpleExprs import *
 from ASTTemplateList import *
-from ASTType import *
 from ASTUse import *
 from ASTVal import *
 from ASTVar import *
@@ -198,7 +198,7 @@ def convertName(name):
   if isinstance(name, list):
     nameList = name
   else:
-    nameList = [name]
+    nameList = name.split('.') 
   #if option.compiler_type == 'gcc':
   return convertName_for_gcc(nameList)
   #elif option.compiler_type == 'msvc':
@@ -283,7 +283,12 @@ def encode_for_gcc(name, args):
     if args != None:
       for item in args:
         #_type = args[item]
-        _type = item.type
+        _type = None
+        print item
+        if isinstance(item, ASTType):
+          _type = item
+        else:
+          _type = item.type
         typename = convertType(_type)
         mangling.append(typename)
 

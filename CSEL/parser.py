@@ -178,7 +178,7 @@ class Parser:
 
   def searchSymbol(self, symbol):
     for elem in reversed(self.stackSymbolList):
-      realname = elem.search(symbol)
+      realname = elem.getRealname(symbol)
       if realname: return realname
 
     return None
