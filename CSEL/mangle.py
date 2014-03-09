@@ -73,6 +73,15 @@ enm = {      '_': 'v',
           'auto': 'Da',
 'std::nullptr_t': 'Dn'}
 
+longToShort = {
+  "System.lang.Char": 'char',
+  "System.lang.Short": 'short',
+  "System.lang.Integer": 'int',
+  "System.lang.Long": 'long',
+  "System.lang.Float": 'float',
+  'System.lang.Double': 'double'
+}
+
 operatorTransTbl = {
   "new": "nw",
   "new[]": "na",
@@ -139,32 +148,23 @@ def validNamespaceName(name):
 
   return False
 
+def convertPathToNative(name, options = None):
+    # name의 유효성 검사 
+    if not re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*(_|[a-zA-Z])[a-zA-Z0-9_]*$', name):
+        return None
+    
 def convertNamespace_for_gcc(name, options):
+  if not re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*((_|[a-zA-Z])[a-zA-Z0-9_]*|[~`!@#\$%\^\&\*\(\)\-_\+=\{\}\[\]\|\\:;"\'<>,\.\?\/]*)$', name):
+    return None
+
   nameList = name.split('.')
 
-  # 마지막을 제외하고는 alphabet과 numeric과 _만 사용해야한다.
-  # 중간에 그러한 규칙을 어기는게 있는지 검사한다.
-  # 이걸 체크하는 이유는 using때문에...
-  ind = 0
-  while ind < len(nameList):
-    if validNamespaceName(nameList[ind]) == False:
-      break
+  op = nameList[-1]
     
-    ind += 1
-
-  # ind는 항상 0부터 시작하므로...
-  if ind < len(nameList) - 1:
-    print "violation of namespace"
-    sys.exit(-1)
-
   # 마지막이 operator일 경우
-  if ind == len(nameList) - 1:
-    if options != None and (options['cast'] or options['sizeof'] or options['alignof']):
-      print "violation of namespace"
-      sys.exit(-1)
-
-    op = nameList[-1]
+  if operatorTransTbl.has_key(op):
     opName = operatorTransTbl[op]
+
     if options != None and options['unary']:
       if op == '+':
         opName = 'ps'
@@ -174,18 +174,10 @@ def convertNamespace_for_gcc(name, options):
         opName = 'ad'
       elif op == '*':
         opName = 'de'
+  elif re.match(r'^[~`!@#\$%\^\&\*\(\)\-_\+=\{\}\[\]\|\\:;"\'<>,\.\?\/]', op):
+    raise Exception('Need to implement', op)
 
     return "".join(map(lambda x: "".join([str(len(x)), x]), nameList[:-2])) + opName 
-
-  if ind == len(nameList) and options != None:
-    if options['cast']:
-      return "".join(["cv<"] + map(lambda x: "".join([str(len(x)), x]), nameList) + [">"])
-    elif options['sizeof']:
-      # how?
-      return ""
-    elif options['alignof']:
-      # how?
-      return ""
 
   return "".join(map(lambda x: "".join([str(len(x)), x]), nameList))
 
@@ -202,8 +194,13 @@ def convertName_for_gcc(name):
     return "".join(["__ZN"] + map(lambda x: "".join([str(len(x)), x]), name) + ['E'])
 
 def convertName(name):
+  nameList = None
+  if isinstance(name, list):
+    nameList = name
+  else:
+    nameList = [name]
   #if option.compiler_type == 'gcc':
-  return convertName_for_gcc(name)
+  return convertName_for_gcc(nameList)
   #elif option.compiler_type == 'msvc':
   # return convertName_for_msvc(tree)
   #else:
@@ -223,15 +220,25 @@ def convertType_for_gcc(type):
     if len(type.ranks) != 0:
       result = ["P"] * len(type.ranks)
 
-  cnt = len(type.name.array)
+  array = None
+  if isinstance(type.name, list):
+    array = type.name
+  else:
+    array = type.name.split('.')
+    
+  pathStr = ".".join(array)
+  if longToShort.has_key(pathStr):
+    array = [longToShort[pathStr]]
+  
+  cnt = len(array)
   if cnt == 1:
-    name = type.name.array[0]
+    name = array[0]
     if not enm.has_key(name):
-      result += __converting(type.name.array)
+      result += [__converting(array)]
     else:
       result += [enm[name]]
   else:
-    result += ["N"] + __converting(type.name.array)
+    result += ["N" +  __converting(array)]
 
   if type.templ != None:
     result += ["I"]
@@ -273,23 +280,25 @@ def encode_for_gcc(name, args):
     _name = convertName(name)
     mangling.append(_name)
 
-    for item in args:
-      _type = args[item]
-      typename = convertType(_type)
-      mangling.append(typename)
+    if args != None:
+      for item in args:
+        #_type = args[item]
+        _type = item.type
+        typename = convertType(_type)
+        mangling.append(typename)
 
     return "".join(mangling)
   elif isinstance(tree, ASTVar) or isinstance(tree, ASTVal):
     cnt = len(tree.name.array)
     if cnt == 1:
-      return "_"+tree.name.array[0]
+      return "_" + tree.name.array[0]
     else:
       name = convertName(tree.name.array)
       mangling.append("".join(["__ZN"]+name+["E"]))
      
     return "".join(mangling)
     
-def encodeSymbolName(name, args, ends):
+def encodeSymbolName(name, args = None, ends = None):
   #if option.compiler_type == 'gcc':
   return encode_for_gcc(name, args)
   #elif option.compiler_type == 'msvc':

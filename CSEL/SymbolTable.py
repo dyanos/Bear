@@ -1,242 +1,108 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os, sys, string
 from mangle import *
+from ASTType import *
 
-class NamespaceSymbol:
-  def __init__(self, name):
-    self.name = name
-    self.child = {}
+class SymbolType(object):
+    def __init__(self, name):
+        self.name = name
+        
+class NamespaceSymbol(SymbolType):
+    def __init__(self):
+        super(NamespaceSymbol, self).__init__("namespace")
+        
+class ClassSymbol(SymbolType):
+    def __init__(self):
+        super(ClassSymbol, self).__init__("class")
+        
+class FunctionSymbol(SymbolType):
+    def __init__(self, args, retType, body):
+        super(FunctionSymbol, self).__init__("function")
+        self.args = args
+        self.retType = retType
+        self.body = body
+        
+class VariableSymbol(SymbolType):
+    def __init__(self, type):
+        super(VariableSymbol, self).__init__("variable")
+        self.type = type
 
-class ClassSymbol:
-  def __init__(self, fname, name):
-    self.fname = fname
-    self.name = name
-    # 이건 아직 미결정
-    self.methods = {}
-    self.properties = {}
-
-class StructSymbol:
-  def __init__(self, fname, name):
-    self.fname = fname
-    self.name = name
-    # 이건 아직 미결정
-    self.methods = {}
-    self.properties = {}
-
-class FunctionSymbol:
-  def __init__(self, fname, name, args, rettype, body):
-    self.fname = fname
-    self.name = name
-    self.args = args
-    self.rettype = rettype
-    self.body = body
-
-class AliasSymbol:
-  def __init__(self, fname, sname):
-    self.shortName = sname
-    self.name = fname
-
-class VariableSymbol:
-  def __init__(self, typeStr):
-    self.type = typeStr
-
-class TemplateFunctionSymbol:
-  def __init__(self, templateargs, fname, name, args, rettype, body):
-    self.templateargs = templateargs
-    self.fname = fname
-    self.name = name
-    self.args = args
-    self.rettype = rettype
-    self.body = body
-
-class TemplateArgumentSymbol:
-  def __init__(self, name):
-    self.name = name
-
+class ValueSymbol(SymbolType):
+    def __init__(self, type):
+        super(ValueSymbol, self).__init__("value")
+        self.type = type
+        
 class SymbolTable:
-  def __init__(self):
-    self.symbolTable = {}
-    self.reverseSymbolTable = {}
-
-    self.registerSymbol(pathStr = "System", typeStr = "namespace")
-    self.registerSymbol(pathStr = "System.lang", typeStr = "namespace")
-
-    namespaceObject = "System.lang.Object"
-    namespaceByte = "System.lang.Byte"
-    namespaceChar = "System.lang.Char"
-    namespaceShort = "System.lang.Short"
-    namespaceInt = "System.lang.Integer"
-    namespaceLong = "System.lang.Long"
-    namespaceFloat = "System.lang.Float"
-    namespaceDouble = "System.lang.Double"
-    namespaceString = "System.lang.String"
-
-    # System.lang.Object
-    self.registerSymbol(pathStr = namespaceObject, typeStr = "class")
-
-    self.registerSymbol(pathStr = namespaceByte, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceChar, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceShort, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceInt, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceLong, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceFloat, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceDouble, typeStr = "class")
-    self.registerSymbol(pathStr = namespaceString, typeStr = "class")
-
-    self.registerAliasSymbol("object", namespaceObject)
-    self.registerAliasSymbol("byte", namespaceByte)
-    self.registerAliasSymbol("short", namespaceShort)
-    self.registerAliasSymbol("int", namespaceInt)
-    self.registerAliasSymbol("float", namespaceFloat)
-    self.registerAliasSymbol("double", namespaceDouble)
-    self.registerAliasSymbol("string", namespaceString)
-
-  def getLastName(self, pathStrList):
-    if len(pathStrList) == 1:
-      return pathStrList[0]
-
-    return pathStrList[-1]
-
-  # pathStr은 항상 full namespace로 들어와야한다.
-  def registerSymbol(self, pathStr, typeStr):
-    last = self.getLastName(pathStr.split('.'))
-
-    sym = None
-    if typeStr == "namespace":
-      sym = NamespaceSymbol(pathStr)
-    elif typeStr == "class":
-      sym = ClassSymbol(pathStr, last)
-    #elif typeStr == "function":
-    #  return FunctionSymbol(nameStr)
-    #elif typeStr == "property" or typeStr == "variable":
-    #  return VariableSymbol(nameStr)
-    #elif typeStr == "enumerate":
-    #  return EnumerateSymbol(nameStr)
-    elif typeStr == "struct":
-      return StructSymbol(pathStr, last)
-    #elif typeStr == "template":
-    #  return TemplateSymbol(nameStr)
-    #elif typeStr == "object":
-    #  return ObjectSymbol(nameStr)
-    #elif typeStr == "trait":
-    #  return TraitSymbol(nameStr)
-
-    ret = self.registerSomething(pathStr, sym)
-    if ret == None:
-      return False
-
-    return True
-
-  def registerVariable(self, name, type):
-    if self.has_key(name):
-      return False
-
-    self.symbolTable[name] = VariableSymbol(type)
-    return True
-
-  def registerFunction(self, fname, args, rettype, body):
-    if self.has_key(fname):
-      return False
-
-    # TODO : fname 채워넣어야함
-    last = self.getLastName(fname.split('.'))
-    self.registerSomething(fname, FunctionSymbol(fname = fname, name = last, args = args, rettype = rettype, body = body))
-
-  def registerTemplateArgument(self, name, type):
-    if self.has_key(name):
-      return False
-
-    self.symbolTable[name] = TemplateArgumentSymbol(name)
-    return True
-
-  def registerTemplateFunction(self, templateargs, fname, args, rettype, body):
-    if self.has_key(fname):
-      return False
-
-    # TODO : fname 채워넣어야함
-    last = self.getLastName(fname.split('.'))
-    self.registerSomething(fname, TemplateFunctionSymbol(templateargs = templateargs, fname = fname, name = last, args = args, rettype = rettype, body = body))
-
-  def registerAliasSymbol(self, shortName, pathStr):
-    sym = self.reverseSymbolTable
-    if not sym.has_key(shortName):
-      sym[shortName] = AliasSymbol(pathStr, shortName)
-      return True
-
-    return True
-
-  # symbol table에 등록하는 방법
-  # 만약 System.lang.Integer를 등록하고 싶으면,
-  # 등록 순서는
-  # 1. System
-  # 2. lang
-  # 3. Integer
-  # 로 되어야 한다.
-  def registerSomething(self, pathStr, body):
-    if self.reverseSymbolTable.has_key(pathStr):
-      alias = self.reverseSymbolTable[pathStr]
-      if isinstance(alias, AliasSymbol):
-        pathStr = alias.name
-
-    seps = pathStr.split('.')
-
-    last = self.getLastName(seps)
-    fronts = seps[:-1]
-
-    sym = self.symbolTable
-    for name in fronts:
-      if sym.has_key(name):
-        sym = sym[name].child
-      else:
-        return None
-
-    if not sym.has_key(last):
-      if body == None:
-        return None
-
-      sym[last] = body
-
-    return sym[last]
-
-  def findLoc(self, pathStr):
-    return self.registerSomething(pathStr, None)
-
-  def has_key(self, name):
-    sym = self.findLoc(name)
-    if sym == None: 
-      return False
-
-    return True
-
-  def __getitem__(self, pathStr):
-    return self.findLoc(pathStr)
-
-  def printStr(self, doc):
-    if isinstance(doc, NamespaceSymbol):
-      for keyStr in doc.child:
-        print "%s" % (keyStr)
-        self.printStr(doc.child[keyStr])
-    elif isinstance(doc, ClassSymbol):
-      for keyStr in doc.methods:
-        print "%s" % (keyStr)
-      for keyStr in doc.properties:
-        print "%s" % (keyStr)
-
-  def printDoc(self):
-    print "Symbol)"
+    def __init__(self):
+        self.symbolTable = {}   # 무조건 Native형태로...
+        self.aliasSymbolTable = {}
+        
+    # path는 "System.lang...."라는 식으로 들어와야 한다.
+    def registerNamespace(self, path):
+        symbol = encodeSymbolName(path)
+        
+        if self.symbolTable.has_key(symbol):
+            return None
+        
+        self.symbolTable[symbol] = NamespaceSymbol()
+        return self.symbolTable[symbol]
     
-    for keyStr in self.symbolTable:
-      print "keyStr : %s" % (keyStr)
-      self.printStr(self.symbolTable[keyStr])
+    def registerClass(self, path):
+        symbol = encodeSymbolName(path)
+        
+        if self.symbolTable.has_key(symbol):
+            return None
+        
+        self.symbolTable[symbol] = ClassSymbol()
+        return self.symbolTable[symbol]
+        
+    def registerFunction(self, path, args = None, retType = None, body = None):
+        symbol = encodeSymbolName(path, args)
+        
+        if self.symbolTable.has_key(symbol):
+            return None
+        
+        # body가 null이면 native function으로 취급한다.
+        self.symbolTable[symbol] = FunctionSymbol(args, retType, body)
+        return self.symbolTable[symbol]
+        
+    def registerAliasSymbol(self, shortName, longName):
+        self.aliasSymbolTable[shortName] = longName
+        return self.aliasSymbolTable[shortName]
 
-  def getRealName(self, name):
-    if self.reverseSymbolTable.has_key(name):
-      alias = self.reverseSymbolTable[name]
-      if isinstance(alias, AliasSymbol):
-        return alias.name
+    def registerVariable(self, name, type):
+        if self.symbolTable.has_key(name):
+            return None
+        
+        self.symbolTable[name] = VariableSymbol(type)
+        return self.symbolTable[name]
+    
+    def search(self, path):
+        _path = path
+        if self.aliasSymbolTable.has_key(_path):
+            _path = self.aliasSymbolTable[_path]
+        
+        if self.symbolTable.has_key(_path):
+            return _path
+        elif self.symbolTable.has_key(encodeSymbolName(_path)):
+            return _path
+        
+        return None
 
-    return name
-
-  def genSymbolStringWithTemplate(self, base, templ):
-    raise Exception("genSymbolStringWithTemplate", "Not implemented")
+    def searchNative(self, path):
+        if self.symbolTable.has_key(path):
+            return path
+        
+        return None
+        
+    def __getitem__(self, k):
+        if self.symbolTable.has_key(k):
+            return self.symbolTable[k]
+        
+        return None
+    
+    def __setitem__(self, k, v):
+        self.symbolTable[k] = v
+        
+    def has_key(self, k):
+        return self.symbolTable.has_key(k)
