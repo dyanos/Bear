@@ -300,9 +300,9 @@ class Translate:
                 # iterator는 어떻게 쓰는지 몰라서 다른 언어에서의 사용법을 먼저 확인하고 코딩해야한다.
                 # 일단 지금은 물어본다.
                 # 나중에 함수 하나로 어떻게 안될까낭?? (가장 nice한 방법은 python처럼 yield keyword가 있는 구조라고 생각된다.)
-                funcname = ret.type + '.' + 'end'
+                nativeName = encodeSymbolName(name = 'System.lang.Array.end', args = [ret.type])
                 context.emitPush(self.machine.getRetReg())
-                context.emitCall(funcname, [ret.reg], ret = True)
+                context.emitCall(nativeName, [ret.reg], ret = True)
 
                 # return이 1이면, end로 가야한다.
                 context.emitComp(self.machine.getRetReg(), self.machine.IInteger(1))
@@ -313,8 +313,8 @@ class Translate:
 
                 # 보통 오른쪽에 있는 것은 iterator가 가능한 object가 됨
                 context.emitPush(self.machine.getRetReg())
-                funcname = ret.type + '.' + 'getNext'
-                context.emitCall(funcname, [ret.reg], ret = True)
+                nativeName = encodeSymbolName(name = 'System.lang.Array.getNext', args = [ret.type])
+                context.emitCall(nativeName, [ret.reg], ret = True)
 
                 left = self.procSimpleExpr(cond.left)
                 context.emitMove(self.machine.getRetReg(), left.reg)
@@ -334,6 +334,7 @@ class Translate:
         result = None
         for expr in tree.exprs:
             result = self.procSimpleExpr(expr)
+        # 마지막에 걸리는 type을 가준으로 한다.
         return result
 
     def procSimpleExpr(self, tree):
@@ -352,17 +353,20 @@ class Translate:
     def procListGeneratorType1(self, tree):
         left = self.procSimpleExpr(tree.start)
         right = self.procSimpleExpr(tree.end)
+        
+        nativeName = encodeSymbolName('System.lang.Array.toRange', args = [left.type, right.type])
+        print nativeName
 
         context = self.getLastContext()
         context.emitPush(self.machine.getRetReg())
         # template일 경우 어떻게 이름을 정해야 할지...
-        context.emitCall('System.lang.Array.toRange', [left.reg, right.reg], ret = True)
+        context.emitCall(nativeName, [left.reg, right.reg], ret = True)
 
         tmpReg = genTempRegister()
         context.emitMove(self.machine.getRetReg(), tmpReg)
         context.emitPop(self.machine.getRetReg())
 
-        return Value(type = 'System.lang.Array', reg = tmpReg)
+        return Value(type = ASTType(name = 'System.lang.Array', templ = None, ranks = None), reg = tmpReg)
 
     def isBasicType(self, type):
         if type == 'System.lang.Integer' \
@@ -372,10 +376,18 @@ class Translate:
 
         return False
 
-    def searchSymbol(self, name):
+    def getRealname(self, name):
+        print "Searching %s" % (name)
         for tbl in reversed(self.symbolTable):
-            if tbl.has_key(name):
-                return tbl[name]
+            realname = tbl.getRealname(name)
+            if realname: return realname
+
+        return None
+
+    def getSymbolInfo(self, native):
+        for elem in reversed(self.symbolTable):
+            if elem.has_key(native):
+                return elem[native]
 
         return None
 
@@ -456,8 +468,10 @@ class Translate:
             return Value(type = left.type, reg = tmpReg)
         else:
             opName = self.makeFName(left.type, tree.name)
+            nativeName = encodeSymbolName(opName, args = [left.right])
+            print nativeName 
             context.emitPush(self.machine.getRetReg())
-            context.emitCall(opName, [left.reg, right.reg], ret = True)
+            context.emitCall(nativeName, [left.reg, right.reg], ret = True)
             context.emitMove(self.machine.getRetReg(), tmpReg)
             context.emitPop(self.machine.getRetReg())
 
@@ -470,15 +484,20 @@ class Translate:
 
         context = self.getLastContext()
         if tree.isType('System.lang.String'):
-            return Value(type = 'System.lang.String', reg = self.machine.IString(tree.value))
+            return Value(type = ASTType(name = 'System.lang.String', templ = None, ranks = None), reg = self.machine.IString(tree.value))
         elif tree.isType('System.lang.Integer'):
-            return Value(type = 'System.lang.Integer', reg = self.machine.IInteger(tree.value))
+            return Value(type = ASTType(name = 'System.lang.Integer', templ = None, ranks = None), reg = self.machine.IInteger(tree.value))
         elif tree.isType('System.lang.Double'):
-            return Value(type = 'System.lang.Double', reg = self.machine.IDouble(tree.value))
+            return Value(type = ASTType(name = 'System.lang.Double', templ = None, ranks = None), reg = self.machine.IDouble(tree.value))
         elif tree.isType('System.lang.Float'):
-            return Value(type = 'System.lang.Float', reg = self.machine.IFloat(tree.value))
+            return Value(type = ASTType(name = 'System.lang.Float', templ = None, ranks = None), reg = self.machine.IFloat(tree.value))
         elif tree.isType('id'):
-            valinfo = self.searchSymbol(tree.value)
+            valinfo = self.getRealname(tree.value)
+            valinfo = self.getSymbolInfo(valinfo)
+
+            if valinfo == None:
+                raise Exception('Error', 'Unknown type : %s' % (tree.value))
+
             return Value(type = valinfo.type, reg = self.machine.IUserReg(tree.value))
         else:
             print tree, type(tree)

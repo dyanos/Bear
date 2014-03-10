@@ -2,9 +2,10 @@
 from AST import *
 
 class ASTArgItem(AST):
-  def __init__(self, name, type):
+  def __init__(self, name, type, ranks = None):
     self.name = name
     self.type = type
+    self.ranks = ranks
 
   def printXML(self):
     print "<arg-item>\n"

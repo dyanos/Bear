@@ -47,8 +47,22 @@ from mangle import *
 
 import copy
 import random
+import re
 
 sourceSets = []
+
+def checkNamespaceGroup(name):
+    if re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*\*$', name):
+        return True
+    
+    return False
+
+def mangling(name, args, extern = False):
+    # name들은 무조건 C++기준으로, 단 extern이 있으면 C로 가정한다.
+    if extern == True:
+        return "_" + name
+    
+    return encodeSymbolName(name, args)
 
 class Parser:
   def __init__(self, fn):
@@ -60,11 +74,77 @@ class Parser:
     self.token.nextToken()
 
     # Root Symbol Table 등록
-    self.stackSymbolList = [SymbolTable()]
+    symtbl = self.initSymbolTable()
+    self.stackSymbolList = [symtbl]
+    # function이나 class앞의 template이나 attribute같은 것들의 정보를 가지고 있는...
+    self.directive = []
+    
     # 아무것도 없으면 Root임
-    self.depthNamespaceString = []
+    self.pathList = []
 
     self.mustcompile = []
+
+  def initSymbolTable(self):
+    symtbl = SymbolTable()
+    
+    symtbl.registerNamespace(path = "System")
+    symtbl.registerNamespace(path = "System.lang")
+
+    namespaceObject = "System.lang.Object"
+    namespaceByte = "System.lang.Byte"
+    namespaceChar = "System.lang.Char"
+    namespaceShort = "System.lang.Short"
+    namespaceInt = "System.lang.Integer"
+    namespaceLong = "System.lang.Long"
+    namespaceFloat = "System.lang.Float"
+    namespaceDouble = "System.lang.Double"
+    namespaceString = "System.lang.String"
+    namespaceBoolean = "System.lang.Boolean"
+    namespaceArray = "System.lang.Array"
+
+    # System.lang.Object
+    symtbl.registerClass(path = namespaceObject)
+
+    symtbl.registerClass(path = namespaceByte)
+    symtbl.registerClass(path = namespaceChar)
+    symtbl.registerClass(path = namespaceShort)
+    symtbl.registerClass(path = namespaceInt)
+    symtbl.registerClass(path = namespaceLong)
+    symtbl.registerClass(path = namespaceFloat)
+    symtbl.registerClass(path = namespaceDouble)
+    symtbl.registerClass(path = namespaceString)
+    symtbl.registerClass(path = namespaceBoolean)
+    symtbl.registerClass(path = namespaceArray)
+    symtbl.registerFunction(
+        path = "System.lang.Array.length", 
+        args = None, 
+        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None), 
+        body = None)
+    symtbl.registerFunction(
+        path = "System.lang.Array.toRange", 
+        args = None, 
+        retType = ASTType(name="System.lang.Array", templ = None, ranks = None), 
+        body = None)
+    symtbl.registerFunction(
+        path = "System.lang.Array.getNext",
+        args = None, 
+        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None), 
+        body = None)
+    symtbl.registerFunction(
+        path = "System.lang.Array.end",
+        args = None, 
+        retType = ASTType(name="System.lang.Boolean", templ = None, ranks = None), 
+        body = None)
+    symtbl.registerAliasSymbol("object", namespaceObject)
+    symtbl.registerAliasSymbol("byte", namespaceByte)
+    symtbl.registerAliasSymbol("short", namespaceShort)
+    symtbl.registerAliasSymbol("int", namespaceInt)
+    symtbl.registerAliasSymbol("float", namespaceFloat)
+    symtbl.registerAliasSymbol("double", namespaceDouble)
+    symtbl.registerAliasSymbol("string", namespaceString)
+    symtbl.registerAliasSymbol('bool', namespaceBoolean)
+    
+    return symtbl
 
   def nextToken(self):
     self.token.nextToken()
@@ -98,11 +178,18 @@ class Parser:
 
   def searchSymbol(self, symbol):
     for elem in reversed(self.stackSymbolList):
-      if elem.has_key(symbol):
-        return elem[symbol]
+      realname = elem.getRealname(symbol)
+      if realname: return realname
 
-    return False
+    return None
 
+  def searchNativeSymbol(self, native):
+    for elem in reversed(self.stackSymbolList):
+      if elem.has_key(native):
+        return elem[native]
+
+    return None
+      
   # list에 따로 들어있는 각각의 namespace, class, function, template, struct, property등을 하나로 합칩니다.
   def flattenSymbolList(self):
     root = self.getRootSymbolTable()
@@ -116,21 +203,74 @@ class Parser:
       tree = None
       
       if self.same('namespace'):
-        raise Exception("parse", "namespace")
+        self.parseNamespace()
       elif self.same('class'):
+        self.parseClass()
         raise Exception("parse", "class")
       elif self.same('template'):
         result = self.parseTemplate()
+        self.directive.append(result)
+      elif self.same('@'):
+        result = self.parseAttribute()
+        self.directive.append(result)
       elif self.same('def'):
         self.parseDef()
       elif self.same('native'):
         # 예는 push로..
-        self.directive.append(value)
+        self.directive.append('native')
         pass
       else:
         break
 
     self.flattenSymbolList()
+   
+  def parseNamespace(self):
+    if not self.match('namespace'):
+      return 
+
+    path = self.getNames()
+    for name in path.split('.'):
+      self.pathList.append(name)
+
+    if self.match(';'):
+      return
+
+    self.parseNamespaceBody()
+
+  def parseNamespaceBody(self):
+    if not self.match('{'):
+      return
+
+    self.parse()
+
+    self.match('}')
+
+  def parseClass(self):
+    if not self.match('class'):
+      return 
+
+    classname = self.makeFullPath(self.getNames())
+
+    if self.match(';'):
+      root = self.getRecentSymbolTable()
+      root.registerSymbol(pathStr = classname, typeStr = "class")
+      return 
+
+    body = self.parseClassBody()
+
+  def parseClassBody(self):
+    if not self.match('{'):
+      return
+
+    # blahblah....
+
+    self.match('}')
+    
+  def parseAttribute(self):
+    if not self.match('@'):
+      return 
+  
+    pass
 
   def parseTemplate(self):
     if not self.match('template'):
@@ -194,11 +334,11 @@ class Parser:
   # def variableName:variableType;
   # def variableName = <initial expr>;  // 이거랑 
   # def variableName:variableType = <initial expr>; // 이거는 함수취급
-  def combineNamespace(self, fn):
-    if len(self.depthNamespaceString) == 0:
+  def makeFullPath(self, fn):
+    if len(self.pathList) == 0:
       return fn
 
-    return ".".join(self.depthNamespaceString + [fn])
+    return ".".join(self.pathList + [fn])
 
   def parseDefBody(self):
     body = None
@@ -216,7 +356,7 @@ class Parser:
       return None
 
     # 이름을 얻습니다.
-    fn = self.combineNamespace(self.getNames())
+    fn = self.makeFullPath(self.getNames())
     #print "Function name : %s" % (fn)
 
     # 함수용 symbol table을 만듭니다.
@@ -231,11 +371,15 @@ class Parser:
       typeTree = elem.type
       #print "symbol = %s" % (typeTree.name)
       if self.searchSymbol(typeTree.name):
-        localSymTbl.registerVariable(elem.name, typeTree.name)
+        localSymTbl.registerVariable(elem.name, typeTree)
       else:
         print "Not found symbol"
         sys.exit(-1)
 
+    nativeSymbol = mangling(fn, args)
+    if parentSymTbl.searchNative(nativeSymbol):
+      print "Error: Duplicated Name"
+      sys.exit(-1)
     #localSymTbl.printDoc()
 
     rettype = self.parseReturnType()
@@ -261,9 +405,9 @@ class Parser:
 
     # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
     # 일단 지금은 영향을 받지 않는다고 가정한다.
-    parentSymTbl.registerFunction(fname = fn, args = args, rettype = rettype, body = body)
+    parentSymTbl.registerFunction(path = fn, args = args, retType = rettype, body = body)
 
-    self.mustcompile.append(parentSymTbl[fn])
+    self.mustcompile.append(parentSymTbl[nativeSymbol])
 
   def parseFuncArgumentList(self):
     if not self.match('('):
@@ -290,9 +434,9 @@ class Parser:
   def parseArgument(self):
     name = self.getName()
     if name == None: return None
-    if not self.match(':'): 
-      return ASTArgItem(name = name, type = "System.lang.Integer")
-    typeStr = self.parseType()
+    typeStr = "System.lang.Integer"
+    if self.match(':'): 
+      typeStr = self.parseType()
     # if typeStr == None: makeError
     return ASTArgItem(name = name, type = typeStr)
 
@@ -321,23 +465,16 @@ class Parser:
     idStr = self.getNames()
 
     # 해당 type이 존재하는지 검사합니다.
-    result = self.searchSymbol(idStr)
-    if result == None:
-      print "unknown type : %s" % (idStr)
-      return None
+    whole = self.searchSymbol(idStr)
+    if not whole:
+      print "Unknown Type : %s" % (idStr)
+      sys.exit(-1)
 
-    #print "result : ", result
-    if isinstance(result, AliasSymbol):
-      idStr = result.name
-      result = self.searchSymbol(idStr)
-    else:
-      idStr = result.fname # 무조건 full name을 얻는다.
-
-    tmpl = self.parseTemplatePart()
-    if not self.matchTemplateInfo(result, tmpl):
-      # 일단 현재는 pass
-      print "Error) Not matched template information"
-      pass
+    #tmpl = self.parseTemplatePart()
+    #if not self.matchTemplateInfo(result, tmpl):
+    #  # 일단 현재는 pass
+    #  print "Error) Not matched template information"
+    #  pass
 
     #print "type's full name = %s" % (idStr)
 
@@ -350,7 +487,6 @@ class Parser:
     #  names.array = ename
 
     #rank  = self.parseRankList()
-    whole = idStr
     return ASTType(name = whole, templ = None, ranks = None)
 
   def parseExprs(self):
