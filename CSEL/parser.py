@@ -64,6 +64,12 @@ def mangling(name, args, extern = False):
     
     return encodeSymbolName(name, args)
 
+# <- 키워드에 대한 정의 (이건 library에서 하면될듯)
+# 위 operator는 async한 assign이다.
+# = 은 sync한 assign을 의미한다. 
+# thread환경이 아니라면 '<-'은 '='과 동일하게 동작하지만
+# thread환경일 경우는 '<-'은 synchronized한 동작을 한다(thread-safe)
+# 하지만 '='은 no-thread-safe하게 동작한다. (2013.03.12)
 class Parser:
   def __init__(self, fn):
     self.isdebug = True

@@ -414,11 +414,6 @@ def calculateInterferenceGraph2(lst, outLive, args):
 
     #print "calculateInterferenceGraph"
 
-    if len(args) <= len(parameterList):
-        args = parameterList[0:len(args)]
-    else:
-        args = parameterList
-
     graph, loc = {}, 0
 
     #if len(args) >= 2:
@@ -531,7 +526,7 @@ def calculateInterferenceGraph2(lst, outLive, args):
     #pp.pprint(graph)
     return graph
 
-def newRegisterAssignAlogrithm(lst, args):
+def newRegisterAssignAlgorithm(lst, args):
     parameterList = ['rcx', 'rdx', 'r8', 'r9']
     parameterListForFloating = ['xmm0', 'xmm1', 'xmm2', 'xmm3']
 
@@ -836,7 +831,7 @@ def mapcolour(lst, args = []):
     #for op in lst: print op
     #print "="*80
     #G = calculateInterferenceGraph(lst, args)
-    G, def1, def2, use1, use2 = newRegisterAssignAlogrithm(lst, args)
+    G, def1, def2, use1, use2 = newRegisterAssignAlgorithm(lst, args)
 
     print "G=",G
     #print newColoringAlgorithm(G)
@@ -962,8 +957,8 @@ def mapcolour(lst, args = []):
     return assignedColor, spilling
 
 def allocateRegister(lst, args):
-    #print "called newRegisterAssignAlogrithm"
-    #newRegisterAssignAlogrithm(lst, args)
+    #print "called newRegisterAssignAlgorithm"
+    #newRegisterAssignAlgorithm(lst, args)
 
     ret, spilling = mapcolour(lst, args)
     keys = ret.keys()

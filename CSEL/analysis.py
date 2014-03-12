@@ -42,6 +42,14 @@ class Context:
         self.narguments += 8
 
         return self.arguments[name]
+    
+    def convertArgumentToReg(self, pos):
+        # argument로 사용되는 register들 
+        argreg = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
+        if pos < len(argreg):
+            return argreg[pos]
+        
+        return None
 
     def registerLoc(self, name, loc):
         if not self.undef.has_key(name):
@@ -220,11 +228,13 @@ class Translate:
         # 일단 함수 인자들을 machine stack에 밀어넣는다.
         context = self.getLastContext()
 
-        for arg in args:
+        # 여기서 system dependent한 메모리 레지스터를 사용하는 것은 좋아보이지 않는다.
+        # Intel.py로 코드를 이동시켜야할듯.(2013/03/12)
+        for pos, arg in enumerate(args):
             memReg = context.setArgVar(arg)
-            opcode = context.machine.OpMove(IUserReg(arg), memReg)
+            opcode = context.machine.OpMove(context.convertArgumentToReg(pos), memReg)
             context.context.append(opcode)
-            print "mov %s, %s" % (str(memReg), arg)
+            print "mov %s, %s" % (str(memReg), context.convertArgumentToReg(pos))
 
             # we will suppose that alignment's size is 8 bytes.
             context.increaseReservedStackSize()
