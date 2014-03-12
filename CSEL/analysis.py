@@ -6,6 +6,7 @@ from SymbolTable import *
 from mangle import *
 from context import *
 from Operand import *
+from graph import *
 import Intel
 
 Seperator = '$'
@@ -161,6 +162,13 @@ class Context:
         pass
 
     def getRegisterAllocation(self, args):
+        g = graph(directional = True)
+        for operand in self.context:
+            if isinstance(operand, self.machine.OpMove):
+                g.addEdge(str(operand.src), str(operand.dst))
+                
+        # to analysis
+            
         self.machine.allocateRegister(self.context, args)
 
     # register 재배치 알고리즘을 돌린 결과
