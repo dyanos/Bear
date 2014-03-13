@@ -39,6 +39,7 @@ class Context:
                 self.registerLoc(elem.name, loc)
 
     def setArgVar(self, name):
+        # 함수 인자들의 갯수가 compiler에서 정한 것보다 더 많다면, arguments에는 그것들과 관련된 메모리 레지스터가 삽입되어야 한다.
         self.arguments[name] = IMem(base=IReg('rbp'), imm=self.narguments)
         self.narguments += 8
 
@@ -49,7 +50,7 @@ class Context:
         argreg = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
         if pos < len(argreg):
             return argreg[pos]
-        
+
         return None
 
     def registerLoc(self, name, loc):
@@ -162,10 +163,10 @@ class Context:
         pass
 
     def getRegisterAllocation(self, args):
-        g = graph(directional = True)
-        for operand in self.context:
-            if isinstance(operand, self.machine.OpMove):
-                g.addEdge(str(operand.src), str(operand.dst))
+#         g = graph(directional = True)
+#         for operand in self.context:
+#             if isinstance(operand, self.machine.OpMove):
+#                 g.addEdge(operand.src, operand.dst)
                 
         # to analysis
             

@@ -41,6 +41,7 @@ from ASTWrap import *
 
 import re
 
+# ms compiler용 mangling 함수 작성 필요 
 enm = {      '_': 'v',
        'wchar_t': 'w',
           'bool': 'b',
