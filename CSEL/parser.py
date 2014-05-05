@@ -41,6 +41,8 @@ from ASTFalse import *
 from ASTReturn import *
 from ASTWrap import *
 from ASTUnary import *
+from ASTTemplateArg import *
+from ASTListValue import *
 from SymbolTable import *
 from IR import *
 from mangle import *
@@ -635,6 +637,7 @@ class Parser:
           elif isinstance(right, ASTIndexing):
             tree = ASTIndexing(ASTNames(tree.array + [right.name.value]), right.history)
         else:
+          tok = self.token.tok
           tree = ASTOperator(ASTWord(tok.type, tok.value), tree, right)
       # array
       elif self.sameType('id'):
@@ -703,7 +706,7 @@ class Parser:
       #  "type": typename, 
       #  "body": ret.body}
 
-      return ret
+      #return ret
     elif self.matchType('id'): 
       if self.same('['):
         history = []

@@ -377,14 +377,15 @@ def mapcolour(lst, args = []):
 
     #print "G=",G
 
-    registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
+    #registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
     #colors = registerList[::-1]
-    colors = ['rax','rbx','rcx','rdx'] 
+    registerList = ['rax','rbx','rcx','rdx'] 
     symbols = G.keys()
+    nsymbols = len(symbols)
 
     # To make a adjacency matrix to represent the interference graph
     assignedColor = {}
-    colored = [False for i in range(0, len(symbols))]
+    colored = [False for i in range(0, nsymbols)]
     colored2 = {}
     
     for pos, symbol in enumerate(symbols):
@@ -404,7 +405,6 @@ def mapcolour(lst, args = []):
     spilling = {}
     
     # using heuristic algorithm
-    nsymbols = len(symbols)
     allvars  = filter(lambda x: not colored2.has_key(x), symbols) # except pre-assigned registers
     while True:
         def SD(G, x, colored):
@@ -428,17 +428,23 @@ def mapcolour(lst, args = []):
         # to find the list of non-assigned registers
         availColorList = list(set(registerList) - set(precolored))
         # if no available register, spill out
+        #print "availColorList = ", availColorList
         if not availColorList or len(availColorList) == 0: # 가용 레지스터가 없을 경우
             # use회수가 가장 적은걸 spill하려고 하는데,
             # 이 symbol이 use회수가 가장 적은 symbol과 연결되어 있지 않다면, 의미가 없다.
             # 인접 register들을 찾는다.
             # To find no colored symbol of the other symbols connected 'symbol'
             # Don't worry when remains machine registers. because they can spill out.
-            outRegList = filter(lambda x: colored2.has_key(x), G[symbol])
+            outRegList = filter(lambda y: not y in registerList, 
+                                filter(lambda x: colored2.has_key(x), list(G[symbol]))
+                                )
             # We find symbol that number of 'use1' of precolored symbols is minimum.
             # and get length of 'use1' and sort
-            outRegList = map(lambda x: (len(use1[x]), x), outRegList).sort()
-
+            outRegList = map(lambda x: (len(use1[x]), x), outRegList)
+            outRegList.sort()
+            
+            #print outRegList
+            
             # 하나를 픽업한다.
             outReg = None
             for e, s in outRegList:
@@ -476,7 +482,7 @@ def mapcolour(lst, args = []):
     return assignedColor, spilling
 
 def allocateRegister(lst, args):
-    #print "called newRegisterAssignAlgorithm"
+    print "called newRegisterAssignAlgorithm"
     #newRegisterAssignAlgorithm(lst, args)
 
     ret, spilling = mapcolour(lst, args)
