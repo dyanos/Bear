@@ -118,8 +118,6 @@ def getRetReg(type = 'System.lang.Integer'):
     return IReg("rax")
 
 def generateInterferenceGraph(lst, outLive, args):
-    pp = pprint.PrettyPrinter(indent=2)
-
     liveList = outLive
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
     parameterListForFloating = [IReg('xmm0'), IReg('xmm1'), IReg('xmm2'), IReg('xmm3')]
@@ -228,7 +226,7 @@ def generateInterferenceGraph(lst, outLive, args):
     #pp.pprint(graph)
     return graph
 
-def newRegisterAssignAlgorithm(lst, args):
+def getInfoForRegAllocation(lst, args):
     parameterList = ['rcx', 'rdx', 'r8', 'r9']
     parameterListForFloating = ['xmm0', 'xmm1', 'xmm2', 'xmm3']
 
@@ -373,13 +371,11 @@ def newRegisterAssignAlgorithm(lst, args):
     return G, def1, def2, use1, use2
 
 def mapcolour(lst, args = []):
-    G, def1, def2, use1, use2 = newRegisterAssignAlgorithm(lst, args)
+    G, def1, def2, use1, use2 = getInfoForRegAllocation(lst, args)
 
-    #print "G=",G
+    registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
+    #registerList = ['rax','rbx','rcx','rdx'] # for test of spilling out
 
-    #registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
-    #colors = registerList[::-1]
-    registerList = ['rax','rbx','rcx','rdx'] 
     symbols = G.keys()
     nsymbols = len(symbols)
 
@@ -482,8 +478,8 @@ def mapcolour(lst, args = []):
     return assignedColor, spilling
 
 def allocateRegister(lst, args):
-    print "called newRegisterAssignAlgorithm"
-    #newRegisterAssignAlgorithm(lst, args)
+    print "called getInfoForRegAllocation"
+    #getInfoForRegAllocation(lst, args)
 
     ret, spilling = mapcolour(lst, args)
     keys = ret.keys()
