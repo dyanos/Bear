@@ -406,12 +406,13 @@ def doGraphColoring(lst, args = []):
         def SD(G, x, colored):
             return len(filter(lambda e: not colored2.has_key(e), G[x]))
 
+        # to find a node that the number of neighbor nodes is maximum
         allvars = filter(lambda x: not colored2.has_key(x), allvars)
         _, symbol = max(map(lambda x: (SD(G, x, colored), x), allvars))
         ind = symbols.index(symbol)
         
         # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
-        # to find available registers
+        # if symbol is already colored, mark it.
         precolored = []
         for s in G[symbol]:
             if not colored2.has_key(s):
