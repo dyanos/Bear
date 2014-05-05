@@ -383,14 +383,6 @@ def mapcolour(lst, args = []):
     symbols = G.keys()
 
     # To make a adjacency matrix to represent the interference graph
-    matrix = [[False for i in range(0, len(symbols))] for j in range(0, len(symbols))]
-    for pos, regname in enumerate(symbols):
-        neighbors = G[regname]
-        for elem in neighbors:
-            ind = symbols.index(elem)
-            matrix[pos][ind] = True
-            matrix[ind][pos] = True
-
     assignedColor = {}
     colored = [False for i in range(0, len(symbols))]
     colored2 = {}
@@ -425,13 +417,12 @@ def mapcolour(lst, args = []):
         # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
         # to find available registers
         precolored = []
-        for colpos, value in enumerate(matrix[ind]):
-            if value == False:
+        for s in G[symbol]:
+            if not colored2.has_key(s):
                 continue
-
-            sym = symbols[colpos]
-            if assignedColor.has_key(sym):
-                precolored.append(assignedColor[sym])
+            
+            if assignedColor.has_key(s):
+                precolored.append(assignedColor[s])
 
         # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
         # to find the list of non-assigned registers
