@@ -413,7 +413,7 @@ def mapcolour(lst, args = []):
     
     # using heuristic algorithm
     nsymbols = len(symbols)
-    allvars  = filter(lambda x: not colored2.has_key(x), G.keys()) # except pre-assigned registers
+    allvars  = filter(lambda x: not colored2.has_key(x), symbols) # except pre-assigned registers
     while True:
         def SD(G, x, colored):
             return len(filter(lambda e: not colored2.has_key(e), G[x]))
@@ -441,29 +441,26 @@ def mapcolour(lst, args = []):
             # use회수가 가장 적은걸 spill하려고 하는데,
             # 이 symbol이 use회수가 가장 적은 symbol과 연결되어 있지 않다면, 의미가 없다.
             # 인접 register들을 찾는다.
-            # we find symbol that number of 'use1' of precolored symbols is minimum.
+            # To find no colored symbol of the other symbols connected 'symbol'
+            # Don't worry when remains machine registers. because they can spill out.
+            outRegList = filter(lambda x: colored2.has_key(x), G[symbol])
+            # We find symbol that number of 'use1' of precolored symbols is minimum.
             # and get length of 'use1' and sort
-            outRegList = filter(lambda x: not colored2.has_key(x), G[symbol]) # To find no colored symbol of the other symbols connected 'symbol'
             outRegList = map(lambda x: (len(use1[x]), x), outRegList).sort()
-            # to remove that symbol is already register
-            outRegList = filter(lambda x: not x[1] in registerList, outRegList)
-            #print "**", outRegList
 
             # 하나를 픽업한다.
-            idx = 0
-            while not assignedColor.has_key(outRegList[idx][1]):
-                idx += 1
-    
-            outReg = outRegList[idx][1]
-            
+            outReg = None
+            for e, s in outRegList:
+                if not spilling.has_key(s):
+                    outReg = s
+                    break
+
+            if outReg == None:
+                raise Exception("Error", "Your algorithm is wrong")            
             #print "---", outReg 
 
             pos = symbols.index(outReg)
             
-            for i in range(len(matrix[pos])):
-                matrix[pos][i] = False
-                matrix[i][pos] = False
-
             tmp = assignedColor[outReg]
             del assignedColor[outReg]
             
