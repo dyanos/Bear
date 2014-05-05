@@ -170,7 +170,7 @@ class Context:
                 
         # to analysis
             
-        self.machine.allocateRegister(self.context, args)
+        self.machine.doRegisterAllocation(self.context, args)
 
     # register 재배치 알고리즘을 돌린 결과
     def reallocRegisters(self):

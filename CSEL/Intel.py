@@ -370,7 +370,7 @@ def getInfoForRegAllocation(lst, args):
 
     return G, def1, def2, use1, use2
 
-def mapcolour(lst, args = []):
+def doGraphColoring(lst, args = []):
     G, def1, def2, use1, use2 = getInfoForRegAllocation(lst, args)
 
     registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
@@ -477,11 +477,11 @@ def mapcolour(lst, args = []):
         
     return assignedColor, spilling
 
-def allocateRegister(lst, args):
-    print "called getInfoForRegAllocation"
+def doRegisterAllocation(lst, args):
+    print "called doRegisterAllocation"
     #getInfoForRegAllocation(lst, args)
 
-    ret, spilling = mapcolour(lst, args)
+    ret, spilling = doGraphColoring(lst, args)
     keys = ret.keys()
     skeys = spilling.keys()
     for operand in lst:
