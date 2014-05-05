@@ -117,293 +117,7 @@ def getRetReg(type = 'System.lang.Integer'):
     
     return IReg("rax")
 
-def analyzeLiveVariable(lst, args):
-    pp = pprint.PrettyPrinter(indent=2)
-
-    Lafter = [set([]) for i in range(0, len(lst) + 1)]
-    pos = len(lst)
-    while pos > 0:
-        operand = lst[pos - 1]
-
-        Lbefore, R, W = None, set([]), set([])
-        if isinstance(operand, OpMove):
-            if isRegister(operand.src):
-                R = set([operand.src])
-            W = set([operand.dst])
-        elif isinstance(operand, OpAdd) \
-            or isinstance(operand, OpSub) \
-            or isinstance(operand, OpMul) \
-            or isinstance(operand, OpDiv):
-            if isRegister(operand.src):
-                R = set([operand.src, operand.dst])
-            W = set([operand.dst])
-        elif isinstance(operand, OpComp):
-            reglist = []
-
-            if isRegister(operand.target1):
-                reglist.append(operand.target1)
-
-            if isRegister(operand.target2):
-                reglist.append(operand.target2)
-
-            R = set(reglist)
-            W = set([])
-        elif isinstance(operand, OpPush) \
-            or isinstance(operand, OpJump) \
-            or isinstance(operand, OpJumpZeroFlag):
-            if isRegister(operand.target):
-                R = set([operand.target])
-            W = set([])
-        elif isinstance(operand, OpPop):
-            R = set([])
-            W = set([operand.target])
-        elif isinstance(operand, OpCall):
-            readRegList = []
-            if isRegister(operand.target):
-                readRegList.append(operand.target)
-            for i in range(0, operand.numargs):
-                readRegList.append(IReg("arg%d" % (i)))
-            R = set(readRegList)
-            W = set([getRetReg()])
-
-        #print "Operand =", operand
-        #print "Pos = %d" % (pos)
-        #print "L_after[pos]=",map(lambda x: str(x), Lafter[pos])
-        #print "W=",map(lambda x: str(x), W)
-        #print "R=",map(lambda x: str(x), R)
-        #print "Result=",map(lambda x: str(x), (Lafter[pos] - W) | R)
-        if pos != 0:
-            #print "Operand =", operand
-            #print "L_after[pos]=",map(lambda x: str(x), Lafter[pos])
-            #print "W=",map(lambda x: str(x), W)
-            #print "R=",map(lambda x: str(x), R)
-            Lafter[pos-1] = (Lafter[pos] - W) | R
-            #print "L_after[pos-1]=",map(lambda x: str(x), Lafter[pos-1])
-        #else:
-            #print "pos == 0",
-            #print map(lambda x: str(x), (Lafter[pos] - W) | R)
-
-        pos -= 1
-
-    #pp.pprint(Lafter)
-    #for elm in Lafter:
-    #    print "=",map(lambda x: str(x), elm)
-
-    return Lafter
-
-def calculateInterferenceGraph(lst, args):
-    pp = pprint.PrettyPrinter(indent=2)
-
-    liveList = analyzeLiveVariable(lst, args)
-    parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
-    parameterListForFloating = [IReg('xmm0'), IReg('xmm1'), IReg('xmm2'), IReg('xmm3')]
-
-    #print len(lst), len(liveList)
-
-    #print "calculateInterferenceGraph"
-
-    if len(args) <= len(parameterList):
-        args = parameterList[0:len(args)]
-    else:
-        args = parameterList
-
-    graph, loc = {}, 1
-
-    if len(args) >= 2:
-        for argName in set(args):
-            for extra in set(args) - set([argName]):
-                if graph.has_key(argName):
-                    graph[argName] |= set([extra])
-                else:
-                    graph[argName] = set([extra])
-
-    for operand in lst:
-        #print operand
-        #print "loc=%d" % (loc)
-        #print "Operand=",operand
-        #print "liveList=",map(lambda x: str(x), liveList[loc])
-        if isinstance(operand, OpMove):
-            adjectList = []
-
-            if isRegister(operand.src):
-                adjectList.append(str(operand.src))
-
-            if liveList[loc] != None:
-                #print map(lambda x: str(x), liveList[loc])
-                for reg in liveList[loc]:
-                    if operand.dst == reg:
-                        continue
-
-                    adjectList.append(reg.name)
-
-            t = str(operand.dst)
-            rn = set(map(lambda x: str(x), adjectList))
-            if graph.has_key(t):
-                graph[t] |= rn
-            else:
-                graph[t] = rn
-
-            for e in adjectList:
-                if graph.has_key(str(e)):
-                    graph[str(e)] |= set([t])
-                else:
-                    graph[str(e)] = set([t])
-
-            #pp.pprint(graph)
-        elif isinstance(operand, OpAdd) \
-            or isinstance(operand, OpSub) \
-            or isinstance(operand, OpMul) \
-            or isinstance(operand, OpDiv):
-            adjectList = []
-            if liveList[loc] != None:
-                #print map(lambda x: str(x), liveList[loc])
-                for reg in liveList[loc]:
-                    if operand.dst == reg:
-                        continue
-
-                    adjectList.append(reg.name)
-
-            t = str(operand.dst)
-            rn = set(map(lambda x: str(x), adjectList))
-            if graph.has_key(t):
-                graph[t] |= rn
-            else:
-                graph[t] = rn
-
-            for e in adjectList:
-                if graph.has_key(str(e)):
-                    graph[str(e)] |= set([t])
-                else:
-                    graph[str(e)] = set([t])              
-        elif isinstance(operand, OpCall):
-            adjectList = [getRetReg()]
-            # 일단 정수나 pointer밖에 없다고 가정...
-            if operand.numargs <= len(parameterList):
-                adjectList += parameterList[0:operand.numargs]
-            else:
-                adjectList += parameterList
-
-            if liveList[loc] == None:
-                continue
-
-            for reg in adjectList:
-                t = str(reg)
-
-                #print map(lambda x: str(x), liveList[loc])
-                for areg in liveList[loc]:
-                    if t == str(areg): 
-                        continue
-
-                    if graph.has_key(t):
-                        graph[t] |= set([str(areg)])
-                    else:
-                        graph[t] = set([str(areg)])
-
-                    if graph.has_key(str(areg)):
-                        graph[str(areg)] |= set([t])
-                    else:
-                        graph[str(areg)] = set([t])
-
-        #print "display graph info : "
-        #for key in graph:
-        #    print "%s="%(key),map(lambda x: str(x), graph[key])
-
-        loc += 1
-
-    #pp.pprint(graph)
-    return graph
-
-def SD(adjected, colored):
-    cnt = 0
-    diffSet = set(adjected) - set(colored)
-
-    #print "SD value = %d" % (cnt)
-
-    return len(adjected) - len(diffSet)
-
-def chooseColor(colors, colored):
-    minVal, minNumColor = 999999999, None
-    for color in colors:
-        cnt = 0
-        for selected in colored:
-            if selected == color:
-                cnt += 1
-        if minVal > cnt:
-            minVal = cnt
-            minNumColor = color
-
-    return minNumColor
-
-def newColoringAlgorithm(graph):
-    colors=['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
-    #colors=['rax','rbx','rcx','rdx']
-
-    colored = {}
-    nodes = graph.keys()
-    m = len(nodes)
-    while len(colored) < m:
-        maxVal = -1
-        for node in nodes:
-            index = None
-            if not colored.has_key(node):
-                d = SD(graph[node], colored.keys())
-                print "1", d, maxVal
-                if d > maxVal:
-                    maxVal = d
-                    index = node
-                print "2", d, maxVal, index
-                if d == maxVal:
-                    if len(graph[node]) > len(graph[index]):
-                        index = node
-    
-            if index != None:
-                colored[index] = chooseColor(colors, colored.values()) # coloring
-            else:
-                raise Exception('err', 'err')
-
-    return colored
-
-def mapcolour2(lst):
-    G = calculateInterferenceGraph(lst)
-
-    print G
-    #print newColoringAlgorithm(G)
-
-    colors = set(['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15'])
-    #colors = set(['rax','rbx','rcx','rdx'])
-    colored = []
-
-    assigned = {}
-
-    nodes = G.keys()
-    for node in nodes:
-        if node in colors:
-            colored.append(node)
-            assigned[node] = node
-
-    for node in nodes:
-        # 이미 색깔이 칠해진 register라면, skip합니다.
-        if node in colored:
-            continue
-
-        # colored?
-        coloredNode = set([])
-        for subNode in G[node]:
-            if assigned.has_key(subNode):
-                coloredNode |= set([assigned[subNode]])
-
-        # 더 이상 할당 할 수 있는 register가 없을때?
-        if len(coloredNode) == len(colors):
-            raise Exception('error', 'no more registers')
-
-        availColorList = list(set(colors) - set(coloredNode))
-        print colors, coloredNode, availColorList
-        assigned[node] = availColorList[-1]
-        colored.append(node)
-
-    return assigned
-
-def calculateInterferenceGraph2(lst, outLive, args):
+def generateInterferenceGraph(lst, outLive, args):
     pp = pprint.PrettyPrinter(indent=2)
 
     liveList = outLive
@@ -620,75 +334,6 @@ def newRegisterAssignAlgorithm(lst, args):
             if inst.isReturn() == True:
                 registerDefVar(IReg('rax'), real)
 
-    #print "succ=",succ
-    #print "pred=",pred
-    #print "def1=",def1
-    #print "def2=",def2
-    #print "use1=",use1
-    #print "use2=",use2
-
-    # def removeFirstOpcodeWith(rn, pos):
-    #     for idx, node in enumerate(lst):
-    #         if idx <= pos: 
-    #             continue
-
-    #         if isinstance(node, OpPop):
-    #             if rn == str(node.target):
-    #                 print "must remove opcode", node, "at", idx
-    #                 return idx
-
-    #     return -1
-
-    # def reorder(pos):
-    #     prevPos = pos - 1
-    #     while prevPos >= 0:
-    #         if succ.has_key(prevPos):
-    #             break
-
-    #         prevPos -= 1
-
-    #     nextPos = pos + 1
-    #     while nextPos < len(lst):
-    #         if pred.has_key(nextPos):
-    #             break
-
-    #         nextPos += 1
-
-    #     if nextPos < len(lst):
-    #         succ[prevPos] |= set([nextPos])
-    #     succ[prevPos] -= set([pos])
-    #     if prevPos >= 0:
-    #         pred[nextPos] |= set([prevPos])
-    #     pred[nextPos] -= set([pos])
-
-    #     del succ[pos]
-    #     del pred[pos]
-
-    # # 의미없이 register를 push하는 경우에 대한 삭제 코드 삽입 필요, 짝인 pop도 삭제
-    # reduntantOpcodeList = []
-    # for pos, node in enumerate(lst):
-    #     if isinstance(node, OpPush):
-    #         cross = filter(lambda x: x <= pos, def1[str(node.target)])
-    #         if len(cross) == 0:
-    #             print "must remove opcode", node, "at",pos
-
-    #             # remove pop after this
-    #             posOfPop = removeFirstOpcodeWith(str(node.target), pos)
-
-    #             use1[str(node.target)] -= set([pos])
-    #             del use2[pos]
-    #             def1[str(node.target)] -= set([posOfPop])
-    #             del def2[posOfPop]
-
-    #             reorder(pos)
-    #             reorder(posOfPop)
-
-    #             reduntantOpcodeList.append(pos)
-    #             reduntantOpcodeList.append(posOfPop)
-
-    print use2
-    print def2
-
     nullSet = set([])
     oldIn, newIn = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
     oldOut, newOut = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
@@ -707,10 +352,6 @@ def newRegisterAssignAlgorithm(lst, args):
 
                     newOut[real] |= newIn[succNodeNum]
                 newIn[real] = use2[real] | (newOut[real] - def2[real])
-            #print real,"=",newIn[real],newOut[real]
-            #print "succ[real]",succ[real]
-            #print newOut[n], def2[n]
-            #print newOut[n] - def2[n]
 
         exit = True
         for n in range(0, nlst):
@@ -723,15 +364,7 @@ def newRegisterAssignAlgorithm(lst, args):
 
         ind += 1
 
-    # reduntantOpcodeList.sort()
-    # for pos in reversed(reduntantOpcodeList):
-    #     del lst[pos]
-    #print newIn
-    print newOut
-
-    #print newIn[0]
-
-    G = calculateInterferenceGraph2(lst, newOut, args)
+    G = generateInterferenceGraph(lst, newOut, args)
     s = list(newIn[0])
     for i in range(0, len(newIn[0])):
         reg = s[i]
@@ -748,100 +381,17 @@ def newRegisterAssignAlgorithm(lst, args):
 
     return G, def1, def2, use1, use2
 
-def reassign(lst, args):
-    parameterList = ['rcx', 'rdx', 'r8', 'r9']
-    parameterListForFloating = ['xmm0', 'xmm1', 'xmm2', 'xmm3']
-
-    #print "args=",args
-
-    newList = []
-    for op in lst:
-        if isinstance(op, OpMove): 
-            if isRegister(op.src):
-                name = str(op.src)
-                if name in args:
-                    loc = args.index(name)
-                    if len(parameterList) > loc:
-                        op.src = IReg(parameterList[loc])
-                    else:
-                        op.src = IMem(IReg('rbp'), None, loc)                        
-
-            if isRegister(op.dst):
-                name = str(op.dst)
-                if name in args:
-                    loc = args.index(name)
-                    if len(parameterList) > loc:
-                        op.dst = IReg(parameterList[loc])
-                    else:
-                        op.dst = IMem(IReg('rbp'), None, loc)
-                elif name.startswith('arg'):
-                    num = int(name[3:])
-                    if num < len(parameterList):
-                        op.dst = IReg(parameterList[num])
-
-            newList.append(op)
-        elif isinstance(op, OpAdd) \
-            or isinstance(op, OpSub) \
-            or isinstance(op, OpMul) \
-            or isinstance(op, OpDiv):
-            if isRegister(op.src):
-                name = str(op.src)
-                if name in args:
-                    loc = args.index(name)
-                    if len(parameterList) > loc:
-                        op.src = IReg(parameterList[loc])
-                    else:
-                        tmpReg = genTempRegister()
-                        newList.append(OpMove(IMem(IReg('rbp'), None, loc), tmpReg))
-                        op.src = tmpReg
-
-            if isRegister(op.dst):
-                name = str(op.dst)
-                if name in args:
-                    loc = args.index(name)
-                    if len(parameterList) > loc:
-                        op.dst = IReg(parameterList[loc])
-                    else:
-                        tmpReg = genTempRegister()
-                        newList.append(OpMove(IMem(IReg('rbp'), None, loc), tmpReg))
-                        op.dst = tmpReg
-
-            newList.append(op)
-        elif isinstance(op, OpPush) \
-            or isinstance(op, OpPop) \
-            or isinstance(op, OpCall):
-            if isRegister(op.target):
-                name = str(op.target)
-                if name in args:
-                    loc = args.index(name)
-                    if len(parameterList) > loc:
-                        op.target = IReg(parameterList[loc])
-                    else:
-                        op.target = IMem(IReg('rbp'), None, loc)
-
-            newList.append(op)
-        else:
-            newList.append(op)
-
-    return newList
-
 def mapcolour(lst, args = []):
-    #lst = reassign(lst, args)
-    #print "="*80
-    #for op in lst: print op
-    #print "="*80
-    #G = calculateInterferenceGraph(lst, args)
     G, def1, def2, use1, use2 = newRegisterAssignAlgorithm(lst, args)
 
-    print "G=",G
-    #print newColoringAlgorithm(G)
+    #print "G=",G
 
     registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
     #colors = registerList[::-1]
     colors = ['rax','rbx','rcx','rdx'] 
     symbols = G.keys()
 
-    # make a adjacency matrix to represent the interference graph
+    # To make a adjacency matrix to represent the interference graph
     matrix = [[False for i in range(0, len(symbols))] for i in range(0, len(symbols))]
     for pos, regname in enumerate(symbols):
         neighbors = G[regname]
@@ -911,6 +461,7 @@ def mapcolour(lst, args = []):
                 precolored.append(assignedColor[sym])
 
         # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
+        # to find the list of non-assigned registers
         availColorList = list(set(colors) - set(precolored))
         if not availColorList or len(availColorList) == 0: # 가용 레지스터가 없을 경우
             # use회수가 가장 적은걸 spill하려고 하는데,

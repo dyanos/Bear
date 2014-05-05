@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-class Graph:
+class graph:
   def __init__(self, directional = False):
     self.directional = directional
     self.edges = {}
