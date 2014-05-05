@@ -61,7 +61,7 @@ class IImm(IStorage):
     return False
 
   def __hash__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
 class IMem(IStorage):
   def __init__(self, base = None, ind = None, imm = None):
@@ -88,7 +88,7 @@ class IMem(IStorage):
     return True      
 
   def __hash__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
 class IString(IStorage):
   def __init__(self, value):
@@ -99,10 +99,10 @@ class IString(IStorage):
       return self.value
 
   def __hash__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
   def __eq__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
 class IInteger(IStorage):
   def __init__(self, value):
@@ -119,7 +119,7 @@ class IInteger(IStorage):
     return False
 
   def __hash__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
 class IFloat(IStorage):
   def __init__(self, value):
@@ -133,7 +133,7 @@ class IFloat(IStorage):
     return False
 
   def __hash__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
 class IDouble(IStorage):
   def __init__(self, value):
@@ -147,7 +147,7 @@ class IDouble(IStorage):
     return False
 
   def __hash__(self):
-    raise Excpetion('IImm', 'Not Implemented')
+    raise Exception('IImm', 'Not Implemented')
 
 def isTemporaryRegister(reg):
   if isinstance(reg, IUserReg):

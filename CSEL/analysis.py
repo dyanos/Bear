@@ -374,7 +374,7 @@ class Translate:
         right = self.procSimpleExpr(tree.end)
         
         nativeName = encodeSymbolName('System.lang.Array.toRange', args = [left.type, right.type])
-        print nativeName
+        #print nativeName
 
         context = self.getLastContext()
         context.emitPush(self.machine.getRetReg())
@@ -396,7 +396,7 @@ class Translate:
         return False
 
     def getRealname(self, name):
-        print "Searching %s" % (name)
+        #print "Searching %s" % (name)
         for tbl in reversed(self.symbolTable):
             realname = tbl.getRealname(name)
             if realname: return realname
@@ -488,7 +488,7 @@ class Translate:
         else:
             opName = self.makeFName(left.type, tree.name)
             nativeName = encodeSymbolName(opName, args = [left.right])
-            print nativeName 
+            #print nativeName 
             context.emitPush(self.machine.getRetReg())
             context.emitCall(nativeName, [left.reg, right.reg], ret = True)
             context.emitMove(self.machine.getRetReg(), tmpReg)
