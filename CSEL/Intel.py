@@ -130,19 +130,7 @@ def generateInterferenceGraph(lst, outLive, args):
 
     graph, loc = {}, 0
 
-    #if len(args) >= 2:
-    #    for argName in set(args):
-    #        for extra in set(args) - set([argName]):
-    #            if graph.has_key(argName):
-    #                graph[str(argName)] |= set([str(extra)])
-    #            else:
-    #                graph[str(argName)] = set([str(extra)])
-
     for operand in lst:
-        #print operand
-        #print "loc=%d" % (loc)
-        #print "Operand=",operand
-        #print "liveList=",map(lambda x: str(x), liveList[loc])
         if isinstance(operand, OpMove):
             adjectList = []
 
@@ -246,12 +234,12 @@ def newRegisterAssignAlgorithm(lst, args):
 
     nlst = len(lst)
 
-    succ = dict([(i, set([])) for i in range(0, nlst+1)]) # 후손에 남겨주는 경우
-    pred = dict([(i, set([])) for i in range(0, nlst+1)]) # 선조로부터 오는 경우
-    def1 = {}
-    def2 = dict([(i, set([])) for i in range(0, nlst+1)])
-    use1 = {}
-    use2 = dict([(i, set([])) for i in range(0, nlst+1)])
+    succ = dict([(i, set([])) for i in range(0, nlst+1)]) # 후손에 남겨주는 경우 (From successor)
+    pred = dict([(i, set([])) for i in range(0, nlst+1)]) # 선조로부터 오는 경우 (From predecessor)
+    def1 = {}   # location defined variables
+    def2 = dict([(i, set([])) for i in range(0, nlst+1)]) # definition information of variable of nth's position
+    use1 = {}   # location of used variables
+    use2 = dict([(i, set([])) for i in range(0, nlst+1)]) # which variable is using at nth's position
 
     def registerDefVar(reg, pos):
         if not isRegister(reg):
@@ -280,6 +268,7 @@ def newRegisterAssignAlgorithm(lst, args):
     pred[0] = (-1)  # 이전 instruction은 없다.
     for pos, inst in enumerate(lst):
         real = pos
+        # per each instruction
         if isinstance(inst, OpJump):
             label = inst.target
             for i in range(0, nlst):
@@ -328,21 +317,25 @@ def newRegisterAssignAlgorithm(lst, args):
         elif isinstance(inst, OpCall):
             succ[real] |= set([real + 1])
             pred[real + 1] |= set([real])
-            # function call이 register를 필요로 하는지에 대한 정보가 필요
             for i in range(inst.numargs):
                 registerUseVar(parameterList[i], real)
+            # To add 'return register' to definition list (def1, def2)
             if inst.isReturn() == True:
                 registerDefVar(IReg('rax'), real)
 
     nullSet = set([])
-    oldIn, newIn = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
-    oldOut, newOut = [nullSet for i in range(0, nlst+1)], [nullSet for i in range(0, nlst+1)]
-    ind = 1
-    while True:
+    
+    oldIn  = [nullSet for i in range(0, nlst+1)] 
+    newIn  = [nullSet for i in range(0, nlst+1)]
+    oldOut = [nullSet for i in range(0, nlst+1)]
+    newOut = [nullSet for i in range(0, nlst+1)]
+
+    exitFlag = True    
+    while exitFlag:
         #print ind 
         for n, node in enumerate(reversed(lst)):
-            real = nlst - n - 1
-            oldIn[real] = newIn[real]
+            real         = nlst - n - 1
+            oldIn[real]  = newIn[real]
             oldOut[real] = newOut[real]
             newOut[real] = set([])
             if succ.has_key(real):
@@ -351,20 +344,18 @@ def newRegisterAssignAlgorithm(lst, args):
                         continue
 
                     newOut[real] |= newIn[succNodeNum]
+                    
                 newIn[real] = use2[real] | (newOut[real] - def2[real])
 
-        exit = True
         for n in range(0, nlst):
             if oldIn[n] != newIn[n] or oldOut[n] != newOut[n]:
-                exit = False
+                exitFlag = False
                 break
 
-        if exit:
-            break
-
-        ind += 1
-
     G = generateInterferenceGraph(lst, newOut, args)
+    
+    # To add arguments to graph's node
+    # graph is directional
     s = list(newIn[0])
     for i in range(0, len(newIn[0])):
         reg = s[i]
@@ -392,7 +383,7 @@ def mapcolour(lst, args = []):
     symbols = G.keys()
 
     # To make a adjacency matrix to represent the interference graph
-    matrix = [[False for i in range(0, len(symbols))] for i in range(0, len(symbols))]
+    matrix = [[False for i in range(0, len(symbols))] for j in range(0, len(symbols))]
     for pos, regname in enumerate(symbols):
         neighbors = G[regname]
         for elem in neighbors:
@@ -401,11 +392,15 @@ def mapcolour(lst, args = []):
             matrix[ind][pos] = True
 
     assignedColor = {}
-    colored = [False] * len(symbols)
+    colored = [False for i in range(0, len(symbols))]
+    colored2 = {}
+    
     for pos, symbol in enumerate(symbols):
-        if symbol in colors:
+        # if a symbol is already colored, 
+        if symbol in registerList:
             assignedColor[symbol] = symbol
             colored[pos] = True
+            colored2[symbol] = True
 
     # 1. SD가 가장 큰 것을 찾는다.
     # 2. 할당되었는지 확인 후 되어있다면, 1번으로 돌아간다.
@@ -415,44 +410,22 @@ def mapcolour(lst, args = []):
     # 6. 없다면 spilling
 
     spilling = {}
-
+    
     # using heuristic algorithm
-    while len(filter(lambda x: x == True, colored)) != len(symbols):
-        maxval, maxpos = -999999999999, None
-        minval, minpos =  999999999999, None
-        for rowpos, col in enumerate(matrix):
-            # is already colored?
-            if colored[rowpos] == True:
-                continue
+    nsymbols = len(symbols)
+    allvars  = filter(lambda x: not colored2.has_key(x), G.keys()) # except pre-assigned registers
+    while True:
+        def SD(G, x, colored):
+            return len(filter(lambda e: not colored2.has_key(e), G[x]))
 
-            # To calculate SD value
-            number = 0
-            for colpos, value in enumerate(col):
-                if colored[colpos] == True:
-                    continue
-
-                if value == True:
-                    number += 1
-
-            if maxval < number:
-                maxval = number
-                maxpos = rowpos
-
-            if minval > number:
-                minval = number
-                minpos = rowpos
-
-        ind = maxpos
-
-        symbol = symbols[ind]
-
+        allvars = filter(lambda x: not colored2.has_key(x), allvars)
+        _, symbol = max(map(lambda x: (SD(G, x, colored), x), allvars))
+        ind = symbols.index(symbol)
+        
+        # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
         # to find available registers
         precolored = []
-        if symbol in colors: # 이미 위에서 이러한 것들을 한번 체크함... # 의미 없는 듯 
-            precolored.append(symbol)
-
-        # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
-        for colpos, value in enumerate(matrix[maxpos]):
+        for colpos, value in enumerate(matrix[ind]):
             if value == False:
                 continue
 
@@ -462,33 +435,34 @@ def mapcolour(lst, args = []):
 
         # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
         # to find the list of non-assigned registers
-        availColorList = list(set(colors) - set(precolored))
+        availColorList = list(set(registerList) - set(precolored))
+        # if no available register, spill out
         if not availColorList or len(availColorList) == 0: # 가용 레지스터가 없을 경우
             # use회수가 가장 적은걸 spill하려고 하는데,
             # 이 symbol이 use회수가 가장 적은 symbol과 연결되어 있지 않다면, 의미가 없다.
             # 인접 register들을 찾는다.
-            neighbors = [pos for pos in range(len(matrix[ind])) if matrix[ind][pos] == True] #filter(lambda x: matrix[ind][x], range(len(matrix[ind])))
-            # use갯수를 센다.
-            outRegList = map(lambda x: (len(use1[symbols[x]]), symbols[x]), neighbors)
-            # 가작 작은 수부터 정렬한다.
-            outRegList.sort()
-
+            # we find symbol that number of 'use1' of precolored symbols is minimum.
+            # and get length of 'use1' and sort
+            outRegList = filter(lambda x: not colored2.has_key(x), G[symbol]) # To find no colored symbol of the other symbols connected 'symbol'
+            outRegList = map(lambda x: (len(use1[x]), x), outRegList).sort()
+            # to remove that symbol is already register
+            outRegList = filter(lambda x: not x[1] in registerList, outRegList)
             #print "**", outRegList
 
             # 하나를 픽업한다.
             idx = 0
-            while not assignedColor.has_key(outRegList[idx][1]) or outRegList[idx][1] in registerList:
+            while not assignedColor.has_key(outRegList[idx][1]):
                 idx += 1
     
             outReg = outRegList[idx][1]
             
             #print "---", outReg 
 
-            ind = symbols.index(outReg)
+            pos = symbols.index(outReg)
             
-            for i in range(len(matrix[ind])):
-                matrix[ind][i] = False
-                matrix[i][ind] = False
+            for i in range(len(matrix[pos])):
+                matrix[pos][i] = False
+                matrix[i][pos] = False
 
             tmp = assignedColor[outReg]
             del assignedColor[outReg]
@@ -504,7 +478,13 @@ def mapcolour(lst, args = []):
 
         #colored[maxpos] = True
         colored[ind] = True
-
+        colored2[symbol] = True
+        
+        # to recalculate the number of colored registers
+        ncolored = len(filter(lambda x: x == True, colored))
+        if ncolored == nsymbols:
+            break
+        
     return assignedColor, spilling
 
 def allocateRegister(lst, args):
