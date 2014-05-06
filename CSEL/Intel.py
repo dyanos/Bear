@@ -415,10 +415,10 @@ def doGraphColoring(lst, args = []):
         # if symbol is already colored, mark it.
         precolored = []
         for s in G[symbol]:
-            if not colored2.has_key(s):
+            if not s in colored2: # to check that the key 's' is in colored2
                 continue
             
-            if assignedColor.has_key(s):
+            if s in assignedColor:
                 precolored.append(assignedColor[s])
 
         # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
@@ -433,7 +433,7 @@ def doGraphColoring(lst, args = []):
             # To find no colored symbol of the other symbols connected 'symbol'
             # Don't worry when remains machine registers. because they can spill out.
             outRegList = filter(lambda y: not y in registerList, 
-                                filter(lambda x: colored2.has_key(x), list(G[symbol]))
+                                filter(colored2.has_key, list(G[symbol]))
                                 )
             # We find symbol that number of 'use1' of precolored symbols is minimum.
             # and get length of 'use1' and sort
@@ -443,6 +443,7 @@ def doGraphColoring(lst, args = []):
             #print outRegList
             
             # 하나를 픽업한다.
+            # to pick a symbol to spill out
             outReg = None
             for e, s in outRegList:
                 if not spilling.has_key(s):
@@ -455,11 +456,7 @@ def doGraphColoring(lst, args = []):
 
             pos = symbols.index(outReg)
             
-            tmp = assignedColor[outReg]
-            del assignedColor[outReg]
-            
-            assignedColor[symbol] = tmp
-            
+            assignedColor[symbol] = assignedColor.pop(outReg)            
             spilling[outReg] = IMem(base = IReg('rbp'), imm = 10)
             
             #raise Exception('Spilling', 'Spilling')
