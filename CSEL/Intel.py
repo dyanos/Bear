@@ -299,6 +299,7 @@ def getInfoForRegAllocation(lst, args):
             isinstance(inst, OpSub) or \
             isinstance(inst, OpMul) or \
             isinstance(inst, OpDiv):
+            # add a, b = a=a+b
             succ[real] |= set([real + 1])
             pred[real + 1] |= set([real])
             registerDefVar(inst.dst, real)
@@ -457,7 +458,8 @@ def doGraphColoring(lst, args = []):
             pos = symbols.index(outReg)
             
             assignedColor[symbol] = assignedColor.pop(outReg)            
-            spilling[outReg] = IMem(base = IReg('rbp'), imm = 10)
+            # the number of spilling symbols : the reservation stack size
+            spilling[outReg] = IMem(base = IReg('rbp'), imm = 8 * len(spilling)) 
             
             #raise Exception('Spilling', 'Spilling')
         else:

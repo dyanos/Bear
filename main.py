@@ -3,6 +3,7 @@ from CSEL.parser import *
 from CSEL.analysis import *
 from CSEL.Operand import *
 from CSEL.Intel import *
+
 parser = Parser("sample.prg")
 parser.parse()
 
@@ -29,4 +30,4 @@ test = [OpMove(IInteger(1), IUserReg('z')),
         OpMove(IUserReg('y'), IUserReg('w')), 
         OpAdd(IUserReg('x'), IUserReg('w'))]
 
-print mapcolour(test)
+print doRegisterAllocation(test, [])

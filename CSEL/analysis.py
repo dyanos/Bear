@@ -6,7 +6,7 @@ from SymbolTable import *
 from mangle import *
 from context import *
 from Operand import *
-from graph import *
+#from graph import *
 import Intel
 
 Seperator = '$'

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import AST from *
+from AST import *
+
 class ASTListValue(AST):
   def __init__(self, history):
     self.history = history
