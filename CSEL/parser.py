@@ -26,6 +26,8 @@ from ASTRankSpecs import *
 from ASTSimpleExprs import *
 from ASTTemplateList import *
 from ASTType import *
+from ASTRank import *
+from ASTRankList import *
 from ASTUse import *
 from ASTVal import *
 from ASTVar import *
@@ -73,8 +75,10 @@ def mangling(name, args, extern = False):
 # thread환경일 경우는 '<-'은 synchronized한 동작을 한다(thread-safe)
 # 하지만 '='은 no-thread-safe하게 동작한다. (2013.03.12)
 class Parser:
-  def __init__(self, fn):
-    self.isdebug = True
+  def __init__(self, fn, isdebug = 0):
+    self.isdebug = isdebug # 0은 디버깅하지 않겠다는 의미
+
+    self.basename = fn[:fn.rfind('.')]
 
     self.directive = []
 
@@ -151,6 +155,7 @@ class Parser:
     symtbl.registerAliasSymbol("double", namespaceDouble)
     symtbl.registerAliasSymbol("string", namespaceString)
     symtbl.registerAliasSymbol('bool', namespaceBoolean)
+    symtbl.registerAliasSymbol("String", namespaceString)
     
     return symtbl
 
@@ -204,6 +209,9 @@ class Parser:
     # 일단 구현할께 function밖에 없으니 ...
 
   def parse(self):
+    if self.isdebug == 1:
+      print "entering parse"
+
     root = self.getRootSymbolTable()
     
     parsingList = []
@@ -231,6 +239,9 @@ class Parser:
         break
 
     self.flattenSymbolList()
+
+    if self.isdebug == 1:
+      print "ending parse"
    
   def parseNamespace(self):
     if not self.match('namespace'):
@@ -349,19 +360,31 @@ class Parser:
     return ".".join(self.pathList + [fn])
 
   def parseDefBody(self):
+    if self.isdebug == 1:
+      print "entering parseDefBody"
+
     body = None
-    
+   
+    if self.isdebug == 1:
+      print "getTokValue : %s" % (self.getTokValue())
+ 
     if self.match('='):
       body = self.parseExpr()
     elif self.match('{'):
       body = self.parseExprs()
       self.match('}')
+
+    if self.isdebug == 1:
+      print "ending parseDefBody"
       
     return body
       
   def parseDef(self):
     if not self.match('def'):
       return None
+
+    if self.isdebug == 1:
+      print "entering parseDef"
 
     # 이름을 얻습니다.
     fn = self.makeFullPath(self.getNames())
@@ -393,7 +416,7 @@ class Parser:
     rettype = self.parseReturnType()
     body = self.parseDefBody()
     if body == None:
-      print "function's body is empty"
+      print "function's body is empty : in %s" % (nativeSymbol)
       sys.exit(-1)
       
     if rettype != 'void':
@@ -415,7 +438,10 @@ class Parser:
     # 일단 지금은 영향을 받지 않는다고 가정한다.
     parentSymTbl.registerFunction(path = fn, args = args, retType = rettype, body = body)
 
-    self.mustcompile.append(parentSymTbl[nativeSymbol])
+    self.mustcompile.append((parentSymTbl[nativeSymbol], nativeSymbol))
+
+    if self.isdebug == 1:
+      print "ending parseDef"
 
   def parseFuncArgumentList(self):
     if not self.match('('):
@@ -428,7 +454,9 @@ class Parser:
       args.append(arg)
       if not self.match(','): break
 
-    self.match(')')
+    if not self.match(')'):
+      print "Error) Need right parenthence"
+      return None
 
     return args
 
@@ -470,7 +498,13 @@ class Parser:
     return True
 
   def parseType(self):
+    if self.isdebug == 1:
+      print "starting parseType"
+
     idStr = self.getNames()
+
+    if self.isdebug == 1:
+      print ".".join(idStr)
 
     # 해당 type이 존재하는지 검사합니다.
     whole = self.searchSymbol(idStr)
@@ -494,8 +528,22 @@ class Parser:
     #else:
     #  names.array = ename
 
-    #rank  = self.parseRankList()
-    return ASTType(name = whole, templ = None, ranks = None)
+    rank  = self.parseRankList()
+ 
+    if self.isdebug == 1:
+      print "ending parseType"
+
+    return ASTType(name = whole, templ = None, ranks = rank)
+
+  def parseRankList(self):
+    lst = []
+    while self.match('['):
+      rank = ASTRank(self.parseSimpleExpr())
+      lst.append(rank)
+      if not self.match(']'):
+        print "Error) Need ']'"
+    
+    return ASTRankList(lst)
 
   def parseExprs(self):
     lst = []
@@ -617,9 +665,15 @@ class Parser:
     return ASTSimpleExprs(history)
 
   def parseSimpleExpr(self):
+    if self.isdebug == 1:
+      print "entering parseSimpleExpr()"
+
     tree = self.parseBasicSimpleExpr()
     if tree == None: return None
     while not self.isEnd():
+      if self.isdebug == 1:
+        print self.getTokValue()
+
       if self.match('.'):
         right = self.parseBasicSimpleExpr()
         if isinstance(tree, ASTWord):
@@ -661,6 +715,9 @@ class Parser:
           tree = ASTUnary(tree, mid)
       else:
         break
+
+    if self.isdebug == 1:
+      print "ending parseSimpleExpr()"
 
     return tree
 
@@ -715,7 +772,7 @@ class Parser:
           self.match(']')
         return ASTIndexing(ASTWord(tok.type, tok.value), history)
       elif self.match('('):
-        args = self.parseArgumentList()
+        args = self.parseArgumentListForFuncCall()
         self.match(')')
         return ASTFuncCall(ASTWord(tok.type, tok.value), args)
       elif self.match('...'):
@@ -751,3 +808,14 @@ class Parser:
     #  raise Exception("parseBasicSimpleExpr", "Not implemented")
 
     return None
+
+  def parseArgumentListForFuncCall(self):
+    args = []
+
+    arg = self.parseSimpleExpr()
+    args.append(arg)
+    while self.match(','):
+      arg = self.parseSimpleExpr()
+      args.append(arg)
+
+    return args

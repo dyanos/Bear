@@ -218,8 +218,8 @@ def convertType_for_gcc(type):
   # reference type도 쓸수있게먼가 조치를...
   # result = ["R"]
   if type.ranks != None:
-    if len(type.ranks) != 0:
-      result = ["P"] * len(type.ranks)
+    if len(type.ranks.ranks) != 0:
+      result = ["P"] * len(type.ranks.ranks)
 
   array = None
   if isinstance(type.name, list):

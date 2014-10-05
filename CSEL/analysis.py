@@ -365,6 +365,8 @@ class Translate:
             return self.procListGeneratorType1(tree)
         elif isinstance(tree, ASTReturn):
             return self.procReturn(tree)
+        elif isinstance(tree, ASTFuncCall):
+            raise NotImplementedError
         else:
             print tree, type(tree)
             raise Exception('procSimpleExpr', 'Not implemented')
