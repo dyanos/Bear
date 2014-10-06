@@ -305,6 +305,9 @@ def encode_for_gcc(name, args):
     return "".join(mangling)
     
 def encodeSymbolName(name, args = None, ends = None):
+  if name == 'main':
+    return '_main'
+
   #if option.compiler_type == 'gcc':
   return encode_for_gcc(name, args)
   #elif option.compiler_type == 'msvc':
