@@ -16,11 +16,12 @@ class ClassSymbol(SymbolType):
         super(ClassSymbol, self).__init__("class")
         
 class FunctionSymbol(SymbolType):
-    def __init__(self, args, retType, body):
+    def __init__(self, args, retType, body, native=False):
         super(FunctionSymbol, self).__init__("function")
         self.args = args
         self.retType = retType
         self.body = body
+        self.native = native
         
 class VariableSymbol(SymbolType):
     def __init__(self, type):
@@ -31,7 +32,10 @@ class ValueSymbol(SymbolType):
     def __init__(self, type):
         super(ValueSymbol, self).__init__("value")
         self.type = type
-        
+
+# native인지 구별할 필요가 있어야 한다.
+# native의 의미는 C++에서 제작된 것으로 Bear 언어로 별도로 된 body가 없다는 뜻.    
+# TODO: Class, Struct, Function등에 대해서 native에 대한 정의를 담을 수 있는 변수 또는 어떠한 장치 필요 
 class SymbolTable:
     def __init__(self):
         self.symbolTable = {}   # 무조건 Native형태로...
@@ -55,7 +59,7 @@ class SymbolTable:
         
         self.symbolTable[symbol] = ClassSymbol()
         return self.symbolTable[symbol]
-        
+    
     def registerFunction(self, path, args = None, retType = None, body = None):
         symbol = encodeSymbolName(path, args)
         
@@ -65,7 +69,17 @@ class SymbolTable:
         # body가 null이면 native function으로 취급한다.
         self.symbolTable[symbol] = FunctionSymbol(args, retType, body)
         return self.symbolTable[symbol]
+
+    def registerNativeFunction(self, path, args = None, retType = None):
+        symbol = encodeSymbolName(path, args)
         
+        if self.symbolTable.has_key(symbol):
+            return None
+        
+        # body가 null이면 native function으로 취급한다.
+        self.symbolTable[symbol] = FunctionSymbol(args, retType, None, native=True)
+        return self.symbolTable[symbol]
+       
     def registerAliasSymbol(self, shortName, longName):
         self.aliasSymbolTable[shortName] = longName
         return self.aliasSymbolTable[shortName]

@@ -101,6 +101,7 @@ class Parser:
     
     symtbl.registerNamespace(path = "System")
     symtbl.registerNamespace(path = "System.lang")
+    symtbl.registerNamespace(path = "System.out")
 
     namespaceObject = "System.lang.Object"
     namespaceByte = "System.lang.Byte"
@@ -127,26 +128,22 @@ class Parser:
     symtbl.registerClass(path = namespaceString)
     symtbl.registerClass(path = namespaceBoolean)
     symtbl.registerClass(path = namespaceArray)
-    symtbl.registerFunction(
+    symtbl.registerNativeFunction(
         path = "System.lang.Array.length", 
         args = None, 
-        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None), 
-        body = None)
+        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None))
     symtbl.registerFunction(
         path = "System.lang.Array.toRange", 
         args = None, 
-        retType = ASTType(name="System.lang.Array", templ = None, ranks = None), 
-        body = None)
+        retType = ASTType(name="System.lang.Array", templ = None, ranks = None))
     symtbl.registerFunction(
         path = "System.lang.Array.getNext",
         args = None, 
-        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None), 
-        body = None)
+        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None))
     symtbl.registerFunction(
         path = "System.lang.Array.end",
         args = None, 
-        retType = ASTType(name="System.lang.Boolean", templ = None, ranks = None), 
-        body = None)
+        retType = ASTType(name="System.lang.Boolean", templ = None, ranks = None))
     symtbl.registerAliasSymbol("object", namespaceObject)
     symtbl.registerAliasSymbol("byte", namespaceByte)
     symtbl.registerAliasSymbol("short", namespaceShort)
@@ -156,7 +153,12 @@ class Parser:
     symtbl.registerAliasSymbol("string", namespaceString)
     symtbl.registerAliasSymbol('bool', namespaceBoolean)
     symtbl.registerAliasSymbol("String", namespaceString)
-    
+
+    symtbl.registerNativeFunction(
+        path = 'System.out.println',
+        args = None,
+        retType = ASTType(name="void", templ = None, ranks = None))
+ 
     return symtbl
 
   def nextToken(self):
@@ -773,7 +775,22 @@ class Parser:
         return ASTIndexing(ASTWord(tok.type, tok.value), history)
       elif self.match('('):
         args = self.parseArgumentListForFuncCall()
-        self.match(')')
+
+        if not self.match(')'):
+          print "Error) Need ')'"
+
+        # TODO: 호출하려는 function에 대한 정보를 얻어서 입력된 argument들의 type과 비교하여,
+        # 현재 symbol table에 호출할 수 있는 function이 있는지를 찾는 코드가 있어야 한다.
+        # 몇번의 try가 필요할지도...(auto casting때문에...)
+        # 예를 들어, 호출하려는 함수의 인자중에 char*를 갖는데, 해당 함수의 인자에는 char*를 사용하지 않고 System.lang.String만 사용하는 경우는
+        # 자동으로 char*를 String으로 auto casting해주어야 한다.
+        # 그 반대의 경우는 String을 char*로 casting해주어야 한다.
+        # 단, 해당 class에 해당 변환을 지원해준다는 가정이 필요하다.(즉, 해당 casting을 지원해주는지 여부를 체크해야만 한다.)
+        # 알고리즘
+        # 1. 현재의 argument들의 type들로 구성된 function을 찾는다.
+        # 2. 만일 없다면, argument들의 갯수가 동일한 함수.... (이건 내일 생각)
+        for arg in args:
+          args   
         return ASTFuncCall(ASTWord(tok.type, tok.value), args)
       elif self.match('...'):
         right = self.parseSimpleExpr()

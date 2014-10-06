@@ -285,7 +285,6 @@ def encode_for_gcc(name, args):
       for item in args:
         #_type = args[item]
         _type = None
-        print item
         if isinstance(item, ASTType):
           _type = item
         else:
