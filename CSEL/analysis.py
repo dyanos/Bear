@@ -177,7 +177,7 @@ class Context:
         
     # to analysis
       
-    self.machine.doRegisterAllocation(self.context, args)
+    return self.machine.doRegisterAllocation(self.context, args)
 
   # register 재배치 알고리즘을 돌린 결과
   def reallocRegisters(self):
@@ -203,6 +203,8 @@ class Context:
 # 모든 Type은 일단 ASTType을 중심으로 돌아야 한다.
 class Translate:
   def __init__(self, globalSymbolTable, mustCompileSet):
+    print "initializing translate"
+
     #self.globalSymbolTable = globalSymbolTable
     self.mustCompileSet = mustCompileSet
 
@@ -214,6 +216,8 @@ class Translate:
 
     self.machine = Intel
 
+    self.codes = None
+
     self.generateMachineCode()
 
   def getRootSymbolTable(self):
@@ -223,24 +227,27 @@ class Translate:
     return self.symbolTable[-1]
 
   def generateMachineCode(self):
-    if isinstance(self.mustCompileSet, FunctionSymbol):
-      self.symbolTable.append(SymbolTable())
-
-      funcinfo = self.mustCompileSet
-
-      localSymbolTable = self.getRecentSymbolTable()
-
-      # 인자를 등록합니다.
-      argNameList = []
-      for arg in funcinfo.args:
-        localSymbolTable.registerVariable(arg.name, arg.type)
-        argNameList.append(arg.name)
-
-      funcbody = funcinfo.body
-      self.procFunc(funcbody, argNameList)
-
-      # remove last one
-      self.symbolTable.pop()
+    print "starting generateMachineCode", self.mustCompileSet
+    if True:
+      tree, name = self.mustCompileSet
+      if isinstance(tree, FunctionSymbol):
+        self.symbolTable.append(SymbolTable())
+ 
+        funcinfo = tree
+ 
+        localSymbolTable = self.getRecentSymbolTable()
+ 
+        # 인자를 등록합니다.
+        argNameList = []
+        for arg in funcinfo.args:
+          localSymbolTable.registerVariable(arg.name, arg.type)
+          argNameList.append(arg.name)
+ 
+        funcbody = funcinfo.body
+        self.codes = self.procFunc(funcbody, argNameList)
+ 
+        # remove last one
+        self.symbolTable.pop()
 
   def getLastContext(self):
     return self.context[-1]
@@ -272,9 +279,14 @@ class Translate:
       #raise Exception("procFunc", "Not implemented some feature")
       self.procExpr(tree)
 
-    self.getLastContext().getRegisterAllocation(args)
+    opcode = context.machine.OpRet()
+    context.context.append(opcode)
+
+    codes = self.getLastContext().getRegisterAllocation(args)
 
     self.context.pop()
+
+    return codes
 
   def procReturn(self, tree):
     retval = self.procExpr(tree.expr)
@@ -390,10 +402,11 @@ class Translate:
         if isinstance(arg, ASTWord):
           # string
           if arg.type == 'Pc':
-           name = self.registerInDataSection(arg.value)
-           args.append(name)
+            name = self.registerInDataSection(arg.value)
+            args.append(name)
 
-      context.emitCall(tree.name.value, args)
+      nativeName = encodeSymbolName(tree.name.array)
+      context.emitCall(nativeName, args)
     else:
       print "procSimpleExpr : ",
       print tree, type(tree)

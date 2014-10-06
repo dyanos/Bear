@@ -8,10 +8,21 @@ parser = Parser("sample.prg")
 parser.parse()
 
 print "Parsing End"
+asmf = open(parser.basename+"64.asm", "wt")
 for symbol in parser.mustcompile:
   print symbol
+  _, name = symbol
   machine = Translate(parser.stackSymbolList, symbol)
 
+  if machine.codes == None:
+    continue
+
+  print "printing code"
+  print >>asmf, "%s:" % (name)
+  for code in machine.codes:
+    print >>asmf, code
+
+asmf.close()
 #test = [OpMove(IInteger(4), IUserReg('z')), 
 #        OpMove(IInteger(0), IUserReg('w')), 
 #        OpMove(IInteger(1), IUserReg('z')), 

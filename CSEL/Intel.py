@@ -98,6 +98,13 @@ class OpJumpZeroFlag(Operand):
   def __str__(self):
     return "jz %s" % (self.target)
 
+class OpRet(Operand):
+  def __init__(self):
+    pass
+
+  def __str__(self):
+    return "ret"
+
 class MarkLabel(Operand):
   def __init__(self, label):
     self.label = label
@@ -380,6 +387,9 @@ def doGraphColoring(lst, args = []):
   symbols = G.keys()
   nsymbols = len(symbols)
 
+  print "symbols = ", symbols
+  print "nsymbols = ", nsymbols
+
   # To make a adjacency matrix to represent the interference graph
   assignedColor = {}
   colored = [False for i in range(0, nsymbols)]
@@ -403,6 +413,12 @@ def doGraphColoring(lst, args = []):
   
   # using heuristic algorithm
   allvars  = filter(lambda x: not colored2.has_key(x), symbols) # except pre-assigned registers
+
+  # 모든 변수들이 다 assign되었다면,
+  if len(allvars) == 0:
+    return assignedColor, spilling
+
+  print "allvars = ", allvars
   while True:
     def SD(G, x, colored):
       return len(filter(lambda e: not colored2.has_key(e), G[x]))
@@ -481,6 +497,8 @@ def doRegisterAllocation(lst, args):
   print "called doRegisterAllocation"
   #getInfoForRegAllocation(lst, args)
 
+  codes = []
+
   ret, spilling = doGraphColoring(lst, args)
   keys = ret.keys()
   skeys = spilling.keys()
@@ -521,10 +539,15 @@ def doRegisterAllocation(lst, args):
       pass
     elif isinstance(operand, OpPush) or isinstance(operand, OpPop):
       pass
+    elif isinstance(operand, OpRet):
+      pass
     else:
       print operand
       raise Exception('error', 'Not Implemented')
 
     print operand
+    codes.append(operand)
 
   print "ending doRegisterAllocation"
+  
+  return codes
