@@ -22,12 +22,12 @@ for symbol in parser.mustcompile:
 #        OpMove(IUserReg('y'), IUserReg('w')), 
 #        OpAdd(IUserReg('x'), IUserReg('w'))]
 
-test = [OpMove(IInteger(1), IUserReg('z')),
-        OpMove(IUserReg('w'), IUserReg('x')),
-        OpAdd(IUserReg('z'), IUserReg('x')), 
-        OpMove(IUserReg('w'), IUserReg('y')), 
-        OpAdd(IUserReg('x'), IUserReg('y')), 
-        OpMove(IUserReg('y'), IUserReg('w')), 
-        OpAdd(IUserReg('x'), IUserReg('w'))]
+test = [OpMove(IInteger(1), IUserReg('z')),   # z = 1
+        OpMove(IUserReg('w'), IUserReg('x')), # x = w
+        OpAdd(IUserReg('z'), IUserReg('x')),  # x += z
+        OpMove(IUserReg('w'), IUserReg('y')), # y = w
+        OpAdd(IUserReg('x'), IUserReg('y')),  # y += x
+        OpMove(IUserReg('y'), IUserReg('w')), # w = y
+        OpAdd(IUserReg('x'), IUserReg('w'))]  # w += x
 
 print doRegisterAllocation(test, [])

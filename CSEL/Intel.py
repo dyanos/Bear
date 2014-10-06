@@ -436,8 +436,8 @@ def doGraphColoring(lst, args = []):
             outRegList = filter(lambda y: not y in registerList, 
                                 filter(colored2.has_key, list(G[symbol]))
                                 )
-            # We find symbol that number of 'use1' of precolored symbols is minimum.
-            # and get length of 'use1' and sort
+            # We will find a symbol that number of 'use1' of precolored symbols is minimum.
+            # and get length of 'use1' and sort it.
             outRegList = map(lambda x: (len(use1[x]), x), outRegList)
             outRegList.sort()
             

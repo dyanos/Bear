@@ -11,6 +11,13 @@ import Intel
 
 Seperator = '$'
 
+def genRandomString(length):
+  chars  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$#@~.?"
+  locs   = [random.uniform(0, len(chars)) for i in range(0, length)]
+  if locs[0] > chars.index('Z'):
+    locs[0] = random.uniform(0, chars.index('Z'))
+  return map(lambda loc: chars[loc], locs)
+
 # value는 그냥 값을 가지고 있으면 되공,
 # data는 data section의 위치를 가지고 있으면 되공...
 class Value:
@@ -175,6 +182,14 @@ class Context:
     # register 재배치 알고리즘을 돌린 결과
     def reallocRegisters(self):
         pass
+
+    def registerInDataSection(self, data):
+        name = self.makeDataAlias()
+        self.dataSection[name] = data
+        return name
+
+    def makeDataAlias(self):
+        return genRandomString(16)
 
 # Symbol Table은 Java의 Symbol Table의 모습을 따른다.
 #
@@ -366,7 +381,19 @@ class Translate:
         elif isinstance(tree, ASTReturn):
             return self.procReturn(tree)
         elif isinstance(tree, ASTFuncCall):
-            raise NotImplementedError
+            context = self.getLastContext()
+            args = []
+            for arg in tree.body:
+                if isinstance(arg, AST) and not isinstance(arg, ASTWord):
+                    arg = self.procSimpleExpr(arg)
+
+                if isinstance(arg, ASTWord):
+                    # string
+                    if arg.type == 'Pc':
+                        name = self.registerInDataSection(arg.value)
+                        args.append(name)
+
+            context.emitCall(tree.name.value, args)
         else:
             print tree, type(tree)
             raise Exception('procSimpleExpr', 'Not implemented')
