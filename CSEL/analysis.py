@@ -120,7 +120,7 @@ class Context:
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
     pushedRegisters = []
     for regnum in range(0, len(args)):
-      if len(args) >= len(parameterList):
+      if len(args) > len(parameterList):
         # stack을
         self.emitMove(args[regnum], IMem(IReg('rbp'), None, None))
       else:
