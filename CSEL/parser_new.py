@@ -6,7 +6,7 @@ from Token import *
 
 from AST import *
 from ASTAlias import *
-from ASTArgItem import *
+from ASTDefArg import *
 from ASTArgList import *
 from ASTAttribute import *
 from ASTTemplate import *

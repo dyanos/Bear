@@ -637,7 +637,7 @@ class Parser:
       elif isinstance(item, ASTSet):
         # 이거에 대해서는 아직 결정된바가 없다.
         pass
-      elif isinstance(item, ASTArgItem):
+      elif isinstance(item, ASTDefArg):
         name = item.name.array[0]
         # 1. name 중복성 체크
         if args_info.has_key(name):
@@ -703,7 +703,7 @@ class Parser:
       elif isinstance(item, ASTSet):
         # 이거에 대해서는 아직 결정된바가 없다.
         pass
-      elif isinstance(item, ASTArgItem):
+      elif isinstance(item, ASTDefArg):
         name = item.name.array[0]
         # 1. name 중복성 체크
         if args_info.has_key(name):
@@ -749,7 +749,7 @@ class Parser:
       else:
         self.token.match(':')
         type = self.parseType()
-        history.append(ASTArgItem(name, type))
+        history.append(ASTDefArg(name, type))
 
       if not self.token.match(','): break
     return ASTArgList(history)

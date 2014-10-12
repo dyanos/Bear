@@ -6,7 +6,7 @@ from random import Random
 from AST import *
 from ASTAlias import *
 from ASTType import *
-from ASTArgItem import *
+from ASTDefArg import *
 from ASTArgList import *
 from ASTAttribute import *
 from ASTClass import *
@@ -369,7 +369,7 @@ def decodeMachineName(name):
 # def System.out.println(abs:First[])
 # void System::out::println(First[] abs);
 #name = ASTNames(["System", "out", "println"])
-#args = ASTArgList([ASTArgItem(ASTNames(["abc"]), ASTType(ASTNames(["First"]), ASTTemplateList([ASTType(ASTNames(["int"]), None, None)]), [ASTEmpty()]))])
+#args = ASTArgList([ASTDefArg(ASTNames(["abc"]), ASTType(ASTNames(["First"]), ASTTemplateList([ASTType(ASTNames(["int"]), None, None)]), [ASTEmpty()]))])
 #tree = ASTDeclFunc(name = name, args = args, ret = None, body = None, type = None)
 #print encode_for_gcc(tree)
 

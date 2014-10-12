@@ -6,7 +6,7 @@ from Token import *
 
 from AST import *
 from ASTAlias import *
-from ASTArgItem import *
+from ASTDefArg import *
 from ASTArgList import *
 from ASTAttribute import *
 from ASTTemplate import *
@@ -401,7 +401,7 @@ class Parser:
     localSymTbl = self.getRecentSymbolTable()
 
     # argument가 나오는지 검사합니다.
-    args = self.parseFuncArgumentList()
+    args = self.parseDefArgsList()
     for elem in args:
       typeTree = elem.type
       #print "symbol = %s" % (typeTree.name)
@@ -447,13 +447,13 @@ class Parser:
     if self.isdebug == 1:
       print "ending parseDef"
 
-  def parseFuncArgumentList(self):
+  def parseDefArgsList(self):
     if not self.match('('):
       return None
 
     args = []
     while not self.isEnd():
-      arg = self.parseArgument()
+      arg = self.parseDefArg()
       if arg == None: break
       args.append(arg)
       if not self.match(','): break
@@ -467,18 +467,25 @@ class Parser:
   def parseReturnType(self):
     # if return type is none,
     if not self.match(':'):
-      return "System.lang.Integer"
+      return ASTType(name = ASTNames("System.lang.Integer".split('.')), templ = None, ranks = None)
 
     return self.parseType()
 
-  def parseArgument(self):
+  def parseDefArg(self):
     name = self.getName()
-    if name == None: return None
-    typeStr = "System.lang.Integer"
+    if name == None: 
+      return None
+
+    typeStr = ASTType(name = ASTNames("System.lang.Integer".split('.')), templ = None, ranks = None)
     if self.match(':'): 
       typeStr = self.parseType()
+
+    defval = None
+    if self.match('='):
+      defval = self.parseBasicSimpleExpr()
+
     # if typeStr == None: makeError
-    return ASTArgItem(name = name, type = typeStr)
+    return ASTDefArg(name = name, type = typeStr, defval = defval)
 
   def getName(self):
     if self.match('_'):
@@ -720,6 +727,30 @@ class Parser:
       else:
         break
 
+    if isinstance(tree, ASTFuncCall):
+      candidates = set([])      
+
+      array = tree.name.array
+      path = ".".join(array[:-1])
+      name = array[-1]
+ 
+      for symtbl in reversed(self.stackSymbolList):
+        lst = symtbl.findFunction(path, name, tree.args)  
+        if lst == None:
+          continue
+        candidates |= set(lst)
+     
+      ncandidates = len(candidates) 
+      if ncandidates == 0:
+        print "Error) Not exist symbol : %s" % (".".join(array))
+        sys.exit(-1)
+      elif ncandidates != 1:
+        print "Error) Two more symbols : %s" % (".".join(array))
+        sys.exit(-1)
+      else:
+        # exists symbol
+        pass
+
     if self.isdebug == 1:
       print "ending parseSimpleExpr()"
 
@@ -777,7 +808,7 @@ class Parser:
         return ASTIndexing(ASTWord(tok.type, tok.value), history)
       elif self.match('('):
         # TODO 함수의 그것인지 아닌지에 대한 구분이 필요하다.
-        args = self.parseArgumentListForFuncCall()
+        args = self.parseDefArgListForFuncCall()
 
         if not self.match(')'):
           print "Error) Need ')'"
@@ -830,7 +861,7 @@ class Parser:
 
     return None
 
-  def parseArgumentListForFuncCall(self):
+  def parseDefArgListForFuncCall(self):
     args = []
 
     arg = self.parseSimpleExpr()
