@@ -7,6 +7,9 @@ from CSEL.Intel import *
 parser = Parser("sample.prg")
 parser.parse()
 
+CodeSection = {}
+DataSection = {}
+
 print "Parsing End"
 asmf = open(parser.basename+"64.asm", "wt")
 for symbol in parser.mustcompile:
@@ -17,10 +20,24 @@ for symbol in parser.mustcompile:
   if machine.codes == None:
     continue
 
-  print "printing code"
-  print >>asmf, "%s:" % (name)
-  for code in machine.codes:
+  ds = machine.getDataSection()
+  for key in ds.keys():
+    DataSection[key] = ds[key]
+
+  CodeSection[name] = machine.codes
+
+print "printing code"
+
+print >>asmf, "section .code"
+for key in CodeSection.keys():
+  print >>asmf, "%s:" % (key)
+  for code in CodeSection[key]:
     print >>asmf, code
+  print >>asmf, ""
+
+print >>asmf, "section .data"
+for key in DataSection.keys():
+  print >>asmf, "%s: db %s" % (key, DataSection[key])
 
 asmf.close()
 #test = [OpMove(IInteger(4), IUserReg('z')), 

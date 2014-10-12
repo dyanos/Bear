@@ -16,6 +16,11 @@ class ASTType(AST):
     elif isinstance(right, ASTType):
       if self.name != right.name:
         return False
+      if self.templ != self.templ:
+        return False
+      if self.ranks != self.ranks:
+        return False
+      return True
     else:
       return False
 

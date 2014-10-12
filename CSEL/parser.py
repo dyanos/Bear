@@ -45,6 +45,8 @@ from ASTWrap import *
 from ASTUnary import *
 from ASTTemplateArg import *
 from ASTListValue import *
+from ASTCalleeArgType1 import *
+from ASTCalleeArgType2 import *
 from SymbolTable import *
 from IR import *
 from mangle import *
@@ -689,7 +691,7 @@ class Parser:
           if isinstance(right, ASTWord):
             tree = ASTNames(tree.array + [right.value])
           elif isinstance(right, ASTFuncCall):
-            tree = ASTFuncCall(ASTNames(tree.array + [right.name.value]), right.body)
+            tree = ASTFuncCall(ASTNames(tree.array + [right.name.value]), right.args)
           elif isinstance(right, ASTIndexing):
             tree = ASTIndexing(ASTNames(tree.array + [right.name.value]), right.history)
         else:
@@ -774,6 +776,7 @@ class Parser:
           self.match(']')
         return ASTIndexing(ASTWord(tok.type, tok.value), history)
       elif self.match('('):
+        # TODO 함수의 그것인지 아닌지에 대한 구분이 필요하다.
         args = self.parseArgumentListForFuncCall()
 
         if not self.match(')'):
@@ -789,12 +792,13 @@ class Parser:
         # 알고리즘
         # 1. 현재의 argument들의 type들로 구성된 function을 찾는다.
         # 2. 만일 없다면, argument들의 갯수가 동일한 함수.... (이건 내일 생각)
-        for arg in args:
-          args   
         return ASTFuncCall(ASTWord(tok.type, tok.value), args)
       elif self.match('...'):
         right = self.parseSimpleExpr()
         return ASTListGenerateType1(ASTWord(tok.type, tok.value), right)
+      elif self.match('='):
+        right = self.parseSimpleExpr()
+        return ASTCalleeArgType2(ASTWord(tok.type, tok.value), right)
       else:
         return ASTWord(tok.type, tok.value)
     elif self.match('_'):
@@ -830,9 +834,9 @@ class Parser:
     args = []
 
     arg = self.parseSimpleExpr()
-    args.append(arg)
+    args.append(ASTCalleeArgType1(arg))
     while self.match(','):
       arg = self.parseSimpleExpr()
-      args.append(arg)
+      args.append(ASTCalleeArgType1(arg))
 
     return args

@@ -6,17 +6,17 @@ from SymbolTable import *
 from mangle import *
 from context import *
 from Operand import *
+from ASTCalleeArgType1 import *
+from ASTCalleeArgType2 import *
 #from graph import *
 import Intel
 
 Seperator = '$'
 
 def genRandomString(length):
-  chars  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$#@~.?"
-  locs  = [random.uniform(0, len(chars)) for i in range(0, length)]
-  if locs[0] > chars.index('Z'):
-    locs[0] = random.uniform(0, chars.index('Z'))
-  return map(lambda loc: chars[loc], locs)
+  chars  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
+  locs  = [random.randint(0, len(chars)-1) for i in range(0, length)]
+  return "".join(map(lambda loc: chars[loc], locs))
 
 # value는 그냥 값을 가지고 있으면 되공,
 # data는 data section의 위치를 가지고 있으면 되공...
@@ -39,6 +39,7 @@ class Context:
 
     self.arguments = {}
     self.narguments = 8
+    self.dataSection = {}
 
   def checkTemporaryReg(self, regList, loc):
     for elem in regList:
@@ -119,10 +120,11 @@ class Context:
   def emitCall(self, target, args, ret = False):
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
     pushedRegisters = []
+    # http://msdn.microsoft.com/en-US/library/zthk2dkh(v=vs.80).aspx
     for regnum in range(0, len(args)):
-      if len(args) > len(parameterList):
+      if regnum >= len(parameterList):
         # stack을
-        self.emitMove(args[regnum], IMem(IReg('rbp'), None, None))
+        self.emitPush(args[regnum])
       else:
         self.emitPush(parameterList[regnum])
         pushedRegisters.append(parameterList[regnum])
@@ -217,8 +219,14 @@ class Translate:
     self.machine = Intel
 
     self.codes = None
+    self.datas = None
+    self.extern = None
 
     self.generateMachineCode()
+
+  # TODO 일단 DataSection을 다음과 같이 읽어가도록 한다.
+  def getDataSection(self):
+    return self.datas
 
   def getRootSymbolTable(self):
     return self.symbolTable[0]
@@ -244,7 +252,7 @@ class Translate:
           argNameList.append(arg.name)
  
         funcbody = funcinfo.body
-        self.codes = self.procFunc(funcbody, argNameList)
+        self.procFunc(funcbody, argNameList)
  
         # remove last one
         self.symbolTable.pop()
@@ -282,11 +290,10 @@ class Translate:
     opcode = context.machine.OpRet()
     context.context.append(opcode)
 
-    codes = self.getLastContext().getRegisterAllocation(args)
+    self.codes = context.getRegisterAllocation(args)
+    self.datas = context.dataSection
 
     self.context.pop()
-
-    return codes
 
   def procReturn(self, tree):
     retval = self.procExpr(tree.expr)
@@ -395,18 +402,27 @@ class Translate:
     elif isinstance(tree, ASTFuncCall):
       context = self.getLastContext()
       args = []
-      for arg in tree.body:
+      for arg in tree.args:
         if isinstance(arg, AST) and not isinstance(arg, ASTWord):
           arg = self.procSimpleExpr(arg)
 
         if isinstance(arg, ASTWord):
           # string
-          if arg.type == 'Pc':
-            name = self.registerInDataSection(arg.value)
+          if arg.type == 'Pc' or arg.type == 'System.lang.String':
+            name = context.registerInDataSection(arg.value)
             args.append(name)
-
+      
+      self.symbolTa      
       nativeName = encodeSymbolName(tree.name.array)
       context.emitCall(nativeName, args)
+    elif isinstance(tree, ASTCalleeArgType1):
+      if isinstance(tree.value, ASTWord):
+        return tree.value
+      else:
+        print tree.value
+      raise NotImplementedError
+    elif isinstance(tree, ASTCalleeArgType2):
+      raise NotImplementedError
     else:
       print "procSimpleExpr : ",
       print tree, type(tree)
