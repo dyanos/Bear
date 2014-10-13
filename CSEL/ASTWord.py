@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 from AST import *
+from ASTType import *
 
 class ASTWord(AST):
   def __init__(self, type, value):
+    if not isinstance(type, ASTType):
+      raise Exception("Error", "type hss to be ASTType")
+      
     self._type = self.type = type
     self.value = value
 

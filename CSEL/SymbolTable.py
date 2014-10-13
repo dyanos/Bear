@@ -95,16 +95,11 @@ class SymbolTable:
             return info
 
           # c++의 default value를 따름(TODO python만큼은 나중에 지원)
-          iscomplete = 0  # 0 is completed, 1 is that variables has default value, -1 is not equal
           for n, arg in enumerate(info.args):
             if arg.type == args[n].type:
               continue
 
             # TODO type이 서로 다르면, 한쪽에서 다른 쪽으로 변환이 가능한지에 대한 체크가 필요하다. 
-            iscomplete = -1
-            return None
-
-          if iscomplete != 0:
             return None
 
           # 인자가 같은지 검사
