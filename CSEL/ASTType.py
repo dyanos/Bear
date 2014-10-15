@@ -3,7 +3,7 @@
 from AST import *
 
 class ASTType(AST):
-  def __init__(self, name, templ, ranks):
+  def __init__(self, name, templ = None, ranks = None):
     self.name  = name
     self.templ = templ
     self.ranks = ranks

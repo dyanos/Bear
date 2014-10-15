@@ -5,6 +5,7 @@ from ASTType import *
 class ASTWord(AST):
   def __init__(self, type, value):
     if not isinstance(type, ASTType):
+      print type
       raise Exception("Error", "type hss to be ASTType")
       
     self._type = self.type = type

@@ -762,15 +762,15 @@ class Parser:
     #print "calling parseBasicSimpleExpr"
     #print "value =", tok.value, tok.type
     if self.matchType('stringLiteral'): 
-      return ASTWord('System.lang.String', tok.value)
+      return ASTWord(ASTType('System.lang.String'), tok.value)
     elif self.matchType('integerLiteral'):
-      return ASTWord('System.lang.Integer', tok.value)
+      return ASTWord(ASTType('System.lang.Integer'), tok.value)
     elif self.matchType('floatLiteral'):
-      return ASTWord('System.lang.Float', tok.value)
+      return ASTWord(ASTType('System.lang.Float'), tok.value)
     elif self.match('true'):
-      return ASTWord('System.lang.Boolean', '1')
+      return ASTWord(ASTType('System.lang.Boolean'), '1')
     elif self.match('false'):
-      return ASTWord('System.lang.Boolean', '0')
+      return ASTWord(ASTType('System.lang.Boolean'), '0')
     elif self.match('return'):
       return ASTReturn(self.parseExpr())
     #elif self.match('def'):
