@@ -158,7 +158,7 @@ class Parser:
 
     symtbl.registerNativeFunction(
         path = 'System.out.println',
-        args = None,
+        args = [ASTType(name=namespaceString, templ = None, ranks = None)],
         retType = ASTType(name="void", templ = None, ranks = None))
  
     return symtbl
@@ -467,7 +467,7 @@ class Parser:
   def parseReturnType(self):
     # if return type is none,
     if not self.match(':'):
-      return ASTType(name = ASTNames("System.lang.Integer".split('.')), templ = None, ranks = None)
+      return ASTType(name = "System.lang.Integer", templ = None, ranks = None)
 
     return self.parseType()
 
@@ -476,7 +476,7 @@ class Parser:
     if name == None: 
       return None
 
-    typeStr = ASTType(name = ASTNames("System.lang.Integer".split('.')), templ = None, ranks = None)
+    typeStr = ASTType(name = "System.lang.Integer", templ = None, ranks = None)
     if self.match(':'): 
       typeStr = self.parseType()
 

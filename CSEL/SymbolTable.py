@@ -96,7 +96,8 @@ class SymbolTable:
 
           # c++의 default value를 따름(TODO python만큼은 나중에 지원)
           for n, arg in enumerate(info.args):
-            if arg.type == args[n].type:
+            print arg, args[n].value.type
+            if arg == args[n].value.type:
               continue
 
             # TODO type이 서로 다르면, 한쪽에서 다른 쪽으로 변환이 가능한지에 대한 체크가 필요하다. 

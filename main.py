@@ -28,7 +28,7 @@ for symbol in parser.mustcompile:
 
 print "printing code"
 
-print >>asmf, "section .code"
+print >>asmf, "section .text"
 for key in CodeSection.keys():
   print >>asmf, "%s:" % (key)
   for code in CodeSection[key]:

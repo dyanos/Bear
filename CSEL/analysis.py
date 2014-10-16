@@ -412,7 +412,6 @@ class Translate:
             name = context.registerInDataSection(arg.value)
             args.append(name)
       
-      self.symbolTa      
       nativeName = encodeSymbolName(tree.name.array)
       context.emitCall(nativeName, args)
     elif isinstance(tree, ASTCalleeArgType1):

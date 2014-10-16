@@ -30,7 +30,6 @@ class ASTType(AST):
     return not self.__eq__(right)            
 
   def __str__(self):
-    print "self.name = ", self.name
     return self.name
 
   def printXML(self):
