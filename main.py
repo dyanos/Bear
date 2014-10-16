@@ -26,7 +26,7 @@ for symbol in parser.mustcompile:
 
   CodeSection[name] = machine.codes
 
-print "printing code"
+print "printing code(sample)"
 
 print >>asmf, "section .text"
 for key in CodeSection.keys():
