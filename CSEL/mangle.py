@@ -38,6 +38,8 @@ from ASTTrue import *
 from ASTFalse import *
 from ASTReturn import *
 from ASTWrap import *
+from ASTCalleeArgType1 import *
+from ASTCalleeArgType2 import *
 
 import re
 
@@ -200,9 +202,9 @@ def convertName(name):
     nameList = name
   else:
     nameList = name.split('.') 
-  #if option.compiler_type == 'gcc':
+  #if option.compilertype == 'gcc':
   return convertName_for_gcc(nameList)
-  #elif option.compiler_type == 'msvc':
+  #elif option.compilertype == 'msvc':
   # return convertName_for_msvc(tree)
   #else:
   # return convertName_for_other(tree)
@@ -254,12 +256,12 @@ def convertType_for_gcc(type):
   return "".join(result)
 
 def convertType(type):
-  if isinstance(type, ASTType):
+  if not isinstance(type, ASTType):
     raise Exception("Error", "Needed ASTType")
 
-  #if option.compiler_type == 'gcc':
+  #if option.compilertype == 'gcc':
   return convertType_for_gcc(type)
-  #elif option.compiler_type == 'msvc':
+  #elif option.compilertype == 'msvc':
   # return convertType_for_msvc(tree)
   #else:
   # return convertType_for_other(tree)
@@ -288,13 +290,19 @@ def convertToNativeSymbol(name, args, ret):
   else:
     mangling.append("%sE" % (name))
 
-  for arg in args:
-    if isinstance(arg, ASTDefArg):
-      mangling.append(convertType(arg.type))
-    else:
-      raise Exception("Error", "Only ASTDefArg")
-
-    mangling.append("E")
+  if args != None:
+    for arg in args:
+      if isinstance(arg, ASTDefArg):
+        mangling.append(convertType(arg.type))
+      elif isinstance(arg, ASTWord):
+        mangling.append(convertType(arg.type))
+      elif isinstance(arg, ASTType):
+        mangling.append(convertType(arg))
+      else:
+        print type(arg)
+        raise Exception("Error", "Only ASTDefArg")
+ 
+      mangling.append("E")
 
   return "".join(mangling)
 
@@ -309,13 +317,19 @@ def encode_for_gcc(name, args):
 
     if args != None:
       for item in args:
-        #_type = args[item]
-        _type = None
+        #type = args[item]
+        type = None
         if isinstance(item, ASTType):
-          _type = item
+          type = item
+        elif isinstance(item, ASTDefArg):
+          type = item.type
+        elif isinstance(item, ASTCalleeArgType1):
+          type = item.type
         else:
-          _type = item.type
-        typename = convertType(_type)
+          print "**", item
+          raise NotImplementedError
+
+        typename = convertType(type)
         mangling.append(typename)
 
     return "".join(mangling)
@@ -333,9 +347,9 @@ def encodeSymbolName(name, args = None, ends = None):
   if name == 'main':
     return '_main'
 
-  #if option.compiler_type == 'gcc':
+  #if option.compilertype == 'gcc':
   return encode_for_gcc(name, args)
-  #elif option.compiler_type == 'msvc':
+  #elif option.compilertype == 'msvc':
   # return encode_for_msvc(tree)
   #else:
   # return encode_for_other(tree)

@@ -8,7 +8,7 @@ def sum(from:int, to:int):int {
     r += i;
   return r;
 }
-def main(args:String[]) {
+def main(args:string[]) {
   System.out.println("Hello, Bear World!");
   return 0;
 }

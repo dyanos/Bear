@@ -3,288 +3,205 @@
 from mangle import *
 from ASTType import *
 
-class SymbolType(object):
-  def __init__(self, name):
-    self.name = name
-
-  def find(self, path = None, fn = None, args = None):
-    raise NotImplementedError
-        
-class NamespaceSymbol(SymbolType):
-  def __init__(self):
-    super(NamespaceSymbol, self).__init__("namespace")
-
-class ClassSymbol(SymbolType):
-  def __init__(self):
-    super(ClassSymbol, self).__init__("class")
-        
-class FunctionSymbol(SymbolType):
-  def __init__(self, args, retType, body, native=False):
-    super(FunctionSymbol, self).__init__("function")
-    self.args = args
-    self.retType = retType
-    self.body = body
-    self.native = native
-    
-  def find(self, path = None, fn = None, args = None):
-    return []
-    
-class VariableSymbol(SymbolType):
-  def __init__(self, type):
-    super(VariableSymbol, self).__init__("variable")
-    self.type = type
-
-  def find(self, path = None, fn = None, args = None):
-    return []
- 
-class ValueSymbol(SymbolType):
-  def __init__(self, type):
-    super(ValueSymbol, self).__init__("value")
-    self.type = type
-
-  def find(self, path = None, fn = None, args = None):
-    return []
- 
 # native인지 구별할 필요가 있어야 한다.
-# native의 의미는 C++에서 제작된 것으로 Bear 언어로 별도로 된 body가 없다는 뜻.    
+# native의 의미는 C++에서 제작된 것으로 Bear 언어로 별도로 된 body가 없다는 뜻.  
 # TODO: Class, Struct, Function등에 대해서 native에 대한 정의를 담을 수 있는 변수 또는 어떠한 장치 필요 
 class SymbolTable:
-    def __init__(self):
-        self.symbolTable = {}
-        self.symbolDict = {}
+  def __init__(self):
+    self.symbolTable = {}
+    self.symbolDict = {'@type':'namespace'}
 
-    def register(self, info):
-        if not info.has_key('@type'):
-            raise KeyError
+  def register(self, info):
+    if not info.has_key('@type'):
+      raise KeyError
 
-        type = info['@type']
-        if type == 'namespace':
-            self.registerNamespace(info)
-        elif type == 'class':
-            self.registerClass(info)
-        else:
-            raise NotImplementedError
+    type = info['@type']
+    if type == 'namespace':
+      self.registerNamespace(info)
+    elif type == 'class':
+      self.registerClass(info)
+    elif type == 'def':
+      self.registerDef(info)
+    elif type == 'alias':
+      if not info.has_key('@fullname'):
+        raise KeyError
 
-    def registerNamespace(self, info):
-        if not info.has_key('@name'):
-            raise KeyError
+      self.symbolDict[info['@name']] = {'@type': 'alias', '@name': info['@fullname']}
+    else:
+      print "type :", type
+      raise NotImplementedError
 
-        path = info['@name'].split('.')
-        now  = self.symbolDict
-        for name in path:
-            if not now.has_key(name):
-                now[name] = {'@type': 'namespace'}
+  def registerNamespace(self, info):
+    if not info.has_key('@name'):
+      raise KeyError
 
-            now = now[name]
+    path = info['@name'].split('.')
+    now  = self.symbolDict
+    for name in path:
+      if not now.has_key(name):
+        now[name] = {'@type': 'namespace'}
 
-    def registerClass(self, info):
-        if not info.has_key('@name'):
-            raise KeyError
+      now = now[name]
 
-        path = info['@name'].split('.')
-        now  = self.symbolDict
-        for name in path[:-1]:
-            if not now.has_key(name):
-                now[name] = {'@type': 'class'}
-            
-            now = now[name]
-        
-        cname = path[-1]
-        if now.has_key(cname):
-            print "Error) Duplicated Class Name"
-            raise Exception('Error', 'Duplicated Class Name')
+  def registerClass(self, info):
+    if not info.has_key('@name'):
+      raise KeyError
 
-        content = {'@type': 'class'}
-        symbols = info['@symbols']
-        for name in symbols:
-            if symbols[name]['@type'] == 'var':
-                content[name] = {'@type': 'var', '@vtype': symbols[name]['@vtype']}
-            elif symbols[name]['@type'] == 'val':
-                content[name] = {'@type': 'val', '@vtype': symbols[name]['@vtype']}
-            elif symbols[name]['@type'] == 'def':
-                content[name] = {'@type': 'def', '@vtype': symbols[name]['@vtype']}
-                raise NotImplementedError
-
-        now[cname] = content
-
-class SymbolTable2:
-    def __init__(self):
-        self.symbolTable = {}   # 무조건 Native형태로...
-        self.symbolDict = {}
-        self.aliasSymbolTable = {}
-       
-    def set(self, path, content):
-        d   = path.split('.')
-        nd  = len(d)
-
-        now = self.symbolDict
-        for p,n in enumerate(d):
-          if p+1 == nd:
-            if not now.has_key(n):
-              now[n] = content
-              return True
-            else:
-              return False
-          elif not now.has_key(n):
-            now[n] = {}
-          now = now[n]
-
-        return False
-
-    def findFunction(self, path, fn, args): 
-        def checkFuncSym(info):
-          if info.args == None:
-            # 함수의 선언시 void로 했는데, callee는 인자가 있다.
-            # 이런 경우는 아예 매치가 안된 것임
-            if args != None and len(args) != 0:
-              return None
-            elif (args != None and len(args) == 0) or args == None:
-              return info # 둘다 인자가 없고, 여기에 들어오는 경우는 함수가 일치할때 뿐이므로, return을 한다.
-            else:
-              raise Exception('Error', 'checkFuncSym') # 이곳으로 들어오는 경우가 있으려나??
-          
-          # 만일 callee의 인자가 없다면, callee의 선언에 default value가 첫인자부터 설정되어 있는지 체크한다. 
-          if args == None or (args != None and len(args) == 0):
-            # 최초의 인자가 default value를 가지고 있지 않다면, non-matched이다.
-            arg = info.args[0]
-            if arg.defval == None:
-              return None 
-            
-            # 기본적으로 최초의 default value이후의 나머지 인자들은 모두 default value여야 한다. 그러므로, 이 호출은 정당해진다. 
-            return info
-
-          # c++의 default value를 따름(TODO python만큼은 나중에 지원)
-          for n, arg in enumerate(info.args):
-            print arg, args[n].value.type
-            if arg == args[n].value.type:
-              continue
-
-            # TODO type이 서로 다르면, 한쪽에서 다른 쪽으로 변환이 가능한지에 대한 체크가 필요하다. 
-            return None
-
-          # 인자가 같은지 검사
-          # default value를 고려해야한다. 
-          #candidates.append(funcSym)
-          return info
-          
-        print "starting findFunction : ", path, fn, args
-
-        names = path.split('.')
-        n_names = len(names)
-
-        candidates = []
-
-        now = self.symbolDict
-        for ns in names:
-          if not now.has_key(ns):
-            return None
-
-          now = now[ns]
-
-        if not now.has_key(fn):
-          return None
-
-        target = now[fn]
-        if isinstance(target, list): # overloaded
-          for element in target:
-            info = checkFuncSym(element)
-            if info != None:
-              candidates.append(info)
-        elif isinstance(target, dict):
-          raise Exception('Error', 'dict')
-        elif isinstance(target, FunctionSymbol):
-          info = checkFuncSym(target)
-          if info != None: 
-            candidates.append(info)
-        else:
-          print target
-          raise Exception('Error', 'other instances')
-        
-        return candidates
-
-    # path는 "System.lang...."라는 식으로 들어와야 한다.
-    def registerNamespace(self, path):
-        symbol = encodeSymbolName(path)
-        
-        if self.symbolTable.has_key(symbol):
-            return None
-        
-        self.symbolTable[symbol] = {"@type": "namespace"}
-        self.set(path, self.symbolTable[symbol])
-        return self.symbolTable[symbol]
+    path = info['@name'].split('.')
+    now  = self.symbolDict
+    for name in path[:-1]:
+      if not now.has_key(name):
+        now[name] = {'@type': 'class'}
+      
+      now = now[name]
     
-    def registerClass(self, path):
-        symbol = encodeSymbolName(path)
-        
-        if self.symbolTable.has_key(symbol):
-            return None
-        
-        self.symbolTable[symbol] = {"@type": "class"}
-        self.set(path, self.symbolTable[symbol])
-        return self.symbolTable[symbol]
-    
-    def registerFunction(self, path, args = None, retType = None, body = None):
-        symbol = encodeSymbolName(path, args)
-        
-        if self.symbolTable.has_key(symbol):
-            return None
-        
-        # body가 null이면 native function으로 취급한다.
-        self.symbolTable[symbol] = FunctionSymbol(args, retType, body)
-        self.set(path, self.symbolTable[symbol])
-        return self.symbolTable[symbol]
+    cname = path[-1]
+    if now.has_key(cname):
+      print "Error) Duplicated Class Name"
+      raise Exception('Error', 'Duplicated Class Name')
 
-    def registerNativeFunction(self, path, args = None, retType = None):
-        symbol = encodeSymbolName(path, args)
-        
-        if self.symbolTable.has_key(symbol):
-            return None
-        
-        # body가 null이면 native function으로 취급한다.
-        self.symbolTable[symbol] = FunctionSymbol(args, retType, None, native=True)
-        self.set(path, self.symbolTable[symbol])
-        return self.symbolTable[symbol]
-       
-    def registerAliasSymbol(self, shortName, longName):
-        self.aliasSymbolTable[shortName] = longName
-        self.symbolTable[shortName] = {"@type": "alias", "@long": longName}
-        self.set(longName, self.aliasSymbolTable[shortName])
-        return self.aliasSymbolTable[shortName]
+    content = {'@type': 'class'}
+    if not info.has_key('@body'):
+      now[cname] = content
+      return
 
-    def registerVariable(self, name, type):
-        if self.symbolTable.has_key(name):
-            return None
-        
-        self.symbolTable[name] = VariableSymbol(type)
-        self.set(name, self.symbolTable[name])
-        return self.symbolTable[name]
-    
-    def getRealname(self, path):
-        _path = path
-        if self.aliasSymbolTable.has_key(_path):
-            _path = self.aliasSymbolTable[_path]
-        
-        if self.symbolTable.has_key(_path):
-            return _path
-        elif self.symbolTable.has_key(encodeSymbolName(_path)):
-            return _path
-        
-        return None
+    symbols = info['@body']
+    for name in symbols:
+      if symbols[name]['@type'] == 'var':
+        content[name] = {'@type': 'var', '@vtype': symbols[name]['@vtype']}
+      elif symbols[name]['@type'] == 'val':
+        content[name] = {'@type': 'val', '@vtype': symbols[name]['@vtype']}
+      elif symbols[name]['@type'] == 'def':
+        data = symbols[name]
 
-    def searchNative(self, path):
-        if self.symbolTable.has_key(path):
-            return path
-        
-        return None
-        
-    def __getitem__(self, k):
-        if self.symbolTable.has_key(k):
-            return self.symbolTable[k]
-        
-        return None
+        args = None
+        if data.has_key('@args'):
+          args = data['@args']
+
+        body = None
+        if data.has_key('@body'):
+          body = data['@body']
+
+        native = convertToNativeSymbol(name, args, None)
+        content[native] = {'@type': 'def', '@vtype': data['@vtype'], '@body': body}
+
+        fn = encodeSymbolName(".".join([info['@name'], name]), args)
+        self.symbolTable[fn] = content[native]
+
+    now[cname] = content
+
+  def registerDef(self, info):
+    if not info.has_key('@name'):
+      raise KeyError
+
+    path = info['@name'].split('.')
+    now  = self.symbolDict
+    if len(path) > 1:
+      for name in path[:-1]:
+        if not now.has_key(name):
+          now[name] = {}
+
+        now = now[name]
+
+    content = {'@type': 'def', '@vtype': info['@vtype']}
+
+    args = None
+    if info.has_key('@args'):
+      args = info['@args']
+
+    body = None
+    if info.has_key('@body'):
+      body = info['@body']
+
+    content['@body'] = body
+    content['@args'] = args
+
+    fname = path[-1]
+
+    native = convertToNativeSymbol(fname, args, None)
+    fn = encodeSymbolName(path, args)
     
-    def __setitem__(self, k, v):
-        self.symbolTable[k] = v
-        
-    def has_key(self, k):
-        return self.symbolTable.has_key(k)
+    self.symbolTable[fn] = content
+    now[native] = content
+
+  def findType(self, path):
+    now = self.symbolDict
+
+    pathlst = path.split('.')
+    nmatch = 0
+    for name in pathlst:
+      if now['@type'] == 'namespace':
+        if not now.has_key(name):
+          break
+
+        now = now[name]
+        nmatch += 1
+      elif now['@type'] == 'class':
+        # class의 method들은 무조건 단일 이름의 함수들이다.
+        for key in now.keys():
+          if key.startswith(name + 'E'):
+            now = now[key]
+            nmatch += 1
+            break
+      elif now['@type'] == 'def':
+        break
+      else:
+        break
+
+    if nmatch == len(pathlst):
+      if now['@type'] == 'alias':
+        return self.findType(now['@name'])
+
+      return now['@type']
+
+    native = encodeSymbolName(path, None, None)
+    for key in self.symbolTable.keys():
+      if key.startswith(native):
+        data = self.symbolTable[key]
+        if not data.has_key('@type'):
+          print "Error) key :", key
+          raise KeyError
+
+        return data['@type']
+
+  def find(self, info):
+    if not info.has_key('@name') or not info.has_key('@type'):
+      raise KeyError
+
+    type = info['@type']
+    path = info['@name']
+    pathlst = path.split('.')
+
+    if type == 'def':
+      args = None
+      if info.has_key('@args'):
+        args = info['@args']
+
+      native = encodeSymbolName(path, args, None)
+      if self.symbolTable.has_key(native):
+        return True
+    elif type == 'namespace' or type == 'class':
+      pathlst = path.split('.')
+
+      now = self.symbolDict
+      nmatch = 0
+      for pos, name in enumerate(pathlst):
+        if not now.has_key(name):
+          return False
+
+        now = now[name]
+        nmatch += 1
+
+      if nmatch == len(pathlst):
+        return True
+    else:
+      print "Error) type :", type
+      raise NotImplementedError
+
+    return False
+
+  def __getitem__(self, path):
+    if not self.symbolTable.has_key(path):
+      return None
+
+    return self.symbolTable[path]

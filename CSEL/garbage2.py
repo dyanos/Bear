@@ -133,7 +133,7 @@ class Translate:
         
         if info.isNativeAttribute(): return
         
-        if info.getType() == SymbolInfo.TYPE_DEF:
+        if info.getType() == SymbolInfo.type_DEF:
             self.localSymbolTable = {}
             self.context = []
             
@@ -511,7 +511,7 @@ class Parser:
 
     return ASTNames(history)
 
-  def search_type(self, type):
+  def searchtype(self, type):
     name  = type.name
     templ = type.templ
     ranks = type.ranks
@@ -1026,7 +1026,7 @@ class Parser:
         #if isinstance(tree, ASTSet):
         #  #if len(tree.lst) != 1:
         #  #  print "error!!" # make error!!
-        #  if self.check_type(tree.lst[0]):
+        #  if self.checktype(tree.lst[0]):
         #    tree = ASTCasting(tree.lst[0], ASTWord(tok.type, tok.value))
         self.token.nextToken()
         right = self.parseBasicSimpleExpr()

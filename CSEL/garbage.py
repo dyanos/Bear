@@ -308,17 +308,17 @@ class IR:
     self.eval(tree.right)
     
 
-    l_classname, l_typestr  = getTypeOf(lsubtree)
-    ret      = searchFunctionInClass(l_typestr, tree.name)
+    l_classname, ltypestr  = getTypeOf(lsubtree)
+    ret      = searchFunctionInClass(ltypestr, tree.name)
     if ret == None:
       print "Error) Operator Not Found! : %s" % (tree.name)
       sys.exit(-1)
 
-    r_classname, r_typestr  = getTypeOf(rsubtree)
-    if l_typestr != r_typestr:
-      result = searchConstructorInClass(l_typestr, r_typestr)
+    r_classname, rtypestr  = getTypeOf(rsubtree)
+    if ltypestr != rtypestr:
+      result = searchConstructorInClass(ltypestr, rtypestr)
       if result == None:
-        print "Error) Don't know how to convert %s to %s" % (demangleName(r_typestr), demangleName(l_typestr))
+        print "Error) Don't know how to convert %s to %s" % (demangleName(rtypestr), demangleName(ltypestr))
         sys.exit(-1)
 
       
@@ -388,11 +388,11 @@ class IR2:
       return arguments[tree]
     return self.getType(tree)
 
-  def genRandomVariable(self, ret_type):
+  def genRandomVariable(self, rettype):
     basestr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
     name = "__" + "".join([basestr[self.random.randrange(0, len(basestr))] for i in range(0, 10)])
     return {'@name': name,
-            '@type': ret_type,
+            '@type': rettype,
             '@representation': 'identifier'}
 
   def evalFunc(self, tree):

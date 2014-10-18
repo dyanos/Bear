@@ -107,9 +107,9 @@ class Parser:
   def initSymbolTable(self):
     symtbl = SymbolTable()
     
-    symtbl.registerNamespace(path = "System")
-    symtbl.registerNamespace(path = "System.lang")
-    symtbl.registerNamespace(path = "System.out")
+    symtbl.register({'@type':'namespace','@name':"System"})
+    symtbl.register({'@type':'namespace','@name':"System.lang"})
+    symtbl.register({'@type':'namespace','@name':"System.out"})
 
     namespaceObject = "System.lang.Object"
     namespaceByte = "System.lang.Byte"
@@ -124,49 +124,54 @@ class Parser:
     namespaceArray = "System.lang.Array"
 
     # System.lang.Object
-    symtbl.registerClass(path = namespaceObject)
+    symtbl.register({'@type':'class','@name':namespaceObject})
 
-    symtbl.registerClass(path = namespaceByte)
-    symtbl.registerClass(path = namespaceChar)
-    symtbl.registerClass(path = namespaceShort)
-    symtbl.registerClass(path = namespaceInt)
-    symtbl.registerClass(path = namespaceLong)
-    symtbl.registerClass(path = namespaceFloat)
-    symtbl.registerClass(path = namespaceDouble)
-    symtbl.registerClass(path = namespaceString)
-    symtbl.registerClass(path = namespaceBoolean)
-    symtbl.registerClass(path = namespaceArray)
-    symtbl.registerNativeFunction(
-        path = "System.lang.Array.length", 
-        args = None, 
-        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None))
-    symtbl.registerFunction(
-        path = "System.lang.Array.toRange", 
-        args = None, 
-        retType = ASTType(name="System.lang.Array", templ = None, ranks = None))
-    symtbl.registerFunction(
-        path = "System.lang.Array.getNext",
-        args = None, 
-        retType = ASTType(name="System.lang.Integer", templ = None, ranks = None))
-    symtbl.registerFunction(
-        path = "System.lang.Array.end",
-        args = None, 
-        retType = ASTType(name="System.lang.Boolean", templ = None, ranks = None))
-    symtbl.registerAliasSymbol("object", namespaceObject)
-    symtbl.registerAliasSymbol("byte", namespaceByte)
-    symtbl.registerAliasSymbol("short", namespaceShort)
-    symtbl.registerAliasSymbol("int", namespaceInt)
-    symtbl.registerAliasSymbol("float", namespaceFloat)
-    symtbl.registerAliasSymbol("double", namespaceDouble)
-    symtbl.registerAliasSymbol("string", namespaceString)
-    symtbl.registerAliasSymbol('bool', namespaceBoolean)
-    symtbl.registerAliasSymbol("String", namespaceString)
+    symtbl.register({'@type':'class','@name':namespaceByte})
+    symtbl.register({'@type':'class','@name':namespaceChar})
+    symtbl.register({'@type':'class','@name':namespaceShort})
+    symtbl.register({'@type':'class','@name':namespaceInt})
+    symtbl.register({'@type':'class','@name':namespaceLong})
+    symtbl.register({'@type':'class','@name':namespaceFloat})
+    symtbl.register({'@type':'class','@name':namespaceDouble})
+    symtbl.register({'@type':'class','@name':namespaceString})
+    symtbl.register({'@type':'class','@name':namespaceBoolean})
+    symtbl.register({'@type':'class','@name':namespaceArray})
+    symtbl.register({
+        '@type':'def',
+        '@name':"System.lang.Array.length", 
+        '@args':None, 
+        '@vtype':ASTType(name="System.lang.Integer", templ = None, ranks = None)})
+    symtbl.register({
+        '@type':'def',
+        '@name':"System.lang.Array.toRange", 
+        '@args':None, 
+        '@vtype':ASTType(name="System.lang.Array", templ = None, ranks = None)})
+    symtbl.register({
+        '@type':'def',
+        '@name':"System.lang.Array.getNext",
+        '@args':None, 
+        '@vtype':ASTType(name="System.lang.Integer", templ = None, ranks = None)})
+    symtbl.register({
+        '@type':'def',
+        '@name':"System.lang.Array.end",
+        '@args':None, 
+        '@vtype':ASTType(name="System.lang.Boolean", templ = None, ranks = None)})
+    symtbl.register({'@type':'alias', '@name':"object", '@fullname':namespaceObject})
+    symtbl.register({'@type':'alias', '@name':"byte", '@fullname':namespaceByte})
+    symtbl.register({'@type':'alias', '@name':"short", '@fullname':namespaceShort})
+    symtbl.register({'@type':'alias', '@name':"int", '@fullname':namespaceInt})
+    symtbl.register({'@type':'alias', '@name':"float", '@fullname':namespaceFloat})
+    symtbl.register({'@type':'alias', '@name':"double", '@fullname':namespaceDouble})
+    symtbl.register({'@type':'alias', '@name':"string", '@fullname':namespaceString})
+    symtbl.register({'@type':'alias', '@name':'bool', '@fullname':namespaceBoolean})
+    symtbl.register({'@type':'alias', '@name':"string", '@fullname':namespaceString})
 
-    symtbl.registerNativeFunction(
-        path = 'System.out.println',
-        args = [ASTType(name=namespaceString, templ = None, ranks = None)],
-        retType = ASTType(name="void", templ = None, ranks = None))
- 
+    symtbl.register({
+        '@type':'def',
+        '@name':'System.out.println',
+        '@args':[ASTType(name=namespaceString, templ = None, ranks = None)],
+        '@vtype':ASTType(name="void", templ = None, ranks = None)})
+
     return symtbl
 
   def nextToken(self):
@@ -193,31 +198,6 @@ class Parser:
   def getTokType(self):
     return self.token.tok.type
 
-  def getRootSymbolTable(self):
-    return self.stackSymbolList[0]
-
-  def getRecentSymbolTable(self):
-    return self.stackSymbolList[-1]
-
-  def searchSymbol(self, symbol):
-    for elem in reversed(self.stackSymbolList):
-      realname = elem.getRealname(symbol)
-      if realname: return realname
-
-    return None
-
-  def searchNativeSymbol(self, native):
-    for elem in reversed(self.stackSymbolList):
-      if elem.has_key(native):
-        return elem[native]
-
-    return None
-      
-  # list에 따로 들어있는 각각의 namespace, class, function, template, struct, property등을 하나로 합칩니다.
-  def flattenSymbolList(self):
-    root = self.getRootSymbolTable()
-    # 일단 구현할께 function밖에 없으니 ...
-
   def getName(self):
     if self.match('_'):
       return '_'
@@ -235,8 +215,6 @@ class Parser:
     if self.isdebug == 1:
       print "entering parse"
 
-    root = self.getRootSymbolTable()
-    
     parsingList = []
     while not self.isEnd():
       tree = None
@@ -260,8 +238,6 @@ class Parser:
         pass
       else:
         break
-
-    self.flattenSymbolList()
 
     if self.isdebug == 1:
       print "ending parse"
@@ -389,6 +365,8 @@ class Parser:
 
         body[realn] = content
 
+    return body
+
   def parseInitExpr(self):
     # 여긴 상수나 간단한 계산하는 루틴정도?
     # 아님 배열
@@ -405,9 +383,6 @@ class Parser:
     if not self.match('template'):
       return None
 
-    sym = SymbolTable()
-    self.stackSymbolList(sym)
-
     params = self.parseTemplateArguments()
     if params == None:
       print "Error) Needs some template parameters"
@@ -421,8 +396,12 @@ class Parser:
     elif self.same('def'):
       target = self.parseDef()
 
-      root = self.getRootSymbolTable()
-      root.registerTemplateFunction(params, target['name'], target['args'], target['rettype'], target['body'])
+      self.globalSymbolTable.register({
+        "@type": 'template def',
+        "@name": target['name'],
+        "@vtype": target['rettype'],
+        "@body": target['body'],
+        "@template args": params})
       # TODO : 그리고 먼가 파일로 만드는 코드 추가
     else:
       print "Error) Dont use template in this type"
@@ -512,14 +491,14 @@ class Parser:
         print "Error) Duplicated Name"
         raise SyntaxError
 
-      if not self.globalSymbolTable.searchType(arg.type):
+      if not self.globalSymbolTable.findType(arg.type.name):
         print "Error) Unknown Type"
         raise SyntaxError
 
       localSymTbl[arg.name] = arg.type
 
     nativeSymbol = mangling(fn, args)
-    if self.globalSymbolTable.searchNative(nativeSymbol):
+    if self.globalSymbolTable.find({'@type': 'def', '@name': fn, '@args': args}):
       print "Error) Duplicated Name"
       raise Exception("Error", "Error")
     #localSymTbl.printDoc()
@@ -544,7 +523,12 @@ class Parser:
 
     # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
     # 일단 지금은 영향을 받지 않는다고 가정한다.
-    self.globalSymbolTable.registerFunction(path = fn, args = args, retType = rettype, body = body)
+    self.globalSymbolTable.register({
+      "@type": "def",
+      "@name": fn,
+      "@args": args,
+      "@vtype": rettype,
+      "@body": body})
 
     self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 
@@ -609,8 +593,8 @@ class Parser:
       print ".".join(idStr)
 
     # 해당 type이 존재하는지 검사합니다.
-    whole = self.searchSymbol(idStr)
-    if not whole:
+    whole = self.globalSymbolTable.findType(idStr)
+    if whole == None:
       print "Unknown Type : %s" % (idStr)
       sys.exit(-1)
 
@@ -635,7 +619,7 @@ class Parser:
     if self.isdebug == 1:
       print "ending parseType"
 
-    return ASTType(name = whole, templ = None, ranks = rank)
+    return ASTType(name = idStr, templ = None, ranks = rank)
 
   def parseRankList(self):
     lst = []
@@ -703,7 +687,7 @@ class Parser:
     if not self.match('var'):
       return None
 
-    sym = self.getRecentSymbolTable()
+    sym = self.localSymbolTable[-1]
     
     hist = []
     while True:
@@ -726,7 +710,7 @@ class Parser:
         tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name), self.parseSimpleExpr())
         hist.append(tree)
 
-      sym.registerVariable(name, type)
+      sym[name] = {"@type": "var", "@vtype": type}
       if not self.match(','):
         break
 
@@ -800,7 +784,7 @@ class Parser:
         #if isinstance(tree, ASTSet):
         #  #if len(tree.lst) != 1:
         #  #  print "error!!" # make error!!
-        #  if self.check_type(tree.lst[0]):
+        #  if self.checktype(tree.lst[0]):
         #    tree = ASTCasting(tree.lst[0], ASTWord(tok.type, tok.value))
         tokVal = self.getTokValue()
         tokType = self.getTokType()
@@ -821,27 +805,12 @@ class Parser:
     if isinstance(tree, ASTFuncCall):
       candidates = set([])      
 
-      array = tree.name.array
-      path = ".".join(array[:-1])
-      name = array[-1]
- 
-      for symtbl in reversed(self.stackSymbolList):
-        lst = symtbl.findFunction(path, name, tree.args)  
-        if lst == None:
-          continue
-        candidates |= set(lst)
+      path = ".".join(tree.name.array)
+      ret = self.globalSymbolTable.find({'@type':'def', '@name':path, '@args':tree.args})
+      if ret == None:
+        print "Error) Not Symbol :", path
+        raise SyntaxError
      
-      ncandidates = len(candidates) 
-      if ncandidates == 0:
-        print "Error) Not exist symbol : %s" % (".".join(array))
-        sys.exit(-1)
-      elif ncandidates != 1:
-        print "Error) Two more symbols : %s" % (".".join(array))
-        sys.exit(-1)
-      else:
-        # exists symbol
-        pass
-
     if self.isdebug == 1:
       print "ending parseSimpleExpr()"
 
@@ -955,10 +924,23 @@ class Parser:
   def parseDefArgListForFuncCall(self):
     args = []
 
-    arg = self.parseSimpleExpr()
-    args.append(ASTCalleeArgType1(arg))
-    while self.match(','):
+    while True:
       arg = self.parseSimpleExpr()
-      args.append(ASTCalleeArgType1(arg))
+      if isinstance(arg, ASTWord):
+        if arg.type == 'id':
+          symtbl = self.localSymbolTable[-1]
+          if not symtbl.has_key(arg.value):
+            print "Error) Not found :", arg.value
+            raise SyntaxError
+          
+          args.append(ASTCalleeArgType1(name = arg.value, type = symtbl[arg.value]))
+        else:
+          args.append(ASTCalleeArgType1(name = arg.value, type = arg.type))
+      else:
+        print arg
+        raise NotImplementedError
+
+      if not self.match(','):
+        break
 
     return args

@@ -4,7 +4,7 @@ from ASTType import *
 
 class ASTWord(AST):
   def __init__(self, type, value):
-    self._type = self.type = type
+    self.type = self.type = type
     self.value = value
 
   def printXML(self):
