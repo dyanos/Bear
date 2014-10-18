@@ -63,12 +63,16 @@ def checkNamespaceGroup(name):
     
     return False
 
-def mangling(name, args, extern = False):
+def mangling(name, args, rettype = None, extern = False):
     # name들은 무조건 C++기준으로, 단 extern이 있으면 C로 가정한다.
     if extern == True:
         return "_" + name
     
     return encodeSymbolName(name, args)
+
+class SyntaxError(Exception):
+    def __init__(self):
+        pass
 
 # <- 키워드에 대한 정의 (이건 library에서 하면될듯)
 # 위 operator는 async한 assign이다.
@@ -88,13 +92,15 @@ class Parser:
     self.token.nextToken()
 
     # Root Symbol Table 등록
-    symtbl = self.initSymbolTable()
-    self.stackSymbolList = [symtbl]
+    self.globalSymbolTable = self.initSymbolTable()
+    self.localSymbolTable = []
+
     # function이나 class앞의 template이나 attribute같은 것들의 정보를 가지고 있는...
     self.directive = []
     
     # 아무것도 없으면 Root임
-    self.pathList = []
+    self.namespaceStack = []
+    self.loadedSymbolList = []
 
     self.mustcompile = []
 
@@ -212,6 +218,19 @@ class Parser:
     root = self.getRootSymbolTable()
     # 일단 구현할께 function밖에 없으니 ...
 
+  def getName(self):
+    if self.match('_'):
+      return '_'
+    
+    return self.token.matchType('id')
+
+  def getNames(self):
+    names = []
+    while not self.isEnd():
+      names.append(self.getName())
+      if not self.match('.'): break
+    return ".".join(names)
+
   def parse(self):
     if self.isdebug == 1:
       print "entering parse"
@@ -252,13 +271,15 @@ class Parser:
       return 
 
     path = self.getNames()
-    for name in path.split('.'):
-      self.pathList.append(name)
 
-    if self.match(';'):
-      return
-
+    self.namespaceStack.append(path)
+    self.loadedSymbolList.append(set([]))
     self.parseNamespaceBody()
+    self.loadedSymbolList.pop()
+    self.namespaceStack.pop() # symbol search할때도 사용할예정
+
+  def getWorkingPath(self):
+    return ".".join(self.namespaceStack)
 
   def parseNamespaceBody(self):
     if not self.match('{'):
@@ -272,23 +293,108 @@ class Parser:
     if not self.match('class'):
       return 
 
-    classname = self.makeFullPath(self.getNames())
+    names = self.getNames()
+    classname = ".".join(self.namespaceStack + [names])
 
+    # 검색 symbol list에 등록만 해놓는다. 
+    # 정의가 안되어 있다가 나중에 사용되면 실제 symbol table에 body가 없으므로,
+    # body가 없다고 에러를 내면 된다.
+    # self.loadedSymbolList와 self.namespaceStack은 단지 symbol을 만들때와 symbol참조를 위해서만 쓰인다.
+    self.loadedSymbolList[-1] |= set([classname])
     if self.match(';'):
-      root = self.getRecentSymbolTable()
-      root.registerSymbol(pathStr = classname, typeStr = "class")
       return 
 
+    self.namespaceStack.push(name)
     body = self.parseClassBody()
+    self.namespaceStack.pop()
+
+    symtbl = self.getRecentSymbolTable()
+    # class의 body는 variable만 있어야 한다. 
+    # class의 method들은 symbol로 등록될 것 이다.
+    symtbl.registerSymbol({"@type": "class", "@name": classname, "@attribute": None, "@body": body})
 
   def parseClassBody(self):
     if not self.match('{'):
       return
 
-    # blahblah....
+    body = {}
+    while not self.match('}'):
+      if self.match('val'): # 상수선언
+        name = self.getName()
+        if body.has_key(name):
+          print "Error) duplicated name :", name
+          raise NameError
 
-    self.match('}')
-    
+        content = {"@type": "val", "@vtype": ASTType("System.lang.Integer")}
+      
+        if self.match(':'):
+          content['@vtype'] = self.parseType()
+      
+        if self.match('='):
+          content['@init'] = self.parseInitExpr()
+
+        body[name] = content
+      elif self.match('var'):   # 변수선언
+        name = self.getName()
+        if body.has_key(name):
+          print "Error) duplicated name :", name
+          raise NameError
+
+        content = {"@type": "var", "@vtype": ASTType("System.lang.Integer")}
+      
+        if self.match(':'):
+          content['@vtype'] = self.parseType()
+      
+        if self.match('='):
+          content['@init'] = self.parseInitExpr()
+
+        body[name] = content
+      elif self.match('def'):   # 함수
+        name = self.getName()
+
+        # 인자까지 봐야지 중복인지를 체크할 수 있음
+        content = {"@type": "def"}
+        if self.match('('):
+          args = self.parseDefArgsList()
+          if not self.match(')'):
+            print "Error) Needed ')'"
+            raise SyntaxError
+          content['@args'] = args
+
+        if self.match(':'): # return type
+          type = self.parseType()
+          content['@vtype'] = type
+        else:
+          content['@vtype'] = None # return이 없음을 의미 (c의 void)
+
+        if self.match('='):
+          defbody = self.parseExpr()
+          content['@body'] = defbody
+        elif self.match('{'):
+          defbody = self.parseExprs()
+          if not self.match('}'):
+            print "Error) Needed '}'"
+            raise SyntaxError
+          content['@body'] = defbody
+        else:
+          print "Error) Needed Body"
+          raise SyntaxError
+
+        # 함수이름을 native symbol로 변경
+        realn = convertToNativeSymbol(name, content['@args'], content['@vtype'])
+        # TODO : Auto Casting은 일단 지원하지 않는다.
+        if body.has_key(realn):
+          print "Error) Multiple declaration :", fname
+          raise SyntaxError
+
+        body[realn] = content
+
+  def parseInitExpr(self):
+    # 여긴 상수나 간단한 계산하는 루틴정도?
+    # 아님 배열
+
+    raise NotImplementedError
+
   def parseAttribute(self):
     if not self.match('@'):
       return 
@@ -358,10 +464,7 @@ class Parser:
   # def variableName = <initial expr>;  // 이거랑 
   # def variableName:variableType = <initial expr>; // 이거는 함수취급
   def makeFullPath(self, fn):
-    if len(self.pathList) == 0:
-      return fn
-
-    return ".".join(self.pathList + [fn])
+    return ".".join(self.namespaceStack + [fn])
 
   def parseDefBody(self):
     if self.isdebug == 1:
@@ -391,37 +494,44 @@ class Parser:
       print "entering parseDef"
 
     # 이름을 얻습니다.
-    fn = self.makeFullPath(self.getNames())
+    only = self.getNames()
+    fn = ".".join(self.namespaceStack + [only])
+
     #print "Function name : %s" % (fn)
 
-    # 함수용 symbol table을 만듭니다.
-    parentSymTbl = self.getRecentSymbolTable()
+    # 함수용 local symbol table을 만듭니다.
+    self.localSymbolTable = [{}]
     
-    self.stackSymbolList.append(SymbolTable())
-    localSymTbl = self.getRecentSymbolTable()
-
     # argument가 나오는지 검사합니다.
     args = self.parseDefArgsList()
-    for elem in args:
-      typeTree = elem.type
-      #print "symbol = %s" % (typeTree.name)
-      if self.searchSymbol(typeTree.name):
-        localSymTbl.registerVariable(elem.name, typeTree)
-      else:
-        print "Not found symbol"
-        sys.exit(-1)
+
+    # check
+    localSymTbl = self.localSymbolTable[-1]
+    for arg in args:
+      if localSymTbl.has_key(arg.name):
+        print "Error) Duplicated Name"
+        raise SyntaxError
+
+      if not self.globalSymbolTable.searchType(arg.type):
+        print "Error) Unknown Type"
+        raise SyntaxError
+
+      localSymTbl[arg.name] = arg.type
 
     nativeSymbol = mangling(fn, args)
-    if parentSymTbl.searchNative(nativeSymbol):
-      print "Error: Duplicated Name"
-      sys.exit(-1)
+    if self.globalSymbolTable.searchNative(nativeSymbol):
+      print "Error) Duplicated Name"
+      raise Exception("Error", "Error")
     #localSymTbl.printDoc()
 
+    # To parse return type
     rettype = self.parseReturnType()
+
+    # To parse body of function
     body = self.parseDefBody()
     if body == None:
-      print "function's body is empty : in %s" % (nativeSymbol)
-      sys.exit(-1)
+      print "Error) Body Empty : in %s" % (nativeSymbol)
+      raise Exception("Error", "Error")
       
     if rettype != 'void':
       if isinstance(body, ASTExpr):
@@ -432,17 +542,11 @@ class Parser:
         if not isinstance(lastExpr, ASTReturn):
           body.exprs[-1] = ASTReturn(lastExpr)
 
-    for directive in self.directive:
-      if directive == 'native':
-        pass
-
-    self.directive = []
-
     # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
     # 일단 지금은 영향을 받지 않는다고 가정한다.
-    parentSymTbl.registerFunction(path = fn, args = args, retType = rettype, body = body)
+    self.globalSymbolTable.registerFunction(path = fn, args = args, retType = rettype, body = body)
 
-    self.mustcompile.append((parentSymTbl[nativeSymbol], nativeSymbol))
+    self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 
     if self.isdebug == 1:
       print "ending parseDef"
@@ -459,7 +563,7 @@ class Parser:
       if not self.match(','): break
 
     if not self.match(')'):
-      print "Error) Need right parenthence"
+      print "Error) Needed ')'"
       return None
 
     return args
@@ -486,19 +590,6 @@ class Parser:
 
     # if typeStr == None: makeError
     return ASTDefArg(name = name, type = typeStr, defval = defval)
-
-  def getName(self):
-    if self.match('_'):
-      return '_'
-    
-    return self.token.matchType('id')
-
-  def getNames(self):
-    names = []
-    while not self.isEnd():
-      names.append(self.getName())
-      if not self.match('.'): break
-    return ".".join(names)
 
   def parseTemplatePart(self):
     #raise Exception('parseTemplatePart', 'Not Implemented')
