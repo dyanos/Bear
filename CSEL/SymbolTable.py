@@ -50,6 +50,65 @@ class ValueSymbol(SymbolType):
 # TODO: Class, Struct, Function등에 대해서 native에 대한 정의를 담을 수 있는 변수 또는 어떠한 장치 필요 
 class SymbolTable:
     def __init__(self):
+        self.symbolTable = {}
+        self.symbolDict = {}
+
+    def register(self, info):
+        if not info.has_key('@type'):
+            raise KeyError
+
+        type = info['@type']
+        if type == 'namespace':
+            self.registerNamespace(info)
+        elif type == 'class':
+            self.registerClass(info)
+        else:
+            raise NotImplementedError
+
+    def registerNamespace(self, info):
+        if not info.has_key('@name'):
+            raise KeyError
+
+        path = info['@name'].split('.')
+        now  = self.symbolDict
+        for name in path:
+            if not now.has_key(name):
+                now[name] = {'@type': 'namespace'}
+
+            now = now[name]
+
+    def registerClass(self, info):
+        if not info.has_key('@name'):
+            raise KeyError
+
+        path = info['@name'].split('.')
+        now  = self.symbolDict
+        for name in path[:-1]:
+            if not now.has_key(name):
+                now[name] = {'@type': 'class'}
+            
+            now = now[name]
+        
+        cname = path[-1]
+        if now.has_key(cname):
+            print "Error) Duplicated Class Name"
+            raise Exception('Error', 'Duplicated Class Name')
+
+        content = {'@type': 'class'}
+        symbols = info['@symbols']
+        for name in symbols:
+            if symbols[name]['@type'] == 'var':
+                content[name] = {'@type': 'var', '@vtype': symbols[name]['@vtype']}
+            elif symbols[name]['@type'] == 'val':
+                content[name] = {'@type': 'val', '@vtype': symbols[name]['@vtype']}
+            elif symbols[name]['@type'] == 'def':
+                content[name] = {'@type': 'def', '@vtype': symbols[name]['@vtype']}
+                raise NotImplementedError
+
+        now[cname] = content
+
+class SymbolTable2:
+    def __init__(self):
         self.symbolTable = {}   # 무조건 Native형태로...
         self.symbolDict = {}
         self.aliasSymbolTable = {}

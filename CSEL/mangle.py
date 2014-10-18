@@ -254,6 +254,9 @@ def convertType_for_gcc(type):
   return "".join(result)
 
 def convertType(type):
+  if isinstance(type, ASTType):
+    raise Exception("Error", "Needed ASTType")
+
   #if option.compiler_type == 'gcc':
   return convertType_for_gcc(type)
   #elif option.compiler_type == 'msvc':
@@ -271,6 +274,29 @@ def converting(name, tmpl):
     mangling_name.append("E")
   mangling_name.apeend("E")
   return "".join(mangling_name)
+
+def convertToNamespace(path):
+  return "".join("N" + map(lambda x: "%d%s" % (len(x), x), name))
+
+def convertToNativeSymbol(name, args, ret):
+  mangling = []
+
+  #나중에 바꾸더라도...
+  if isinstance(name, list):
+    mangling.append(convertToNamespace(name))
+    mangling.append("E")
+  else:
+    mangling.append("%sE" % (name))
+
+  for arg in args:
+    if isinstance(arg, ASTDefArg):
+      mangling.append(convertType(arg.type))
+    else:
+      raise Exception("Error", "Only ASTDefArg")
+
+    mangling.append("E")
+
+  return "".join(mangling)
 
 # 모든 이름은 root namespace부터 있어야 한다.
 # 즉, Full name space이어야한다.
