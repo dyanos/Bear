@@ -411,9 +411,9 @@ class Translate:
       context.emitCall(nativeName, args)
     elif isinstance(tree, ASTCalleeArgType1):
       if isinstance(tree.value, ASTWord):
-        return tree.value
+        return self.procWord(tree.value)
       else:
-        print tree.value
+        print type(tree.value)
       raise NotImplementedError
     elif isinstance(tree, ASTCalleeArgType2):
       raise NotImplementedError

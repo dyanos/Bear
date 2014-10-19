@@ -941,9 +941,9 @@ class Parser:
             print "Error) Not found :", arg.value
             raise SyntaxError
           
-          args.append(ASTCalleeArgType1(name = arg.value, type = symtbl[arg.value]))
+          args.append(ASTCalleeArgType1(value = arg, type = symtbl[arg.value]))
         else:
-          args.append(ASTCalleeArgType1(name = arg.value, type = arg.type))
+          args.append(ASTCalleeArgType1(value = arg, type = arg.type))
       else:
         print arg
         raise NotImplementedError
