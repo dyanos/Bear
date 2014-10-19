@@ -410,10 +410,6 @@ class Translate:
       nativeName = encodeSymbolName(tree.name.array)
       context.emitCall(nativeName, args)
     elif isinstance(tree, ASTCalleeArgType1):
-      if isinstance(tree.value, ASTWord):
-        return self.procWord(tree.value)
-      else:
-        print type(tree.value)
       raise NotImplementedError
     elif isinstance(tree, ASTCalleeArgType2):
       raise NotImplementedError
