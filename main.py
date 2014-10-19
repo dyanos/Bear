@@ -15,7 +15,7 @@ asmf = open(parser.basename+"64.asm", "wt")
 for symbol in parser.mustcompile:
   print symbol
   _, name = symbol
-  machine = Translate(parser.stackSymbolList, symbol)
+  machine = Translate(parser.globalSymbolTable, symbol)
 
   if machine.codes == None:
     continue

@@ -204,17 +204,18 @@ class Context:
 # 모든 Return은 Value를 끼고 있어야 한다.
 # 모든 Type은 일단 ASTType을 중심으로 돌아야 한다.
 class Translate:
-  def __init__(self, globalSymbolTable, mustCompileSet):
+  def __init__(self, symbolTable, mustCompileSet):
     print "initializing translate"
 
     #self.globalSymbolTable = globalSymbolTable
     self.mustCompileSet = mustCompileSet
 
-    self.symbolTable = []
-    self.symbolTable += globalSymbolTable
+    self.symbolTable = symbolTable
 
     self.context = []
-    self.localSymbolList = []
+    self.external = {}
+    self.reservedStackSize = 0
+    self.info = None
 
     self.machine = Intel
 
@@ -228,39 +229,19 @@ class Translate:
   def getDataSection(self):
     return self.datas
 
-  def getRootSymbolTable(self):
-    return self.symbolTable[0]
-
-  def getRecentSymbolTable(self):
-    return self.symbolTable[-1]
-
   def generateMachineCode(self):
     print "starting generateMachineCode", self.mustCompileSet
-    if True:
+    if isinstance(self.mustCompileSet, list):
+      raise NotImplementedError
+    else:
       tree, name = self.mustCompileSet
-      if isinstance(tree, FunctionSymbol):
-        self.symbolTable.append(SymbolTable())
+      if tree['@type'] == 'def':
+        self.procFunc(tree)
  
-        funcinfo = tree
- 
-        localSymbolTable = self.getRecentSymbolTable()
- 
-        # 인자를 등록합니다.
-        argNameList = []
-        for arg in funcinfo.args:
-          localSymbolTable.registerVariable(arg.name, arg.type)
-          argNameList.append(arg.name)
- 
-        funcbody = funcinfo.body
-        self.procFunc(funcbody, argNameList)
- 
-        # remove last one
-        self.symbolTable.pop()
-
   def getLastContext(self):
     return self.context[-1]
 
-  def procFunc(self, tree, args):
+  def procFunc(self, tree):
     context = Context()
     self.context.append(context)
 
@@ -269,26 +250,36 @@ class Translate:
 
     # 여기서 system dependent한 메모리 레지스터를 사용하는 것은 좋아보이지 않는다.
     # Intel.py로 코드를 이동시켜야할듯.(2013/03/12)
+    args = tree['@args']
     for pos, arg in enumerate(args):
-      memReg = context.setArgVar(arg)
-      opcode = context.machine.OpMove(context.convertArgumentToReg(pos), memReg)
-      context.context.append(opcode)
-      print "mov %s, %s" % (str(memReg), context.convertArgumentToReg(pos))
+      content = {}
+      name = None
+      if isinstance(arg, ASTDefArg):
+        name = arg.name
+        content['@type'] = arg.type
+      else:
+        raise NotImplementedError
 
-      # we will suppose that alignment's size is 8 bytes.
-      context.increaseReservedStackSize()
+      if name == None:
+        raise SyntaxError
 
-    if isinstance(tree, ASTExprs):
-      self.procExprs(tree)
-    elif isinstance(tree, ASTExpr):
-      self.procExpr(tree)
+      content['@loc'] = pos
+
+      self.external[name] = content
+
+    self.info = tree
+    body = self.tree['@body']
+    if isinstance(body, ASTExprs):
+      self.procExprs(body)
+    elif isinstance(body, ASTExpr):
+      self.procExpr(body)
     else:
-      #print tree, type(tree)
-      #raise Exception("procFunc", "Not implemented some feature")
-      self.procExpr(tree)
+      print tree, type(tree)
+      raise NotImplementedError
 
     opcode = context.machine.OpRet()
     context.context.append(opcode)
+    self.info = None
 
     self.codes = context.getRegisterAllocation(args)
     self.datas = context.dataSection
@@ -297,13 +288,11 @@ class Translate:
 
   def procReturn(self, tree):
     retval = self.procExpr(tree.expr)
+    if retval == None:
+      return None
     
     context = self.getLastContext()
-    if retval == None:
-      # 되돌려지는게 없다면, return type에 맞추어서 무엇인가를 보내야한다? TODO
-      context.emitMove(IImm(0), self.machine.getRetReg())
-    else:
-      context.emitMove(retval.reg, self.machine.getRetReg())
+    context.emitMove(retval.reg, self.machine.getRetReg())
     
     # 끝이기 때문에 별도로 되돌려줄 무엇인가가 없다     
     return None
@@ -569,14 +558,14 @@ class Translate:
     elif tree.isType('System.lang.Float'):
       return Value(type = ASTType(name = 'System.lang.Float', templ = None, ranks = None), reg = self.machine.IFloat(tree.value))
     elif tree.isType('id'):
-      valinfo = self.getRealname(tree.value)
-      valinfo = self.getSymbolInfo(valinfo)
-
-      if valinfo == None:
+      symtbl = self.info['@symbols']
+      if not symtbl.has_key(tree.value):
         raise Exception('Error', 'Unknown type : %s' % (tree.value))
 
-      return Value(type = valinfo.type, reg = self.machine.IUserReg(tree.value))
+      info = symtbl[tree.value]
+      return Value(type = info.type, reg = self.machine.IUserReg(tree.value))
     else:
       print tree, type(tree)
+      raise NotImplementedError
 
     return Value(type = tree.getType(), reg = tmpReg)

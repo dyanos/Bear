@@ -528,7 +528,10 @@ class Parser:
       "@name": fn,
       "@args": args,
       "@vtype": rettype,
-      "@body": body})
+      "@body": body,
+      "@symbols": self.localSymbolTable})
+
+    self.localSymbolTable = [{}]
 
     self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 

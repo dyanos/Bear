@@ -3,9 +3,10 @@ from AST import *
 from ASTType import *
 
 class ASTWord(AST):
-  def __init__(self, type, value):
-    self.type = self.type = type
+  def __init__(self, type, value, vtype = None):
+    self.type = type
     self.value = value
+    self.vtype = vtype
 
   def printXML(self):
     if self.type == 'Pc':
