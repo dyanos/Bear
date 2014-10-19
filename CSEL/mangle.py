@@ -281,6 +281,9 @@ def convertToNamespace(path):
   return "".join("N" + map(lambda x: "%d%s" % (len(x), x), name))
 
 def convertToNativeSymbol(name, args, ret):
+  if name == 'main':
+    return "_main"
+
   mangling = []
 
   #나중에 바꾸더라도...
@@ -346,6 +349,11 @@ def encode_for_gcc(name, args):
 def encodeSymbolName(name, args = None, ends = None):
   if name == 'main':
     return '_main'
+  
+  if isinstance(name, list):
+    if len(name) == 1:
+      if name[0] == 'main':
+        return '_main'
 
   #if option.compilertype == 'gcc':
   return encode_for_gcc(name, args)

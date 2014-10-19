@@ -235,6 +235,10 @@ class Translate:
       raise NotImplementedError
     else:
       tree, name = self.mustCompileSet
+      print tree
+      if not tree.has_key('@type'):
+        raise KeyError
+
       if tree['@type'] == 'def':
         self.procFunc(tree)
  
@@ -268,11 +272,13 @@ class Translate:
       self.external[name] = content
 
     self.info = tree
-    body = self.tree['@body']
+    body = tree['@body']
     if isinstance(body, ASTExprs):
       self.procExprs(body)
     elif isinstance(body, ASTExpr):
       self.procExpr(body)
+    elif isinstance(body, ASTSimpleExprs):
+      self.procSimpleExprs(body)
     else:
       print tree, type(tree)
       raise NotImplementedError
@@ -465,6 +471,9 @@ class Translate:
 
   # 모든 type 정보는 ASTType을 사용하도록??
   def procOperator(self, tree):
+    print tree.left, tree.right
+    print isinstance(tree.left, ASTWord)
+    print isinstance(tree.right, ASTWord)
     left = self.procExpr(tree.left)
     right = self.procExpr(tree.right)
     if not self.compareTypeStr(left.type, right.type):
@@ -534,7 +543,8 @@ class Translate:
       return Value(type = left.type, reg = tmpReg)
     else:
       opName = self.makeFName(left.type, tree.name)
-      nativeName = encodeSymbolName(opName, args = [left.right])
+      print left, tree, opName
+      nativeName = encodeSymbolName(opName, args = [left.type])
       #print nativeName 
       context.emitPush(self.machine.getRetReg())
       context.emitCall(nativeName, [left.reg, right.reg], ret = True)
@@ -558,12 +568,23 @@ class Translate:
     elif tree.isType('System.lang.Float'):
       return Value(type = ASTType(name = 'System.lang.Float', templ = None, ranks = None), reg = self.machine.IFloat(tree.value))
     elif tree.isType('id'):
-      symtbl = self.info['@symbols']
+      symtbl = self.info['@symbols'][-1]
       if not symtbl.has_key(tree.value):
         raise Exception('Error', 'Unknown type : %s' % (tree.value))
 
       info = symtbl[tree.value]
-      return Value(type = info.type, reg = self.machine.IUserReg(tree.value))
+      if isinstance(info, dict):
+        if not info.has_key('@vtype'):
+          print info
+          raise Exception('Error', 'Error')
+        
+        info = info['@vtype']
+      
+      if isinstance(info, ASTType) == False:
+        print info
+        raise Exception('Error', 'Not ASTType')
+
+      return Value(type = info, reg = self.machine.IUserReg(tree.value))
     else:
       print tree, type(tree)
       raise NotImplementedError

@@ -533,6 +533,7 @@ class Parser:
 
     self.localSymbolTable = [{}]
 
+    print nativeSymbol, self.globalSymbolTable[nativeSymbol]
     self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 
     if self.isdebug == 1:
@@ -596,10 +597,14 @@ class Parser:
       print ".".join(idStr)
 
     # 해당 type이 존재하는지 검사합니다.
-    whole = self.globalSymbolTable.findType(idStr)
-    if whole == None:
+    type = self.globalSymbolTable.findType(idStr)
+    if type == None:
       print "Unknown Type : %s" % (idStr)
       sys.exit(-1)
+
+    if type == 'alias':
+      idStr = self.globalSymbolTable.find(idStr)
+      print "(", idStr
 
     #tmpl = self.parseTemplatePart()
     #if not self.matchTemplateInfo(result, tmpl):

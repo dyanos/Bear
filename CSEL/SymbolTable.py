@@ -113,14 +113,19 @@ class SymbolTable:
     if info.has_key('@body'):
       body = info['@body']
 
+    symbols = None
+    if info.has_key('@symbols'):
+      symbols = info['@symbols']
+
     content['@body'] = body
     content['@args'] = args
+    content['@symbols'] = symbols
 
     fname = path[-1]
 
     native = convertToNativeSymbol(fname, args, None)
     fn = encodeSymbolName(path, args)
-    
+
     self.symbolTable[fn] = content
     now[native] = content
 
