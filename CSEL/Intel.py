@@ -247,6 +247,11 @@ def getInfoForRegAllocation(lst, args):
   use2 = dict([(i, set([])) for i in range(0, nlst+1)]) # which variable is using at nth's position
 
   def registerDefVar(reg, pos):
+    # 시스템 레지스터가 들어올경우 def에서는 0을 다음번 use에서는 그것을 사용하는 식으로 표시한다.
+    # 그렇게 하는 이유는 해당 register가 이미 선점된 상태에서, 꼭 사용해야 하는 경우(call에서의 rcx나 연산에서의 rax처럼)
+    # 에 대해서 spill out을 쉽게 구현할 수 있기 때문이다.
+    # 물론 spill out이 끝난 뒤에는 해당 레지스터들은 복구해야한다. 
+    # 네이밍은 rcx0, rcx1처럼 하면됨...
     if not isRegister(reg):
       return 
       
