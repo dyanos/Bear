@@ -121,14 +121,28 @@ class Context:
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
     pushedRegisters = []
     # http://msdn.microsoft.com/en-US/library/zthk2dkh(v=vs.80).aspx
-    for regnum in range(0, len(args)):
-      if regnum >= len(parameterList):
-        # stack을
-        self.emitPush(args[regnum])
+    for num, reg in enumerate(args):
+      tmpreg = None
+      if isinstance(reg, ASTWord):
+        if reg.type == 'id':
+          tmpreg = IUserReg(reg.value)
+        elif reg.type == ASTType('System.lang.String'):
+          tmpreg = self.registerInDataSection(reg.value)
+        elif reg.type == 'System.lang.Integer':
+          tmpreg = IImm(reg['@value'])  
+        else:
+          print reg.type, reg.value
+          raise NotImplementedError 
+      elif isinstance(reg, IStorage):
+        tmpreg = reg
       else:
-        self.emitPush(parameterList[regnum])
-        pushedRegisters.append(parameterList[regnum])
-        self.emitMove(args[regnum], parameterList[regnum])
+        print reg
+        raise NotImplementedError
+
+      if num < len(parameterList):
+        self.emitMove(tmpreg, parameterList[num])
+      else:
+        self.emitPush(tmpreg)
 
     # return 변수가 있을 경우, 일단 있다고 가정...
     #self.context.append(self.machine.OpPush(IReg('rax')))
@@ -188,7 +202,7 @@ class Context:
   def registerInDataSection(self, data):
     name = self.makeDataAlias()
     self.dataSection[name] = data
-    return name
+    return IConstVar(name)
 
   def makeDataAlias(self):
     return genRandomString(16)
@@ -397,15 +411,15 @@ class Translate:
     elif isinstance(tree, ASTFuncCall):
       context = self.getLastContext()
       args = []
+      # type체킹은 parser에서 다 끝냈다고 생각하고...
       for arg in tree.args:
-        if isinstance(arg, AST) and not isinstance(arg, ASTWord):
-          arg = self.procSimpleExpr(arg)
-
-        if isinstance(arg, ASTWord):
-          # string
-          if arg.type == 'Pc' or arg.type == 'System.lang.String':
-            name = context.registerInDataSection(arg.value)
-            args.append(name)
+        if isinstance(arg, ASTCalleeArgType1):
+          args.append(arg.value)
+        elif isinstance(arg, ASTWord):
+          args.append(arg)
+        else:
+          print arg
+          raise NotImplementedError
       
       nativeName = encodeSymbolName(tree.name.array)
       context.emitCall(nativeName, args)

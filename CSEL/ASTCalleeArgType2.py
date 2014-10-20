@@ -2,9 +2,10 @@
 from AST import *
 
 class ASTCalleeArgType2(AST):
-  def __init__(self, name, value):
+  def __init__(self, name, value, type):
     self.name = name
     self.value = value
+    self.type = type
 
   def printXML(self):
     print "<callee-type2>"

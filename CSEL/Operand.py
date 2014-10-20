@@ -90,6 +90,20 @@ class IMem(IStorage):
   def __hash__(self):
     raise Exception('IImm', 'Not Implemented')
 
+class IConstVar(IStorage):
+  def __init__(self, label):
+    super(IConstVar, self).__init__("const var")
+    self.label = label
+
+  def __str__(self):
+    return self.value
+
+  def __hash__(self):
+    raise NotImplementedError
+
+  def __eq__(self):
+    raise NotImplementedError
+
 class IString(IStorage):
   def __init__(self, value):
       super(IString, self).__init__("string")
@@ -99,10 +113,10 @@ class IString(IStorage):
       return self.value
 
   def __hash__(self):
-    raise Exception('IImm', 'Not Implemented')
+    raise NotImplementedError
 
   def __eq__(self):
-    raise Exception('IImm', 'Not Implemented')
+    raise NotImplementedError
 
 class IInteger(IStorage):
   def __init__(self, value):
@@ -119,7 +133,7 @@ class IInteger(IStorage):
     return False
 
   def __hash__(self):
-    raise Exception('IImm', 'Not Implemented')
+    raise NotImplementedError
 
 class IFloat(IStorage):
   def __init__(self, value):
@@ -133,7 +147,7 @@ class IFloat(IStorage):
     return False
 
   def __hash__(self):
-    raise Exception('IImm', 'Not Implemented')
+    raise NotImplementedError
 
 class IDouble(IStorage):
   def __init__(self, value):
