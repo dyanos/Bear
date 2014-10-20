@@ -46,21 +46,6 @@ class Context:
       if self.machine.isTemporaryRegister(elem) == True:
         self.registerLoc(elem.name, loc)
 
-  def setArgVar(self, name):
-    # 함수 인자들의 갯수가 compiler에서 정한 것보다 더 많다면, arguments에는 그것들과 관련된 메모리 레지스터가 삽입되어야 한다.
-    self.arguments[name] = IMem(base=IReg('rbp'), imm=self.narguments)
-    self.narguments += 8
-
-    return self.arguments[name]
-  
-  def convertArgumentToReg(self, pos):
-    # argument로 사용되는 register들 
-    argreg = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
-    if pos < len(argreg):
-      return argreg[pos]
-
-    return None
-
   def registerLoc(self, name, loc):
     if not self.undef.has_key(name):
       self.undef[name] = [loc]
@@ -74,14 +59,7 @@ class Context:
   def decreaseReservedStackSize(self):
     self.reservedStackSize -= self.sizeOfMachineRegister
 
-  def convertReg(self, name):
-    if self.arguments.has_key(str(name)):
-      return self.arguments[str(name)]
-    return name
-
   def emitMove(self, src, dst):
-    src = self.convertReg(src)
-    dst = self.convertReg(dst)
     operand = self.machine.OpMove(src, dst)
     self.context.append(operand)
     self.checkTemporaryReg(regList = [src, dst], loc = len(self.context))
@@ -89,10 +67,6 @@ class Context:
     print "mov %s, %s" % (dst, src)
 
   def emitAdd(self, srcA, srcB, dst):
-    srcA = self.convertReg(srcA)
-    srcB = self.convertReg(srcB)
-    dst = self.convertReg(dst)
-
     context = self.context
     if self.machine == Intel:
       tmpReg = genTempRegister()
@@ -104,14 +78,12 @@ class Context:
       print "add %s, %s, %s" % (dst, srcB, srcA)
 
   def emitPush(self, target):
-    target = self.convertReg(target)
     operand = self.machine.OpPush(target)
     self.context.append(operand)
 
     print "push %s" % (target)
 
   def emitPop(self, target):
-    target = self.convertReg(target)
     operand = self.machine.OpPop(target)
     self.context.append(operand)
 
@@ -156,8 +128,6 @@ class Context:
       self.emitPop(reg)
 
   def emitComp(self, target1, target2):
-    target1 = self.convertReg(target1)
-    target2 = self.convertReg(target2)
     operand = self.machine.OpComp(target1, target2)
     self.context.append(operand)
     print "cmp %s, %s" % (target1, target2)
@@ -173,7 +143,6 @@ class Context:
     print "jz %s" % (label)
 
   def emitJumpUsingReg(self, reg):
-    reg = self.convertReg(reg)
     operand = self.machine.OpJumpToReg(reg)
     self.context.append(operand)
     print "jmp %s" % (reg)

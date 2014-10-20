@@ -336,6 +336,9 @@ def getInfoForRegAllocation(lst, args):
   oldOut = [nullSet for i in range(0, nlst+1)]
   newOut = [nullSet for i in range(0, nlst+1)]
 
+  print lst
+  print succ
+  print pred
   exitFlag = True  
   while exitFlag:
     #print ind 
@@ -344,7 +347,9 @@ def getInfoForRegAllocation(lst, args):
       oldIn[real]  = newIn[real]
       oldOut[real] = newOut[real]
       newOut[real] = set([])
+      print real
       if succ.has_key(real):
+        print "*", succ[real]
         for succNodeNum in succ[real]:
           if succNodeNum < 0 or succNodeNum >= nlst:
             continue
@@ -352,12 +357,19 @@ def getInfoForRegAllocation(lst, args):
           newOut[real] |= newIn[succNodeNum]
           
         newIn[real] = use2[real] | (newOut[real] - def2[real])
+        print newIn[real], use2[real], newOut[real], def2[real]
+
+    exitFlag = False
+    for n in range(nlst):
+      if len(newOut[n]) != 0:
+        exitFlag = True
+        break 
 
     for n in range(0, nlst):
       if oldIn[n] != newIn[n] or oldOut[n] != newOut[n]:
         exitFlag = False
         break
-
+    
   G = generateInterferenceGraph(lst, newOut, args)
   
   # To add arguments to graph's node
