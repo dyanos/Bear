@@ -184,7 +184,7 @@ class SymbolTable:
 
       native = encodeSymbolName(path, args, None)
       if self.symbolTable.has_key(native):
-        return True
+        return self.symbolTable[native]
     elif type == 'namespace' or type == 'class':
       pathlst = path.split('.')
 
@@ -192,18 +192,18 @@ class SymbolTable:
       nmatch = 0
       for pos, name in enumerate(pathlst):
         if not now.has_key(name):
-          return False
+          return None
 
         now = now[name]
         nmatch += 1
 
       if nmatch == len(pathlst):
-        return True
+        return now
     else:
       print "Error) type :", type
       raise NotImplementedError
 
-    return False
+    return None
 
   def __getitem__(self, path):
     if not self.symbolTable.has_key(path):

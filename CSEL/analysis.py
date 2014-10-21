@@ -448,20 +448,23 @@ class Translate:
   def compareTypeStr(self, leftType, rightType):
     return leftType == rightType
 
+  def convertToASTType(self, obj):
+    if isinstance(obj, ASTType):
+      return obj
+    elif isinstance(obj, ASTWord):
+      return obj.type
+    elif isinstance(obj, Value):
+      return obj.type
+    else:
+      print obj
+      raise NotImplementedError
+
   # 모든 type 정보는 ASTType을 사용하도록??
   def procOperator(self, tree):
-    print tree.left, tree.right
-    print isinstance(tree.left, ASTWord)
-    print isinstance(tree.right, ASTWord)
+    context = self.getLastContext()
+
     left = self.procExpr(tree.left)
     right = self.procExpr(tree.right)
-    if not self.compareTypeStr(left.type, right.type):
-      print "Error: mismatched type"
-      print "type of left tree = '%s'" % (left.type)
-      print "type of right tree = '%s'" % (right.type)
-      return None
-
-    context = self.getLastContext()
 
     tmpReg = genTempRegister()
     if self.isBasicType(left.type):      

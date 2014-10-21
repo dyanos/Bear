@@ -643,10 +643,14 @@ class Parser:
     lst = []
     while not self.isEnd():
       ret = self.parseExpr()
-      if ret == None: break
+      if ret == None: 
+        continue
       if isinstance(ret, ASTExprs):
         lst += ret.exprs
+      elif isinstance(ret, list):
+        lst += ret
       else:
+        # ??
         lst.append(ret)
 
     if len(lst) == 0: return None
@@ -691,6 +695,15 @@ class Parser:
     body = self.parseExpr()
     return ASTFor(cond, body)
 
+  def convertToASTType(self, obj):
+    if isinstance(obj, ASTType):
+      return obj
+    elif isinstance(obj, ASTWord):
+      return obj.type
+    else:
+      print "**", obj
+      raise NotImplementedError
+
   def parseVar(self):
     if not self.match('var'):
       return None
@@ -702,6 +715,7 @@ class Parser:
       name = self.getName()
       if sym.has_key(name):
         print "has duplicated name"
+        raise Exception('Error', 'Duplicated Name')
         return None
 
       type = None
@@ -713,8 +727,13 @@ class Parser:
       #print "name =", name
 
       # 변수 초기화
-      init = None
+      tree = None
       if self.match('='):
+        query = {"@name": '=', '@type': 'def'}
+        query['@args'] = [type, self.convertToASTType(self.parseSimpleExpr())]
+        symbol = self.globalSymbolTable.find(query)
+        print symbol
+
         tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name), self.parseSimpleExpr())
         hist.append(tree)
 
@@ -724,7 +743,7 @@ class Parser:
 
     self.match(';')
 
-    return ASTExprs(hist)
+    return hist
 
   def parseVal(self):
     return None
@@ -786,7 +805,25 @@ class Parser:
             tree = ASTIndexing(ASTNames(tree.array + [right.name.value]), right.history)
         else:
           tok = self.token.tok
-          tree = ASTOperator(ASTWord(tok.type, tok.value), tree, right)
+  
+          # Global Operator 함수로 첫번째 찾는다. (C++의 operator + (left, right)라는 식..)
+          content = {'@type': 'def', '@name': tok.value}
+          content['@args'] = [self.convertToASTType(tree), self.convertToASTType(right)]
+          symbol = self.globalSymbolTable.find(content)
+          if symbol = None:
+            # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
+            content = {'@type': 'def', '@name': self.convertToASTType(tree) + "." + tok.value}
+            content['@args'] = [self.convertToASTType(right)]
+            symbol = self.globalSymbolTable.find(content)
+
+          if symbol != None:
+            if symbol['@type'] == 'native def':
+              raise NotImplementedError
+            else:
+              tree = ASTFuncCall(content['@name'], tree, right)
+          elif symbol == None:
+            tree = ASTOperator(ASTWord(tok.type, tok.value), tree, right)
+            
       # array
       elif self.sameType('id'):
         #if isinstance(tree, ASTSet):
