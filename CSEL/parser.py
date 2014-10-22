@@ -47,6 +47,9 @@ from ASTTemplateArg import *
 from ASTListValue import *
 from ASTCalleeArgType1 import *
 from ASTCalleeArgType2 import *
+from ASTNativeAdd import *
+from ASTNativeMove import *
+
 from SymbolTable import *
 from IR import *
 from mangle import *
@@ -130,6 +133,24 @@ class Parser:
     symtbl.register({'@type':'class','@name':namespaceChar})
     symtbl.register({'@type':'class','@name':namespaceShort})
     symtbl.register({'@type':'class','@name':namespaceInt})
+    symtbl.register({
+      '@type':'native def',
+      '@name':namespaceInt + '.=',
+      '@args':[ASTType(namespaceInt)],
+      '@vtype':ASTType(namespaceInt),
+      '@method':lambda se,dst: ASTNativeMove(se, dst)})
+    symtbl.register({
+      '@type':'native def',
+      '@name':'+',
+      '@args':[ASTType(namespaceInt), ASTType(namespaceInt)],
+      '@vtype':ASTType(namespaceInt),
+      '@method':lambda src1,src2: ASTNativeAdd(src1, src2)})
+    symtbl.register({
+      '@type':'native def',
+      '@name':'+=',
+      '@args':[ASTType(namespaceInt), ASTType(namespaceInt)],
+      '@vtype':ASTType(namespaceInt),
+      '@method':lambda se,dst: ASTNativeMove(se, ASTNativeAdd(src, dst))})
     symtbl.register({'@type':'class','@name':namespaceLong})
     symtbl.register({'@type':'class','@name':namespaceFloat})
     symtbl.register({'@type':'class','@name':namespaceDouble})
@@ -665,7 +686,6 @@ class Parser:
     elif self.same('for'):
       ret = self.parseForStmt()
     elif self.same('var'):
-      #print "calling var"
       ret = self.parseVar()
     elif self.same('val'):
       ret = self.parseVal()
@@ -698,8 +718,12 @@ class Parser:
   def convertToASTType(self, obj):
     if isinstance(obj, ASTType):
       return obj
-    elif isinstance(obj, ASTWord):
+    elif isinstance(obj, ASTWord) and obj.vtype != None:
+      return obj.vtype
+    elif isinstance(obj, ASTWord) and isinstance(obj.type, ASTType):
       return obj.type
+    elif isinstance(obj, ASTListGenerateType1):
+      return ASTType('System.lang.Array')
     else:
       print "**", obj
       raise NotImplementedError
@@ -734,7 +758,7 @@ class Parser:
         symbol = self.globalSymbolTable.find(query)
         print symbol
 
-        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name), self.parseSimpleExpr())
+        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), self.parseSimpleExpr())
         hist.append(tree)
 
       sym[name] = {"@type": "var", "@vtype": type}
@@ -746,7 +770,46 @@ class Parser:
     return hist
 
   def parseVal(self):
-    return None
+    if not self.match('val'):
+      return None
+
+    sym = self.localSymbolTable[-1]
+    
+    hist = []
+    while True:
+      name = self.getName()
+      if sym.has_key(name):
+        print "has duplicated name"
+        raise Exception('Error', 'Duplicated Name')
+        return None
+
+      type = None
+      if self.match(':'):
+        type = self.parseType()
+      else:
+        type = ASTType(name = 'System.lang.Integer', templ = None, ranks = None)
+
+      #print "name =", name
+
+      # 변수 초기화
+      tree = None
+      if self.match('='):
+        query = {"@name": '=', '@type': 'def'}
+        query['@args'] = [type, self.convertToASTType(self.parseSimpleExpr())]
+        symbol = self.globalSymbolTable.find(query)
+        print symbol
+
+        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), self.parseSimpleExpr())
+        hist.append(tree)
+
+      sym[name] = {"@type": "var", "@vtype": type}
+      if not self.match(','):
+        break
+
+    self.match(';')
+
+    return hist
+
 
   def parseBlockExprs(self):
     return None
@@ -810,12 +873,13 @@ class Parser:
           content = {'@type': 'def', '@name': tok.value}
           content['@args'] = [self.convertToASTType(tree), self.convertToASTType(right)]
           symbol = self.globalSymbolTable.find(content)
-          if symbol = None:
+          if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
             content = {'@type': 'def', '@name': self.convertToASTType(tree) + "." + tok.value}
             content['@args'] = [self.convertToASTType(right)]
             symbol = self.globalSymbolTable.find(content)
 
+          print symbol, content
           if symbol != None:
             if symbol['@type'] == 'native def':
               raise NotImplementedError
@@ -839,8 +903,24 @@ class Parser:
         self.token.nextToken()
 
         right = self.parseBasicSimpleExpr()
+        print "here : ", mid, tree, right
         if right != None:
-          tree = ASTOperator(mid, tree, right)
+          content = {'@type': 'def', '@name': tokVal}
+          content['@args'] = [self.convertToASTType(tree), self.convertToASTType(right)]
+          symbol = self.globalSymbolTable.find(content)
+          if symbol == None:
+            # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
+            content = {'@type': 'def', '@name': self.convertToASTType(tree) + "." + tokVal}
+            content['@args'] = [self.convertToASTType(right)]
+            symbol = self.globalSymbolTable.find(content)
+
+          if symbol != None:
+            if symbol['@type'] == 'native def':
+              raise NotImplementedError
+            else:
+              tree = ASTFuncCall(content['@name'], [tree, right])
+          else:
+            tree = ASTOperator(mid, tree, right)
         else:
           # for example, 'a++' or 'a+'
           tree = ASTUnary(tree, mid)
@@ -850,7 +930,12 @@ class Parser:
     if isinstance(tree, ASTFuncCall):
       candidates = set([])      
 
-      path = ".".join(tree.name.array)
+      path = None
+      if isinstance(tree, ASTNames):
+        path = ".".join(tree.name.array)
+      else:
+        path = tree.name
+
       ret = self.globalSymbolTable.find({'@type':'def', '@name':path, '@args':tree.args})
       if ret == None:
         print "Error) Not Symbol :", path
@@ -931,12 +1016,18 @@ class Parser:
         return ASTFuncCall(ASTWord(tok.type, tok.value), args)
       elif self.match('...'):
         right = self.parseSimpleExpr()
-        return ASTListGenerateType1(ASTWord(tok.type, tok.value), right)
-      elif self.match('='):
-        right = self.parseSimpleExpr()
-        return ASTCalleeArgType2(ASTWord(tok.type, tok.value), right)
+        return ASTListGenerateType1(ASTWord(tok.type, tok.value), right) # 여기서 빠진 것은 Arrya<T이어야 한다는 사실(Type이 빠졌다는 소리)
       else:
-        return ASTWord(tok.type, tok.value)
+        vtype = None
+        for symbolTable in reversed(self.localSymbolTable):
+          if symbolTable.has_key(tok.value):
+            vtype = symbolTable[tok.value]
+            break
+
+        if vtype == None:
+          vtype = self.globalSymbolTable.findType([tok.value])
+
+        return ASTWord(tok.type, tok.value, vtype)
     elif self.match('_'):
       return ASTWord('v', tok.value)
     elif self.match('['):

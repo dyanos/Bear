@@ -27,6 +27,8 @@ class SymbolTable:
         raise KeyError
 
       self.symbolDict[info['@name']] = {'@type': 'alias', '@name': info['@fullname']}
+    elif type == 'native def':
+      self.registerNativeDef(info)
     else:
       print "type :", type
       raise NotImplementedError
@@ -129,6 +131,46 @@ class SymbolTable:
     self.symbolTable[fn] = content
     now[native] = content
 
+  def registerNativeDef(self, info):
+    if not info.has_key('@name'):
+      raise KeyError
+
+    path = info['@name'].split('.')
+    now  = self.symbolDict
+    if len(path) > 1:
+      for name in path[:-1]:
+        if not now.has_key(name):
+          now[name] = {}
+
+        now = now[name]
+
+    content = {'@type': 'def', '@vtype': info['@vtype']}
+
+    args = None
+    if info.has_key('@args'):
+      args = info['@args']
+
+    body = None
+    if info.has_key('@body'):
+      body = info['@body']
+
+    symbols = None
+    if info.has_key('@symbols'):
+      symbols = info['@symbols']
+
+    content['@body'] = body
+    content['@args'] = args
+    content['@symbols'] = symbols
+    content['@method'] = info['@method']
+
+    fname = path[-1]
+
+    native = convertToNativeSymbol(fname, args, None)
+    fn = encodeSymbolName(path, args)
+
+    self.symbolTable[fn] = content
+    now[native] = content
+   
   def findType(self, path):
     now = self.symbolDict
 

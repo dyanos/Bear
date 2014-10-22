@@ -328,6 +328,11 @@ def encode_for_gcc(name, args):
           type = item.type
         elif isinstance(item, ASTCalleeArgType1):
           type = item.type
+        elif isinstance(item, ASTWord) and item.vtype != None:
+          if not isinstance(item.vtype, ASTType):
+            raise NotImplementedError
+
+          type = item.vtype
         else:
           print "**", item
           raise NotImplementedError
