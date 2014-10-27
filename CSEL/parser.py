@@ -554,7 +554,7 @@ class Parser:
 
     self.localSymbolTable = [{}]
 
-    print nativeSymbol, self.globalSymbolTable[nativeSymbol]
+    print "1", nativeSymbol, self.globalSymbolTable[nativeSymbol]
     self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 
     if self.isdebug == 1:
@@ -710,7 +710,7 @@ class Parser:
     if not self.match('for'):
       return None
 
-    cond = self.parseSimpleExpr()
+    cond = self.parseBasicSimpleExpr()
     self.match(':')
     body = self.parseExpr()
     return ASTFor(cond, body)
@@ -718,8 +718,17 @@ class Parser:
   def convertToASTType(self, obj):
     if isinstance(obj, ASTType):
       return obj
+    elif isinstance(obj, ASTListGenerateType1):
+      return self.convertToASTType(obj.start)
     elif isinstance(obj, ASTWord) and obj.vtype != None:
-      return obj.vtype
+      if isinstance(obj.vtype, ASTType):
+        return obj.vtype
+      # 이건 비정상적인 경우, 이렇게 찾아들어오면 안된다.
+      elif isinstance(obj.vtype, dict):
+        return obj.vtype['@vtype']
+      else:
+        print "))", obj.vtype
+        raise NotImplementedError
     elif isinstance(obj, ASTWord) and isinstance(obj.type, ASTType):
       return obj.type
     elif isinstance(obj, ASTListGenerateType1):
@@ -753,12 +762,14 @@ class Parser:
       # 변수 초기화
       tree = None
       if self.match('='):
-        query = {"@name": '=', '@type': 'def'}
-        query['@args'] = [type, self.convertToASTType(self.parseSimpleExpr())]
-        symbol = self.globalSymbolTable.find(query)
-        print symbol
+        right = self.parseSimpleExpr()
 
-        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), self.parseSimpleExpr())
+        query = {"@name": '=', '@type': 'def'}
+        query['@args'] = [type, self.convertToASTType(right)]
+        symbol = self.globalSymbolTable.find(query)
+        print "2", symbol
+
+        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), right)
         hist.append(tree)
 
       sym[name] = {"@type": "var", "@vtype": type}
@@ -794,12 +805,14 @@ class Parser:
       # 변수 초기화
       tree = None
       if self.match('='):
-        query = {"@name": '=', '@type': 'def'}
-        query['@args'] = [type, self.convertToASTType(self.parseSimpleExpr())]
-        symbol = self.globalSymbolTable.find(query)
-        print symbol
+        right = self.parseSimpleExpr()
 
-        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), self.parseSimpleExpr())
+        query = {"@name": '=', '@type': 'def'}
+        query['@args'] = [type, self.convertToASTType(right)]
+        symbol = self.globalSymbolTable.find(query)
+        print "3", symbol
+
+        tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), right)
         hist.append(tree)
 
       sym[name] = {"@type": "var", "@vtype": type}
@@ -875,11 +888,11 @@ class Parser:
           symbol = self.globalSymbolTable.find(content)
           if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            content = {'@type': 'def', '@name': self.convertToASTType(tree) + "." + tok.value}
+            content = {'@type': 'def', '@name': self.convertToASTType(tree).name + "." + tok.value}
             content['@args'] = [self.convertToASTType(right)]
             symbol = self.globalSymbolTable.find(content)
 
-          print symbol, content
+          print "4", symbol, content
           if symbol != None:
             if symbol['@type'] == 'native def':
               raise NotImplementedError
@@ -910,7 +923,7 @@ class Parser:
           symbol = self.globalSymbolTable.find(content)
           if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            content = {'@type': 'def', '@name': self.convertToASTType(tree) + "." + tokVal}
+            content = {'@type': 'def', '@name': self.convertToASTType(tree).name + "." + tokVal}
             content['@args'] = [self.convertToASTType(right)]
             symbol = self.globalSymbolTable.find(content)
 

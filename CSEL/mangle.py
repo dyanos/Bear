@@ -192,11 +192,14 @@ def convertName_for_gcc(name):
     if name[0] == 'main':
       return '_main'
     else:
-      return "__Z%d%s" % (len(name[0]), name[0])
+      if operatorTransTbl.has_key(name[0]):
+        return "_Z%s" % (operatorTransTbl[name[0]])
+      else:
+        return "_Z%d%s" % (len(name[0]), name[0])
   else:
     return "".join(["__ZN"] + map(lambda x: "".join([str(len(x)), x]), name) + ['E'])
 
-def convertName(name):
+def _convertName(name):
   nameList = None
   if isinstance(name, list):
     nameList = name
@@ -268,7 +271,7 @@ def convertType(type):
  
 def converting(name, tmpl):
   mangling_name = []
-  mangling_name += convertName(name)
+  mangling_name += _convertName(name)
   if tmpl != None:
     mangling_name.append("I")
     for item in tmpl:
@@ -278,6 +281,12 @@ def converting(name, tmpl):
   return "".join(mangling_name)
 
 def convertToNamespace(path):
+  if len(path) == 1:
+    if operatorTransTbl.has_key(path[0]):
+      return operatorTransTbl[path[0]]
+    else:
+      return path[0]
+
   return "".join("N" + map(lambda x: "%d%s" % (len(x), x), name))
 
 def convertToNativeSymbol(name, args, ret):
@@ -291,7 +300,10 @@ def convertToNativeSymbol(name, args, ret):
     mangling.append(convertToNamespace(name))
     mangling.append("E")
   else:
-    mangling.append("%sE" % (name))
+    if operatorTransTbl.has_key(name):
+      mangling.append("%sE" % (operatorTransTbl[name]))
+    else:
+      mangling.append("%sE" % (name))
 
   if args != None:
     for arg in args:
@@ -315,7 +327,7 @@ def encode_for_gcc(name, args):
   mangling = []
   if True:
     cnt = len(name)
-    _name = convertName(name)
+    _name = _convertName(name)
     mangling.append(_name)
 
     if args != None:
@@ -333,6 +345,12 @@ def encode_for_gcc(name, args):
             raise NotImplementedError
 
           type = item.vtype
+        elif isinstance(item, dict):
+          if item.has_key('@vtype'):
+            return item['@vtype']
+          else:
+            print "key error"
+            raise KeyError
         else:
           print "**", item
           raise NotImplementedError
@@ -346,26 +364,31 @@ def encode_for_gcc(name, args):
     if cnt == 1:
       return "_" + tree.name.array[0]
     else:
-      name = convertName(tree.name.array)
+      name = _convertName(tree.name.array)
       mangling.append("".join(["__ZN"]+name+["E"]))
      
     return "".join(mangling)
     
 def encodeSymbolName(name, args = None, ends = None):
-  if name == 'main':
-    return '_main'
-  
   if isinstance(name, list):
     if len(name) == 1:
       if name[0] == 'main':
         return '_main'
 
-  #if option.compilertype == 'gcc':
-  return encode_for_gcc(name, args)
-  #elif option.compilertype == 'msvc':
-  # return encode_for_msvc(tree)
-  #else:
-  # return encode_for_other(tree)
+    #if option.compilertype == 'gcc':
+    return encode_for_gcc(name, args)
+    #elif option.compilertype == 'msvc':
+    # return encode_for_msvc(tree)
+    #else:
+    # return encode_for_other(tree)
+  elif isinstance(name, str):
+    if name == 'main':
+      return '_main'
+
+    return _convertName(name)
+  else:
+    print "*2", name
+    raise Exception('Error', 'Error')
 
 def reverseEncodedName(name):
   value = None
@@ -387,7 +410,7 @@ def convertSimpleTypeName(name):
 
   # for gcc
   nameList = name.split('.')
-  return convertName(nameList)
+  return _convertName(nameList)
 
 def decodeMachineName(name):
   translateTable = {
