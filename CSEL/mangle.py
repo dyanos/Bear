@@ -385,7 +385,7 @@ def encodeSymbolName(name, args = None, ends = None):
     if name == 'main':
       return '_main'
 
-    return _convertName(name)
+    return encode_for_gcc(name, args)
   else:
     print "*2", name
     raise Exception('Error', 'Error')

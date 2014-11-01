@@ -554,7 +554,7 @@ class Parser:
 
     self.localSymbolTable = [{}]
 
-    print "1", nativeSymbol, self.globalSymbolTable[nativeSymbol]
+    #print "1", nativeSymbol, self.globalSymbolTable[nativeSymbol]
     self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 
     if self.isdebug == 1:
@@ -625,7 +625,7 @@ class Parser:
 
     if type == 'alias':
       idStr = self.globalSymbolTable.find(idStr)
-      print "(", idStr
+      #print "(", idStr
 
     #tmpl = self.parseTemplatePart()
     #if not self.matchTemplateInfo(result, tmpl):
@@ -665,7 +665,7 @@ class Parser:
     while not self.isEnd():
       ret = self.parseExpr()
       if ret == None: 
-        continue
+        break
       if isinstance(ret, ASTExprs):
         lst += ret.exprs
       elif isinstance(ret, list):
@@ -693,7 +693,9 @@ class Parser:
       ret = self.parseBlockExprs()
     else:
       ret = self.parseSimpleExpr1()
+      #print "***",ret
       self.match(';')
+      #s = raw_input()
 
     return ret
 
@@ -711,9 +713,28 @@ class Parser:
       return None
 
     cond = self.parseBasicSimpleExpr()
-    self.match(':')
-    body = self.parseExpr()
-    return ASTFor(cond, body)
+    if cond == None:
+      print "Error) Needed to identifier"
+      raise SyntaxError
+    if not self.match('<='):
+      print "Error) Needed to <="
+      raise SyntaxError
+    generator = self.parseSimpleExpr()
+    if generator == None:
+      print "Error) Needed generator"
+      raise SyntaxError
+
+    body = None
+    if self.match(':'):
+      body = self.parseExpr()
+    elif self.match('{'):
+      body = self.parseExprs()
+      self.match('}')
+    else:
+      print "Error) Needed '{' '}' or '='"
+      raise NotImplementedError
+
+    return ASTFor(cond, generator, body)
 
   def convertToASTType(self, obj):
     if isinstance(obj, ASTType):
@@ -733,6 +754,8 @@ class Parser:
       return obj.type
     elif isinstance(obj, ASTListGenerateType1):
       return ASTType('System.lang.Array')
+    elif isinstance(obj, ASTCalleeArgType1):
+      return self.convertToASTType(obj.type)
     else:
       print "**", obj
       raise NotImplementedError
@@ -767,7 +790,7 @@ class Parser:
         query = {"@name": '=', '@type': 'def'}
         query['@args'] = [type, self.convertToASTType(right)]
         symbol = self.globalSymbolTable.find(query)
-        print "2", symbol
+        #print "2", symbol
 
         tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), right)
         hist.append(tree)
@@ -916,7 +939,7 @@ class Parser:
         self.token.nextToken()
 
         right = self.parseBasicSimpleExpr()
-        print "here : ", mid, tree, right
+        #print "here : ", mid, tree, right
         if right != None:
           content = {'@type': 'def', '@name': tokVal}
           content['@args'] = [self.convertToASTType(tree), self.convertToASTType(right)]
@@ -945,13 +968,15 @@ class Parser:
 
       path = None
       if isinstance(tree, ASTNames):
+        path = ".".join(tree.array)
+      elif isinstance(tree.name, ASTNames):
         path = ".".join(tree.name.array)
       else:
         path = tree.name
 
-      ret = self.globalSymbolTable.find({'@type':'def', '@name':path, '@args':tree.args})
+      ret = self.globalSymbolTable.find({'@type':'def', '@name':path, '@args':map(lambda x: self.convertToASTType(x), tree.args)})
       if ret == None:
-        print "Error) Not Symbol :", path
+        print "Error) Not Symbol :", path, map(lambda x: self.convertToASTType(x), tree.args)
         raise SyntaxError
      
     if self.isdebug == 1:
@@ -975,7 +1000,10 @@ class Parser:
     elif self.match('false'):
       return ASTWord(ASTType('System.lang.Boolean'), '0')
     elif self.match('return'):
-      return ASTReturn(self.parseExpr())
+      #print "entering return"
+      expr = self.parseSimpleExpr()
+      #print "@@", expr
+      return ASTReturn(expr)
     #elif self.match('def'):
     #  ret = self.parseDefInnerFunc()
 
@@ -1038,7 +1066,7 @@ class Parser:
             break
 
         if vtype == None:
-          vtype = self.globalSymbolTable.findType([tok.value])
+          vtype = self.globalSymbolTable.findType(tok.value)
 
         return ASTWord(tok.type, tok.value, vtype)
     elif self.match('_'):

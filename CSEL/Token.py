@@ -191,7 +191,8 @@ class Token:
       else:
         self.tok = self.history[self.pos]
         self.pos = self.pos + 1
-    #print self.tok
+    #print "-",self.tok
+    #traceback.print_stack()
     return self.tok
 
   def same(self, val):

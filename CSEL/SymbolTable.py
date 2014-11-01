@@ -225,7 +225,7 @@ class SymbolTable:
         args = info['@args']
 
       native = encodeSymbolName(path, args, None)
-      print "*1", native
+      #print "*1", native
       if self.symbolTable.has_key(native):
         return self.symbolTable[native]
     elif type == 'namespace' or type == 'class':
