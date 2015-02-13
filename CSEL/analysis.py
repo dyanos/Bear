@@ -8,6 +8,7 @@ from context import *
 from Operand import *
 from ASTCalleeArgType1 import *
 from ASTCalleeArgType2 import *
+from ASTListGenerateType1 import *
 #from graph import *
 import Intel
 
@@ -317,10 +318,46 @@ class Translate:
     lastLabelStr = genTemporaryString()
 
     context = self.getLastContext()
+    if isinstance(tree.generator, ASTListGenerateType1):
+      # List Generator를 생성하는 생성자를 호출한다.
+      symbolInitFunc = encodeSymbolName(name = 'System.lang.Array.Array', args = [])  
+      context.emitPush(self.machine.getRetReg())
+      context.emitCall(symbolInitFunc, [], ret = True)
+      tmpReg = genTempRegister()
+      context.emitMove(self.machine.getRetReg(), tmpReg)
+      context.emitPop(self.machine.getRetReg())
+
+      context.emitLabel(midLabelStr)
+
+      # TODO(2013.10.18.) : 더 이상 남은게 없는지 확인해서 마지막으로 가는 코드가 필요하다.
+      # 특정 flag를 이용해서 다른데로 갈 수 있지만...
+      # iterator는 어떻게 쓰는지 몰라서 다른 언어에서의 사용법을 먼저 확인하고 코딩해야한다.
+      # 일단 지금은 물어본다.
+      # 나중에 함수 하나로 어떻게 안될까낭?? (가장 nice한 방법은 python처럼 yield keyword가 있는 구조라고 생각된다.)
+      nativeName = encodeSymbolName(name = 'System.lang.Array.end', args = ['System.lang.Array'])
+      context.emitPush(self.machine.getRetReg())
+      context.emitCall(nativeName, [tmpReg], ret = True)
+
+      # return이 1이면, end로 가야한다.
+      context.emitComp(self.machine.getRetReg(), self.machine.IInteger(1))
+      context.emitPop(self.machine.getRetReg())  # control bit가 바뀌지 않을지 걱정해야 한다.
+
+      # zero flag가 1이면(즉, 0)
+      context.emitJumpZeroFlag(lastLabelStr)
+
+      # 보통 오른쪽에 있는 것은 iterator가 가능한 object가 됨
+      context.emitPush(self.machine.getRetReg())
+      nativeName = encodeSymbolName(name = 'System.lang.Array.getNext', args = ['System.lang.Array'])
+      context.emitCall(nativeName, [tmpReg], ret = True)
+
     if isinstance(tree.cond, ASTOperator):
       cond = tree.cond
       # 'for var <= list:'
       if cond.name == '<=':
+        left = self.procSimpleExpr(tree.cond.left)
+        context.emitMove(self.machine.getRetReg(), left.reg)
+        context.emitPop(self.machine.getRetReg())
+ 
         # 이 경우 right쪽은 initialization code라 생각한다.
         ret = self.procSimpleExpr(cond.right)
 
@@ -355,6 +392,7 @@ class Translate:
         raise Exception('procForCond', 'Not implemented')
     else:
       print tree, type(tree)
+      print tree.cond, type(tree.cond)
       raise Exception('procForCond', 'Not implemented')
 
     ret = self.procExprs(tree.body)

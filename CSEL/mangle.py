@@ -349,8 +349,10 @@ def encode_for_gcc(name, args):
           if item.has_key('@vtype'):
             return item['@vtype']
           else:
-            print "key error"
+            print "key error", item
             raise KeyError
+        elif isinstance(item, str):
+          return _convertName(item.split('.'))
         else:
           print "**", item
           raise NotImplementedError
