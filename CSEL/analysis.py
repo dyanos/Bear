@@ -307,6 +307,13 @@ class Translate:
       return self.procOperator(tree)
     elif isinstance(tree, ASTReturn):
       self.procReturn(tree)
+    elif isinstance(tree, ASTFuncCall):
+      nativeName = encodeSymbolName(name = tree.name, args = tree.args)
+      regs = []
+      for arg in tree.args:
+        ret = self.procExpr(arg)
+        regs.append(ret)
+      context.emitCall(nativeName, regs, ret = False)
     else:
       print tree, type(tree)
       raise Exception("procExpr", "Not Implemented")
@@ -391,9 +398,35 @@ class Translate:
         print tree, type(tree)
         raise Exception('procForCond', 'Not implemented')
     else:
-      print tree, type(tree)
-      print tree.cond, type(tree.cond)
-      raise Exception('procForCond', 'Not implemented')
+      if True:
+        generator = self.procSimpleExpr(tree.generator)
+
+        context.emitLabel(midLabelStr)
+
+        # TODO(2013.10.18.) : 더 이상 남은게 없는지 확인해서 마지막으로 가는 코드가 필요하다.
+        # 특정 flag를 이용해서 다른데로 갈 수 있지만...
+        # iterator는 어떻게 쓰는지 몰라서 다른 언어에서의 사용법을 먼저 확인하고 코딩해야한다.
+        # 일단 지금은 물어본다.
+        # 나중에 함수 하나로 어떻게 안될까낭?? (가장 nice한 방법은 python처럼 yield keyword가 있는 구조라고 생각된다.)
+        nativeName = encodeSymbolName(name = 'System.lang.Array.end', args = [generator.type])
+        context.emitPush(self.machine.getRetReg())
+        context.emitCall(nativeName, [generator.reg], ret = True)
+
+        # return이 1이면, end로 가야한다.
+        context.emitComp(self.machine.getRetReg(), self.machine.IInteger(1))
+        context.emitPop(self.machine.getRetReg())  # control bit가 바뀌지 않을지 걱정해야 한다.
+
+        # zero flag가 1이면(즉, 0)
+        context.emitJumpZeroFlag(lastLabelStr)
+
+        # 보통 오른쪽에 있는 것은 iterator가 가능한 object가 됨
+        context.emitPush(self.machine.getRetReg())
+        nativeName = encodeSymbolName(name = 'System.lang.Array.getNext', args = [generator.type])
+        context.emitCall(nativeName, [generator.reg], ret = True)
+      else: 
+        print tree, type(tree)
+        print tree.cond, type(tree.cond)
+        raise Exception('procForCond', 'Not implemented')
 
     ret = self.procExprs(tree.body)
     context.emitJump(midLabelStr)
