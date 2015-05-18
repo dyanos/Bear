@@ -353,6 +353,8 @@ def encode_for_gcc(name, args):
             raise KeyError
         elif isinstance(item, str):
           return _convertName(item.split('.'))
+        elif isinstance(item, Value):
+          type = ??
         else:
           print "**", item
           raise NotImplementedError

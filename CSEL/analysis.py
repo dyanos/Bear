@@ -25,7 +25,11 @@ class Value:
   def __init__(self, **kargs):
     for key, value in kargs.iteritems():
       setattr(self, key, value)
-
+      
+  def __str__(self):
+    attrs = vars(self)
+    return ', '.join("%s: %s" % item for item in attrs.items())
+    
 # 3-state machine code
 class Context: 
   def __init__(self):
@@ -308,7 +312,15 @@ class Translate:
     elif isinstance(tree, ASTReturn):
       self.procReturn(tree)
     elif isinstance(tree, ASTFuncCall):
-      nativeName = encodeSymbolName(name = tree.name, args = tree.args)
+      # 양쪽의 Argument들은 Evaluate되어야만 한다.
+      new_args = []
+      for argument in tree.args:
+        new_args.append(self.procExpr(argument))
+      
+      print tree.name
+      print new_args[0]
+      
+      nativeName = encodeSymbolName(name = tree.name, args = new_args)
       regs = []
       for arg in tree.args:
         ret = self.procExpr(arg)
