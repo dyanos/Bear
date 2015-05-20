@@ -41,6 +41,8 @@ from ASTWrap import *
 from ASTCalleeArgType1 import *
 from ASTCalleeArgType2 import *
 
+from Value import *
+
 import re
 
 # ms compiler용 mangling 함수 작성 필요 
@@ -354,7 +356,10 @@ def encode_for_gcc(name, args):
         elif isinstance(item, str):
           return _convertName(item.split('.'))
         elif isinstance(item, Value):
-          type = ??
+          if not isinstance(item.type, ASTType):
+            raise NotImplementedError
+          
+          type = item.type
         else:
           print "**", item
           raise NotImplementedError

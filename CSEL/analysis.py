@@ -9,6 +9,8 @@ from Operand import *
 from ASTCalleeArgType1 import *
 from ASTCalleeArgType2 import *
 from ASTListGenerateType1 import *
+from Value import *
+
 #from graph import *
 import Intel
 
@@ -18,17 +20,6 @@ def genRandomString(length):
   chars  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
   locs  = [random.randint(0, len(chars)-1) for i in range(0, length)]
   return "".join(map(lambda loc: chars[loc], locs))
-
-# value는 그냥 값을 가지고 있으면 되공,
-# data는 data section의 위치를 가지고 있으면 되공...
-class Value:
-  def __init__(self, **kargs):
-    for key, value in kargs.iteritems():
-      setattr(self, key, value)
-      
-  def __str__(self):
-    attrs = vars(self)
-    return ', '.join("%s: %s" % item for item in attrs.items())
     
 # 3-state machine code
 class Context: 
@@ -112,6 +103,8 @@ class Context:
           raise NotImplementedError 
       elif isinstance(reg, IStorage):
         tmpreg = reg
+      elif isinstance(reg, Value):
+        tmpreg = reg.reg
       else:
         print reg
         raise NotImplementedError
@@ -317,14 +310,13 @@ class Translate:
       for argument in tree.args:
         new_args.append(self.procExpr(argument))
       
-      print tree.name
-      print new_args[0]
-      
       nativeName = encodeSymbolName(name = tree.name, args = new_args)
       regs = []
       for arg in tree.args:
         ret = self.procExpr(arg)
         regs.append(ret)
+        
+      context = self.getLastContext()
       context.emitCall(nativeName, regs, ret = False)
     else:
       print tree, type(tree)
