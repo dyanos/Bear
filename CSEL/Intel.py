@@ -3,6 +3,9 @@
 from Operand import *
 import pprint,sys
 
+import networkx as nx
+import matplotlib.pyplot as plt
+
 class OpMove(Operand):
   def __init__(self, src, dst):
     self.src = src
@@ -230,7 +233,7 @@ def generateInterferenceGraph(lst, outLive, args):
 
     loc += 1
 
-  #pp.pprint(graph)
+  pprint.pprint(graph)
   return graph
 
 def getInfoForRegAllocation(lst, args):
@@ -406,12 +409,16 @@ def doGraphColoring(lst, args = []):
   colored = [False for i in range(0, nsymbols)]
   colored2 = {}
   
+  availColorList = []
+
   for pos, symbol in enumerate(symbols):
     # if a symbol is already colored, 
     if symbol in registerList:
       assignedColor[symbol] = symbol
       colored[pos] = True
       colored2[symbol] = True
+
+  availColorList = filter(lambda x: not x in symbols, registerList)
 
   # 1. SD가 가장 큰 것을 찾는다.
   # 2. 할당되었는지 확인 후 되어있다면, 1번으로 돌아간다.
@@ -421,6 +428,7 @@ def doGraphColoring(lst, args = []):
   # 6. 없다면 spilling
 
   spilling = {}
+  preservedStackSize = 0
   
   # using heuristic algorithm
   allvars  = filter(lambda x: not colored2.has_key(x), symbols) # except pre-assigned registers
@@ -443,17 +451,17 @@ def doGraphColoring(lst, args = []):
     # if symbol is already colored, mark it.
     precolored = []
     for s in G[symbol]:
-      if not s in colored2: # to check that the key 's' is in colored2
+      if not s in colored2.keys(): # to check that the key 's' is in colored2
         continue
       
-      if s in assignedColor:
+      if s in assignedColor.keys():
         precolored.append(assignedColor[s])
 
     # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
     # to find the list of non-assigned registers
-    availColorList = list(set(registerList) - set(precolored))
+    #availColorList = list(set(registerList) - set(precolored))
     # if no available register, spill out
-    #print "availColorList = ", availColorList
+    print "Symbol", symbol, ", availColorList = ", availColorList
     if not availColorList or len(availColorList) == 0: # 가용 레지스터가 없을 경우
       # use회수가 가장 적은걸 spill하려고 하는데,
       # 이 symbol이 use회수가 가장 적은 symbol과 연결되어 있지 않다면, 의미가 없다.
@@ -486,11 +494,13 @@ def doGraphColoring(lst, args = []):
       
       assignedColor[symbol] = assignedColor.pop(outReg)      
       # the number of spilling symbols : the reservation stack size
-      spilling[outReg] = IMem(base = IReg('rbp'), imm = 8 * len(spilling)) 
+      spilling[outReg] = IMem(base = IReg('rbp'), imm = 8 * preservedStackSize)
+      preservedStackSize += 1 
       
       #raise Exception('Spilling', 'Spilling')
     else:
       assignedColor[symbol] = availColorList[0]
+      del availColorList[0]
     #print symbol, assignedColor[symbol], availColorList[0]
 
     #colored[maxpos] = True

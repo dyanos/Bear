@@ -110,13 +110,20 @@ class Context:
         raise NotImplementedError
 
       if num < len(parameterList):
-        self.emitMove(tmpreg, parameterList[num])
+        _reg = parameterList[num]
+        self.emitPush(_reg)
+        pushedRegisters.append(_reg)
+        self.emitMove(tmpreg, _reg)
       else:
         self.emitPush(tmpreg)
 
     # return 변수가 있을 경우, 일단 있다고 가정...
     #self.context.append(self.machine.OpPush(IReg('rax')))
     #self.context.append(self.machine.OpMove(IImm(0), IReg('rax')))
+    #if ret == True:
+    #  self.context.append(self.machine.OpPush(IReg('rax')))
+    #  self.context.append(self.machine.OpMove(IImm(0), IReg('rax')))
+      
     operand = self.machine.OpCall(target, len(args), ret = ret)
     self.context.append(operand)
 
@@ -360,7 +367,9 @@ class Translate:
       context.emitPush(self.machine.getRetReg())
       nativeName = encodeSymbolName(name = 'System.lang.Array.getNext', args = ['System.lang.Array'])
       context.emitCall(nativeName, [tmpReg], ret = True)
-
+      context.emitMove(self.machine.getRetReg(), tmpReg)
+      context.emitPop(self.machine.getRetReg())
+      
     if isinstance(tree.cond, ASTOperator):
       cond = tree.cond
       # 'for var <= list:'
