@@ -449,13 +449,13 @@ def doGraphColoring(lst, args = []):
     
     # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
     # if symbol is already colored, mark it.
-    precolored = []
-    for s in G[symbol]:
-      if not s in colored2.keys(): # to check that the key 's' is in colored2
-        continue
+    #precolored = []
+    #for s in G[symbol]:
+    #  if not s in colored2.keys(): # to check that the key 's' is in colored2
+    #    continue
       
-      if s in assignedColor.keys():
-        precolored.append(assignedColor[s])
+    #  if s in assignedColor.keys():
+    #    precolored.append(assignedColor[s])
 
     # full list중에 색칠이 칠해진 녀석들을 지움 - 그게 가용 registers
     # to find the list of non-assigned registers
