@@ -10,6 +10,7 @@ from ASTCalleeArgType1 import *
 from ASTCalleeArgType2 import *
 from ASTListGenerateType1 import *
 from Value import *
+from Intel import *
 
 #from graph import *
 import Intel
@@ -167,7 +168,7 @@ class Context:
         
     # to analysis
       
-    return self.machine.doRegisterAllocation(self.context, args)
+    return RegisterAllocation.doRegisterAllocation(self.context, args)
 
   # register 재배치 알고리즘을 돌린 결과
   def reallocRegisters(self):
