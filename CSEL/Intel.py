@@ -130,8 +130,9 @@ def getRetReg(type = 'System.lang.Integer'):
 class RegisterAllocation:
   def __init__(self):
     pass
-    
-  def generateInterferenceGraph(lst, outLive, args):
+   
+  @staticmethod
+  def genInterferenceGraph(lst, outLive, args):
     liveList = outLive
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
     parameterListForFloating = [IReg('xmm0'), IReg('xmm1'), IReg('xmm2'), IReg('xmm3')]
@@ -239,7 +240,8 @@ class RegisterAllocation:
   
     pprint.pprint(graph)
     return graph
-  
+ 
+  @staticmethod
   def getInfoForRegAllocation(lst, args):
     parameterList = ['rcx', 'rdx', 'r8', 'r9']
     parameterListForFloating = ['xmm0', 'xmm1', 'xmm2', 'xmm3']
@@ -376,7 +378,7 @@ class RegisterAllocation:
           exitFlag = False
           break
       
-    G = generateInterferenceGraph(lst, newOut, args)
+    G = RegisterAllocation.genInterferenceGraph(lst, newOut, args)
     
     # To add arguments to graph's node
     # graph is directional
@@ -395,9 +397,12 @@ class RegisterAllocation:
           G[s[j]] = set([reg])
   
     return G, def1, def2, use1, use2
-  
+ 
+  @staticmethod
   def doGraphColoring(lst, args = []):
-    G, def1, def2, use1, use2 = getInfoForRegAllocation(lst, args)
+    G, def1, def2, use1, use2 = RegisterAllocation.getInfoForRegAllocation(lst, args)
+
+    print G
   
     registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
     #registerList = ['rax','rbx','rcx','rdx'] # for test of spilling out
@@ -405,8 +410,8 @@ class RegisterAllocation:
     symbols = G.keys()
     nsymbols = len(symbols)
   
-    print "symbols = ", symbols
-    print "nsymbols = ", nsymbols
+    #print "symbols = ", symbols
+    #print "nsymbols = ", nsymbols
   
     # To make a adjacency matrix to represent the interference graph
     assignedColor = {}
@@ -441,7 +446,7 @@ class RegisterAllocation:
     if len(allvars) == 0:
       return assignedColor, spilling
   
-    print "allvars = ", allvars
+    #print "allvars = ", allvars
     while True:
       def SD(G, x, colored):
         return len(filter(lambda e: not colored2.has_key(e), G[x]))
@@ -465,7 +470,7 @@ class RegisterAllocation:
       # to find the list of non-assigned registers
       #availColorList = list(set(registerList) - set(precolored))
       # if no available register, spill out
-      print "Symbol", symbol, ", availColorList = ", availColorList
+      #print "Symbol", symbol, ", availColorList = ", availColorList
       if not availColorList or len(availColorList) == 0: # 가용 레지스터가 없을 경우
         # use회수가 가장 적은걸 spill하려고 하는데,
         # 이 symbol이 use회수가 가장 적은 symbol과 연결되어 있지 않다면, 의미가 없다.
@@ -517,14 +522,15 @@ class RegisterAllocation:
         break
       
     return assignedColor, spilling
-  
+ 
+  @staticmethod
   def doRegisterAllocation(lst, args):
     print "called doRegisterAllocation"
     #getInfoForRegAllocation(lst, args)
   
     codes = []
   
-    ret, spilling = doGraphColoring(lst, args)
+    ret, spilling = RegisterAllocation.doGraphColoring(lst, args)
     keys = ret.keys()
     skeys = spilling.keys()
     for operand in lst:
@@ -570,7 +576,7 @@ class RegisterAllocation:
         print operand
         raise Exception('error', 'Not Implemented')
   
-      print operand
+      #print operand
       codes.append(operand)
   
     print "ending doRegisterAllocation"

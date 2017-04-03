@@ -235,18 +235,18 @@ class Translate:
     return self.context[-1]
 
   def procFunc(self, tree):
-    context = Context()
-    self.context.append(context)
+    #print tree
+
+    self.context.append(Context())
 
     # 일단 함수 인자들을 machine stack에 밀어넣는다.
-    context = self.getLastContext()
+    ctxt = self.getLastContext()
 
     # 여기서 system dependent한 메모리 레지스터를 사용하는 것은 좋아보이지 않는다.
     # Intel.py로 코드를 이동시켜야할듯.(2013/03/12)
     args = tree['@args']
     for pos, arg in enumerate(args):
-      content = {}
-      name = None
+      content, name = {}, None
       if isinstance(arg, ASTDefArg):
         name = arg.name
         content['@type'] = arg.type
@@ -262,22 +262,24 @@ class Translate:
 
     self.info = tree
     body = tree['@body']
+    body.printXML()
+    # ASTReturn은 아래 것들 중에 걸리는게 없다... 근데 왜 Exception이 안나왔지??
     if isinstance(body, ASTExprs):
       self.procExprs(body)
     elif isinstance(body, ASTExpr):
-      self.procExpr(body)
+      self.procExpr(body.expr)
     elif isinstance(body, ASTSimpleExprs):
       self.procSimpleExprs(body)
     else:
       print tree, type(tree)
       raise NotImplementedError
 
-    opcode = context.machine.OpRet()
-    context.context.append(opcode)
+    opcode = ctxt.machine.OpRet()
+    ctxt.context.append(opcode)
     self.info = None
 
-    self.codes = context.getRegisterAllocation(args)
-    self.datas = context.dataSection
+    self.codes = ctxt.getRegisterAllocation(args)
+    self.datas = ctxt.dataSection
 
     self.context.pop()
 
@@ -319,13 +321,27 @@ class Translate:
         new_args.append(self.procExpr(argument))
       
       nativeName = encodeSymbolName(name = tree.name, args = new_args)
+
+      # return value가 있는지 체크해야만 한다.
+      sym = self.symbolTable.findByEncodedSymbol(nativeName)
+      if sym == None:
+        raise Exception("procExpr", "Symbol Not Found")
+
+      print sym
+      retv = False
+      if '@vtype' in sym and sym['@vtype'].name != 'void':
+        retv = True
+
       regs = []
       for arg in tree.args:
         ret = self.procExpr(arg)
         regs.append(ret)
         
       context = self.getLastContext()
-      context.emitCall(nativeName, regs, ret = False)
+      context.emitCall(nativeName, regs, ret = retv)
+
+      if retv == True:
+        return Value(type = ASTType(name = sym['@vtype'], templ = None, ranks = None), reg = self.machine.getRetReg())
     else:
       print tree, type(tree)
       raise Exception("procExpr", "Not Implemented")

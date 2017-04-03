@@ -248,6 +248,12 @@ class SymbolTable:
 
     return None
 
+  def findByEncodedSymbol(self, encoded):
+    if encoded in self.symbolTable:
+      return self.symbolTable[encoded]
+
+    return None
+
   def __getitem__(self, path):
     if not self.symbolTable.has_key(path):
       return None

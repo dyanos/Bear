@@ -534,13 +534,16 @@ class Parser:
       raise Exception("Error", "Error")
       
     if rettype != 'void':
-      if isinstance(body, ASTExpr):
-        body = ASTReturn(body)
-      else:
+      if isinstance(body, ASTExprs) or isinstance(body, ASTSimpleExprs):
         # return을 명시적으로 적지 않았다면, 마지막 expression의 결과를 return값으로 한다.
         lastExpr = body.exprs[-1]
         if not isinstance(lastExpr, ASTReturn):
           body.exprs[-1] = ASTReturn(lastExpr)
+      else: # isinstance(body, ASTExpr):
+        body = ASTExpr(ASTReturn(body))
+
+    print "&&=", type(rettype)
+    print "**=", body
 
     # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
     # 일단 지금은 영향을 받지 않는다고 가정한다.
@@ -609,8 +612,8 @@ class Parser:
     return True
 
   def parseType(self):
-    if self.isdebug == 1:
-      print "starting parseType"
+    #if self.isdebug == 1:
+    print "starting parseType"
 
     idStr = self.getNames()
 
@@ -618,12 +621,12 @@ class Parser:
       print ".".join(idStr)
 
     # 해당 type이 존재하는지 검사합니다.
-    type = self.globalSymbolTable.findType(idStr)
-    if type == None:
+    tp = self.globalSymbolTable.findType(idStr)
+    if tp == None:
       print "Unknown Type : %s" % (idStr)
       sys.exit(-1)
 
-    if type == 'alias':
+    if tp == 'alias':
       idStr = self.globalSymbolTable.find(idStr)
       #print "(", idStr
 
@@ -872,7 +875,12 @@ class Parser:
 
       history.append(tree)
 
-    if len(history) == 0: return None
+    nhist = len(history)
+    print "nhist = ", nhist
+    if nhist == 0: return None
+    elif nhist == 1:
+      return history[0]
+
     #self.match(';') # caution!!
     return ASTSimpleExprs(history)
 
