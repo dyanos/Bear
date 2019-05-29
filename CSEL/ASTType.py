@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTType(AST):
   def __init__(self, name, templ = None, ranks = None):
@@ -33,17 +33,17 @@ class ASTType(AST):
     return self.name
 
   def printXML(self):
-    print "<type>\n<name>"
+    print("<type>\n<name>")
     self.name.printXML()
-    print "</name>"
+    print("</name>")
     if self.templ != None:
-      print "<templ>"
+      print("<templ>")
       self.templ.printXML()
-      print "</templ>"
+      print("</templ>")
     if self.ranks != None:
-      print "<ranks>"
+      print("<ranks>")
       self.ranks.printXML()
-      print "</ranks>"
-    print "</type>"
+      print("</ranks>")
+    print("</type>")
 
 

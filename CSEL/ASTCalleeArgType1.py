@@ -1,5 +1,5 @@
 #!?usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTCalleeArgType1(AST):
   def __init__(self, value, type):
@@ -7,10 +7,10 @@ class ASTCalleeArgType1(AST):
     self.type = type
 
   def printXML(self):
-    print "<callee-type1>"
+    print("<callee-type1>")
     self.value.printXML()
     self.type.printXML()
-    print "</callee-type1>"
+    print("</callee-type1>")
 
   def __eq__(self, right):
     if self.type == right.type:

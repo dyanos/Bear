@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTBlock(AST):
   def __init__(self, body):
     self.body = body
 
   def printXML(self):
-    print "<block>"
+    print("<block>")
     self.body.printXML()
-    print "</block>"
+    print("</block>")

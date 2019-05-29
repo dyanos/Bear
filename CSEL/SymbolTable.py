@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from mangle import *
-from ASTType import *
+from .mangle import *
+from .ASTType import *
 
 # native인지 구별할 필요가 있어야 한다.
 # native의 의미는 C++에서 제작된 것으로 Bear 언어로 별도로 된 body가 없다는 뜻.  
@@ -12,7 +12,7 @@ class SymbolTable:
     self.symbolDict = {'@type':'namespace'}
 
   def register(self, info):
-    if not info.has_key('@type'):
+    if '@type' not in info:
       raise KeyError
 
     type = info['@type']
@@ -23,47 +23,47 @@ class SymbolTable:
     elif type == 'def':
       self.registerDef(info)
     elif type == 'alias':
-      if not info.has_key('@fullname'):
+      if '@fullname' not in info:
         raise KeyError
 
       self.symbolDict[info['@name']] = {'@type': 'alias', '@name': info['@fullname']}
     elif type == 'native def':
       self.registerNativeDef(info)
     else:
-      print "type :", type
+      print("type :", type)
       raise NotImplementedError
 
   def registerNamespace(self, info):
-    if not info.has_key('@name'):
+    if '@name' not in info:
       raise KeyError
 
     path = info['@name'].split('.')
     now  = self.symbolDict
     for name in path:
-      if not now.has_key(name):
+      if name not in now:
         now[name] = {'@type': 'namespace'}
 
       now = now[name]
 
   def registerClass(self, info):
-    if not info.has_key('@name'):
+    if '@name' not in info:
       raise KeyError
 
     path = info['@name'].split('.')
     now  = self.symbolDict
     for name in path[:-1]:
-      if not now.has_key(name):
+      if name not in now:
         now[name] = {'@type': 'class'}
       
       now = now[name]
     
     cname = path[-1]
-    if now.has_key(cname):
-      print "Error) Duplicated Class Name"
+    if cname in now:
+      print("Error) Duplicated Class Name")
       raise Exception('Error', 'Duplicated Class Name')
 
     content = {'@type': 'class'}
-    if not info.has_key('@body'):
+    if '@body' not in info:
       now[cname] = content
       return
 
@@ -77,11 +77,11 @@ class SymbolTable:
         data = symbols[name]
 
         args = None
-        if data.has_key('@args'):
+        if '@args' in data:
           args = data['@args']
 
         body = None
-        if data.has_key('@body'):
+        if '@body' in data:
           body = data['@body']
 
         native = convertToNativeSymbol(name, args, None)
@@ -93,14 +93,14 @@ class SymbolTable:
     now[cname] = content
 
   def registerDef(self, info):
-    if not info.has_key('@name'):
+    if '@name' not in info:
       raise KeyError
 
     path = info['@name'].split('.')
     now  = self.symbolDict
     if len(path) > 1:
       for name in path[:-1]:
-        if not now.has_key(name):
+        if name not in now:
           now[name] = {}
 
         now = now[name]
@@ -108,15 +108,15 @@ class SymbolTable:
     content = {'@type': 'def', '@vtype': info['@vtype']}
 
     args = None
-    if info.has_key('@args'):
+    if '@args' in info:
       args = info['@args']
 
     body = None
-    if info.has_key('@body'):
+    if '@body' in info:
       body = info['@body']
 
     symbols = None
-    if info.has_key('@symbols'):
+    if '@symbols' in info:
       symbols = info['@symbols']
 
     content['@body'] = body
@@ -132,14 +132,14 @@ class SymbolTable:
     now[native] = content
 
   def registerNativeDef(self, info):
-    if not info.has_key('@name'):
+    if '@name' not in info:
       raise KeyError
 
     path = info['@name'].split('.')
     now  = self.symbolDict
     if len(path) > 1:
       for name in path[:-1]:
-        if not now.has_key(name):
+        if name not in now:
           now[name] = {}
 
         now = now[name]
@@ -147,15 +147,15 @@ class SymbolTable:
     content = {'@type': 'def', '@vtype': info['@vtype']}
 
     args = None
-    if info.has_key('@args'):
+    if '@args' in info:
       args = info['@args']
 
     body = None
-    if info.has_key('@body'):
+    if '@body' in info:
       body = info['@body']
 
     symbols = None
-    if info.has_key('@symbols'):
+    if '@symbols' in info:
       symbols = info['@symbols']
 
     content['@body'] = body
@@ -178,14 +178,14 @@ class SymbolTable:
     nmatch = 0
     for name in pathlst:
       if now['@type'] == 'namespace':
-        if not now.has_key(name):
+        if name not in now:
           break
 
         now = now[name]
         nmatch += 1
       elif now['@type'] == 'class':
         # class의 method들은 무조건 단일 이름의 함수들이다.
-        for key in now.keys():
+        for key in list(now.keys()):
           if key.startswith(name + 'E'):
             now = now[key]
             nmatch += 1
@@ -202,17 +202,17 @@ class SymbolTable:
       return now['@type']
 
     native = encodeSymbolName(path, None, None)
-    for key in self.symbolTable.keys():
+    for key in list(self.symbolTable.keys()):
       if key.startswith(native):
         data = self.symbolTable[key]
-        if not data.has_key('@type'):
-          print "Error) key :", key
+        if '@type' not in data:
+          print("Error) key :", key)
           raise KeyError
 
         return data['@type']
 
   def find(self, info):
-    if not info.has_key('@name') or not info.has_key('@type'):
+    if '@name' not in info or '@type' not in info:
       raise KeyError
 
     type = info['@type']
@@ -221,12 +221,12 @@ class SymbolTable:
 
     if type == 'def':
       args = None
-      if info.has_key('@args'):
+      if '@args' in info:
         args = info['@args']
 
       native = encodeSymbolName(path, args, None)
       #print "*1", native
-      if self.symbolTable.has_key(native):
+      if native in self.symbolTable:
         return self.symbolTable[native]
     elif type == 'namespace' or type == 'class':
       pathlst = path.split('.')
@@ -234,7 +234,7 @@ class SymbolTable:
       now = self.symbolDict
       nmatch = 0
       for pos, name in enumerate(pathlst):
-        if not now.has_key(name):
+        if name not in now:
           return None
 
         now = now[name]
@@ -243,7 +243,7 @@ class SymbolTable:
       if nmatch == len(pathlst):
         return now
     else:
-      print "Error) type :", type
+      print("Error) type :", type)
       raise NotImplementedError
 
     return None
@@ -255,7 +255,7 @@ class SymbolTable:
     return None
 
   def __getitem__(self, path):
-    if not self.symbolTable.has_key(path):
+    if path not in self.symbolTable:
       return None
 
     return self.symbolTable[path]

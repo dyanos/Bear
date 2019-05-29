@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTOperator(AST):
   def __init__(self, name, left, right):
@@ -8,10 +8,10 @@ class ASTOperator(AST):
     self.right = right
 
   def printXML(self):
-    print "<binary-operator name=\"%s\">\n<left>" % (self.name)
+    print("<binary-operator name=\"%s\">\n<left>" % (self.name))
     self.left.printXML()
-    print "</left>\n<right>"
+    print("</left>\n<right>")
     self.right.printXML()
-    print "</right>\n</binary-operator>"
+    print("</right>\n</binary-operator>")
 
 

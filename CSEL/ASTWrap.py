@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 class ASTWrap(AST):
   def __init__(self, history):
     self.history = history

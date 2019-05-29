@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTNativeAdd(AST):
   def __init__(self, src, dst):

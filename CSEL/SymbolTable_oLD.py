@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os, sys, string
-from mangle import *
+from .mangle import *
 
 # The information about a symbol in symbol table has information (and body if the type of that is a function.    
 class SymbolInfo:
@@ -136,7 +136,7 @@ class SymbolTable:
         encodedName = encodeSymbol(pathStr, args, ends)
 
         d = self.getWorkingSymbolTable()
-        if d.has_key(encodedName):
+        if encodedName in d:
             return SymbolTable.ERROR_ALREADY_REGISTERED
 
         d[encodedName] = {"encoded": encodedName, "alias": False, "info": info}
@@ -151,7 +151,7 @@ class SymbolTable:
     def searchTable(self, tbl, name):
         if tbl == None: return None
 
-        if not tbl.has_key(name):
+        if name not in tbl:
             return None
 
         v = tbl[name]

@@ -1,16 +1,16 @@
 #!/usr/bin/env pythone
-from AST import *
+from .AST import *
 
 class ASTTemplateList(AST):
   def __init__(self, history):
     self.history = history
 
   def printXML(self):
-    print "<template-list>"
+    print("<template-list>")
     for item in self.history:
-      print "<template-item>"
+      print("<template-item>")
       item.printXML()
-      print "</template-item>"
-    print "</template-list>"
+      print("</template-item>")
+    print("</template-list>")
 
 

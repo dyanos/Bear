@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTUse(AST):
   def __init__(self, name):
     self.name = name
 
   def printXML(self):
-    print "<use>"
+    print("<use>")
     self.name.printXML()
-    print "</use>"
+    print("</use>")
 
 
 

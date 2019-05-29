@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTListGenerateType1(AST):
   def __init__(self, start, end):
@@ -7,10 +7,10 @@ class ASTListGenerateType1(AST):
     self.end   = end
 
   def printXML(self):
-    print "<list-generate-type>\n<start>"
+    print("<list-generate-type>\n<start>")
     self.start.printXML()
-    print "</start>\n<end>"
+    print("</start>\n<end>")
     self.end.printXML()
-    print "</end>"
+    print("</end>")
 
 

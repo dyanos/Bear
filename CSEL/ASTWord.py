@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from AST import *
-from ASTType import *
+from .AST import *
+from .ASTType import *
 
 class ASTWord(AST):
   def __init__(self, type, value, vtype = None):
@@ -10,15 +10,15 @@ class ASTWord(AST):
 
   def printXML(self):
     if self.type == 'Pc':
-      print "<string>%s</string>" % (self.value)
+      print("<string>%s</string>" % (self.value))
     elif self.type == 'i':
-      print "<integer>%s</integer>" % (self.value)
+      print("<integer>%s</integer>" % (self.value))
     elif self.type == 'f':
-      print "<float>%s</float>" % (self.value)
+      print("<float>%s</float>" % (self.value))
     elif self.type == 'id':
-      print "<identifier>%s</identifier>" % (self.value)
+      print("<identifier>%s</identifier>" % (self.value))
     else:
-      print "%s" % (self.value)
+      print("%s" % (self.value))
 
   def __str__(self):
     return self.value 
@@ -31,7 +31,7 @@ class ASTWord(AST):
       if self.value == right:
         return True
     else:
-      print "Not implemented = right's type :", type(right), " ... ", right
+      print("Not implemented = right's type :", type(right), " ... ", right)
       raise Exception('ASTWord', 'ASTWord')
 
     return False

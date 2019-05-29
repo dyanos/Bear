@@ -10,10 +10,10 @@ parser.parse()
 CodeSection = {}
 DataSection = {}
 
-print "Parsing End"
+print("Parsing End")
 asmf = open(parser.basename+"64.asm", "wt")
 for symbol in parser.mustcompile:
-  print symbol
+  print(symbol)
   _, name = symbol
   machine = Translate(parser.globalSymbolTable, symbol)
 
@@ -21,23 +21,23 @@ for symbol in parser.mustcompile:
     continue
 
   ds = machine.getDataSection()
-  for key in ds.keys():
+  for key in list(ds.keys()):
     DataSection[key] = ds[key]
 
   CodeSection[name] = machine.codes
 
-print "printing code(sample)"
+print("printing code(sample)")
 
-print >>asmf, "section .text"
-for key in CodeSection.keys():
-  print >>asmf, "%s:" % (key)
+asmf.write("section .text\n")
+for key in list(CodeSection.keys()):
+  asmf.write("%s:\n" % (key))
   for code in CodeSection[key]:
-    print >>asmf, code
-  print >>asmf, ""
+    asmf.write("%s\n" % (code))
+  asmf.write("\n")
 
-print >>asmf, "section .data"
-for key in DataSection.keys():
-  print >>asmf, "%s: db %s" % (key, DataSection[key])
+asmf.write("section .data\n")
+for key in list(DataSection.keys()):
+  asmf.write("%s: db %s\n" % (key, DataSection[key]))
 
 asmf.close()
 #test = [OpMove(IInteger(4), IUserReg('z')), 
@@ -58,4 +58,4 @@ test = [OpMove(IInteger(1), IUserReg('z')),   # z = 1
         OpMove(IUserReg('y'), IUserReg('w')), # w = y
         OpAdd(IUserReg('x'), IUserReg('w'))]  # w += x
 
-print doRegisterAllocation(test, [])
+print(doRegisterAllocation(test, []))

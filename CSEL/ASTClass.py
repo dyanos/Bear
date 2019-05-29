@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from AST import *
+from .AST import *
 
 # All the class and namespace must have unique symbol table related to our class or namespace.
 
@@ -13,12 +13,12 @@ class ASTClass(AST):
     self.info = info
 
   def printXML(self):
-    print "<class>"
-    if self.info.has_key('short'):
-      print "<short-name>%s</short-name>" % (self.info['short'])
-    if self.info.has_key('long'):
-      print "<long-name>%s</long-name>" % (self.info['long'])
+    print("<class>")
+    if 'short' in self.info:
+      print("<short-name>%s</short-name>" % (self.info['short']))
+    if 'long' in self.info:
+      print("<long-name>%s</long-name>" % (self.info['long']))
     self.name.printXML()
-    print "</class>"
+    print("</class>")
 
 

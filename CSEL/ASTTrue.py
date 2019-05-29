@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTTrue(AST):
   def printXML(self):
-    print "<true/>"
+    print("<true/>")
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTNativeMove(AST):
   def __init__(self, src, dst):

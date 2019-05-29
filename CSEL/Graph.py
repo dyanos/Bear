@@ -6,7 +6,7 @@ class graph:
     self.nodes = []
 
   def _addEdge(self, source, destination):
-    if self.edges.has_key(source):
+    if source in self.edges:
       self.edges[source] |= set([destination])
     else:
       self.edges[source] = set([destination])
@@ -21,7 +21,7 @@ class graph:
     return False
 
   def isConnected(self, nodeOne, nodeTwo):
-    if self.edges.has_key(nodeOne):
+    if nodeOne in self.edges:
       if not self._isEmpty(self.edges[nodeOne] & set([nodeTwo])):
         return True
 

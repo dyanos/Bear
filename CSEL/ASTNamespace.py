@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from AST import *
+from .AST import *
 
 # All the class and namespace must have unique symbol table related to our class or namespace.
 
@@ -14,8 +14,8 @@ class ASTNamespace(AST):
     self.body = body
 
   def printXML(self):
-    print "<namespace>"
+    print("<namespace>")
     self.name.printXML()
-    print "</namespace>"
+    print("</namespace>")
 
 

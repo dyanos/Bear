@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTUnary(AST):
   def __init__(self, ident, op):
@@ -7,7 +7,7 @@ class ASTUnary(AST):
     self.op = op
 
   def printXML(self):
-    print "<unary>"
+    print("<unary>")
     self.id.printXML()
     self.op.printXML()
-    print "</unary>"
+    print("</unary>")

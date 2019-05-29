@@ -48,71 +48,71 @@ tokens = [
     'semi'
     ] + list(reserved.values())
 
-upper = ur'[A-Z$_]'
-lower = ur'[a-z]'
-letter = ur'('+upper+'|'+lower+')'
-digit = ur'[0-9]'
-opchar = ur"""[^0-9a-zA-Z\s$_\[\]{}()'`";,\.:=#@]"""
+upper = r'[A-Z$_]'
+lower = r'[a-z]'
+letter = r'('+upper+'|'+lower+')'
+digit = r'[0-9]'
+opchar = r"""[^0-9a-zA-Z\s$_\[\]{}()'`";,\.:=#@]"""
 
-octalDigit = ur'[0-7]'
-nonZeroDigit = ur'[1-9]'
-digit = ur'[0-9]'
-hexDigit = ur'' + digit + '[a-fA-F]'
-octalNumeral = ur'0'+octalDigit+'+'
-hexNumeral = ur'0x'+hexDigit+'+'
-decimalNumeral = ur''+digit+'+'
-exponentPart = ur'[Ee][-+]?'+digit+'+'
-floatType = ur'[FfDd]'
-idrest = ur'('+letter+'|'+digit+')*(_'+opchar+')?'
-varid = ur''+lower+idrest
-plainid = ur'('+upper+idrest+'|'+varid+'|'+opchar+'+)'
+octalDigit = r'[0-7]'
+nonZeroDigit = r'[1-9]'
+digit = r'[0-9]'
+hexDigit = r'' + digit + '[a-fA-F]'
+octalNumeral = r'0'+octalDigit+'+'
+hexNumeral = r'0x'+hexDigit+'+'
+decimalNumeral = r''+digit+'+'
+exponentPart = r'[Ee][-+]?'+digit+'+'
+floatType = r'[FfDd]'
+idrest = r'('+letter+'|'+digit+')*(_'+opchar+')?'
+varid = r''+lower+idrest
+plainid = r'('+upper+idrest+'|'+varid+'|'+opchar+'+)'
 
-simple_escape = ur"""([a-zA-Z\\?'"])"""
-octal_escape = ur"""([0-7]{1,3})"""
-hex_escape = ur"""(x[0-9a-fA-F]+)"""
-escape_sequence = ur"""(\\("""+simple_escape+'|'+octal_escape+'|'+hex_escape+'))'
-cconst_char = ur"""([^'\\\n]|"""+escape_sequence+')'
+simple_escape = r"""([a-zA-Z\\?'"])"""
+octal_escape = r"""([0-7]{1,3})"""
+hex_escape = r"""(x[0-9a-fA-F]+)"""
+escape_sequence = r"""(\\("""+simple_escape+'|'+octal_escape+'|'+hex_escape+'))'
+cconst_char = r"""([^'\\\n]|"""+escape_sequence+')'
 char_const = "'"+cconst_char+"'"
-string_char = ur"""([^"\\\n]|"""+escape_sequence+')'
+string_char = r"""([^"\\\n]|"""+escape_sequence+')'
 string_literal = '"'+string_char+'*"'
 
-op = ur''+opchar+'+'
+op = r''+opchar+'+'
 #t_id = ur'[a-zA-Z][a-zA-Z0-9_]*|_[a-zA-Z0-9_]+|_' + opchar +'+|' + opchar + '+|\'' + string_char + '+\''
-t_integerLiteral = ur'('+decimalNumeral+'|'+hexNumeral+'|'+octalNumeral+')[L|l]?'
-t_floatingLiteral = ur"("+digit+"+\."+digit+"*("+exponentPart+")?("+floatType+")?|\."+digit+"+("+exponentPart+")?("+floatType+")?|"+digit+"+"+exponentPart+"("+floatType+")?|"+digit+"+("+exponentPart+")?"+floatType+")"
+t_integerLiteral = r'('+decimalNumeral+'|'+hexNumeral+'|'+octalNumeral+')[L|l]?'
+t_floatingLiteral = r"("+digit+"+\."+digit+"*("+exponentPart+")?("+floatType+")?|\."+digit+"+("+exponentPart+")?("+floatType+")?|"+digit+"+"+exponentPart+"("+floatType+")?|"+digit+"+("+exponentPart+")?"+floatType+")"
 #t_characterLiteral = ur"'("+string_char+")\'"
 #t_stringLiteral = ur'("'+string_char+'*"|""\"'+string_char+'*""\")'
-t_semi = ur'(;|\n+)'
-t_threedot = ur'\.\.\.'
+t_semi = r'(;|\n+)'
+t_threedot = r'\.\.\.'
 
 def t_newline(t):
-    ur'\n'
+    r'\n'
     t.lexer.lineno = t.lexer.lineno + 1 
 
 def t_comment(t):
-    ur'(/\*(.|\n)*\*/)|(//.*)'
+    r'(/\*(.|\n)*\*/)|(//.*)'
     pass
 
 def t_characterLiteral(t):
-    ur"""'([a-zA-Z0-9_]|[^\w\n])?'"""
+    r"""'([a-zA-Z0-9_]|[^\w\n])?'"""
     return t
 
 def t_stringLiteral(t):
-    ur'"[^\n]*"'
+    r'"[^\n]*"'
     return t
 
 def t_mathLiteral(t):
-    ur'`[^\n]`'
+    r'`[^\n]`'
     return t
 
 def t_symbolLiteral(t):
-    ur"""'[^\w\[\]\.\n;]"""
+    r"""'[^\w\[\]\.\n;]"""
     return t
 
 # id��� `��� ������������ ��������� ������ ������ ������ ������ ������(2013.03.12)
 # `������ ������������ ��������� `@abc123`������ ��������� ������+id��������� id��� ������������ ��������� ������
 def t_id(t):
-    ur"""[a-zA-Z_][0-9a-zA-Z_]*|[^\w\s$\[\]{}\(\)'`";,\.]+|[^0-9a-zA-Z\(\){}[]\.,:]*"""
+    r"""[a-zA-Z_][0-9a-zA-Z_]*|[^\w\s$\[\]{}\(\)'`";,\.]+|[^0-9a-zA-Z\(\){}[]\.,:]*"""
     if t.value == "_":
         t.type = t.value
     else:
@@ -122,7 +122,7 @@ def t_id(t):
 t_ignore = ' \t'
 
 def t_error(t):
-    print "Illegal character '%s'" % t.value[0]
+    print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
  
 class Token:

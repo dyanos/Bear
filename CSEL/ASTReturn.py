@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTReturn(AST):
   def __init__(self, expr):
     self.expr = expr
 
   def printXML(self):
-    print "<return>"
+    print("<return>")
     self.expr.printXML()
-    print "</return>"
+    print("</return>")

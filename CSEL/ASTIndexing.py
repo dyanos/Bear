@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTIndexing(AST):
   def __init__(self, name, history):
@@ -7,11 +7,11 @@ class ASTIndexing(AST):
     self.hist  = history
     
   def printXML(self):
-    print "<indexing>\n<name>"
+    print("<indexing>\n<name>")
     self.name.printXML()
-    print "</name>\n<hist>"
+    print("</name>\n<hist>")
     for item in self.hist:
       item.printXML()
-    print "</hist>\n</indexing>"
+    print("</hist>\n</indexing>")
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTFor(AST):
   def __init__(self, cond, generator, body):
@@ -8,11 +8,11 @@ class ASTFor(AST):
     self.body = body
 
   def printXML(self):
-    print "<for>\n<cond>"
+    print("<for>\n<cond>")
     self.cond.printXML()
     self.generator.printXML()
-    print "</cond>\n<body>"
+    print("</cond>\n<body>")
     self.body.printXML()
-    print "</body>\n</for>"
+    print("</body>\n</for>")
 
 

@@ -3,7 +3,7 @@ import traceback
 
 class AST:
   def printXML(self):
-    print "Empty"
+    print("Empty")
 
   def isType(self, typeStr):
     # if this class doesn't have the 'type' member variable,

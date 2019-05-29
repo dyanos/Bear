@@ -41,11 +41,11 @@ class Transformation:
 
   # search the symbol and return type of it.
   def searchSymbolTable(self, name):
-    if self.arg_symtbl.has_key(name):
+    if name in self.arg_symtbl:
       return self.arg_symtbl[name]
-    elif self.local_symtbl.has_key(name):
+    elif name in self.local_symtbl:
       return self.local_symtbl[name]
-    elif self.local_constant_symtbl.has_key(name):
+    elif name in self.local_constant_symtbl:
       return self.local_constant_symtbl[name]
 
     return None
@@ -88,16 +88,16 @@ class Transformation:
         else:
           return {"type": type, "register-num": regnum, "extendtype": "indrect"}
       else:
-        print "I don't know how the ASTWord(%s) convert" % (now.name)
+        print("I don't know how the ASTWord(%s) convert" % (now.name))
       return None
     elif isinstance(now, ASTVar):
       if self.searchSymbol(now.name) == None:
-        print "duplicate symbol"
+        print("duplicate symbol")
       self.local_symtbl[now.name] = convertType(now.type)
       ret = self.parseExpr(now.init)
     elif isinstance(now, ASTVal):
       if self.searchSymbol(now.name) == None:
-        print "duplicate symbol"
+        print("duplicate symbol")
       self.local_constant_symtbl[now.name] = now.type
       ret = self.parseExpr(now.init)
 
@@ -108,10 +108,10 @@ parser.parse()
 #  print key
 
 def makeSymbolName(cname, fname, args):
-  print "debug) %s, %s" % (cname, fname)
+  print("debug) %s, %s" % (cname, fname))
 
   name = [cname, str(len(fname)), fname, convertType(args)]
-  print "debug) full : %s" % ("".join(name))
+  print("debug) full : %s" % ("".join(name)))
   return "".join(name)
 
 class Register:
@@ -148,7 +148,7 @@ def genRandomString(length):
   locs   = [random.uniform(0, len(chars)) for i in range(0, length)]
   if locs[0] > chars.index('Z'):
     locs[0] = random.uniform(0, chars.index('Z'))
-  return map(lambda loc: chars[loc], locs)
+  return [chars[loc] for loc in locs]
 
 class Configure:
   def __init__(self):
@@ -282,7 +282,7 @@ class IR:
     self.code.append("div %s, %s" % (left, right))
 
   def emitCall(self, name, **kw):
-    for (key, item) in kw.items():
+    for (key, item) in list(kw.items()):
       pass
   
     self.emitClear(REG_RAX)
@@ -290,14 +290,14 @@ class IR:
 
   def searchFunctionInClass(self, BaseName, OperatorName):
     fpath = mergeName(BaseName, changeIntoReal(OperatorName))
-    if not self.symtbl.has_key(fpath):
+    if fpath not in self.symtbl:
       return None
 
     return fpath
 
   def searchConstructorInClass(self, BaseName, RightType):
     pattern = "".join([BaseName, "Ec"])
-    for (key, value) in self.symtbl.items():
+    for (key, value) in list(self.symtbl.items()):
       if re.match(pattern, key):
         return key
     
@@ -311,14 +311,14 @@ class IR:
     l_classname, ltypestr  = getTypeOf(lsubtree)
     ret      = searchFunctionInClass(ltypestr, tree.name)
     if ret == None:
-      print "Error) Operator Not Found! : %s" % (tree.name)
+      print("Error) Operator Not Found! : %s" % (tree.name))
       sys.exit(-1)
 
     r_classname, rtypestr  = getTypeOf(rsubtree)
     if ltypestr != rtypestr:
       result = searchConstructorInClass(ltypestr, rtypestr)
       if result == None:
-        print "Error) Don't know how to convert %s to %s" % (demangleName(rtypestr), demangleName(ltypestr))
+        print("Error) Don't know how to convert %s to %s" % (demangleName(rtypestr), demangleName(ltypestr)))
         sys.exit(-1)
 
       
@@ -360,7 +360,7 @@ class IR2:
     self.info    = {}
 
   def getType(self, node):
-    print "getType = ", node
+    print("getType = ", node)
     if node is ASTWord:
       type = None
       if node.type is str:
@@ -373,7 +373,7 @@ class IR2:
     elif node is ASTNames:
       return convertName(self.array)
     else:
-      print "Error in getType"
+      print("Error in getType")
 
   def searchFuncInClass(self, cname, fname, args):
     symbol = makeSymbolName(cname, fname, args)
@@ -384,7 +384,7 @@ class IR2:
   def findSymbolType(self, tree):
     # to find in arguments
     arguments = self.info['@arguments']
-    if arguments.has_key(tree):
+    if tree in arguments:
       return arguments[tree]
     return self.getType(tree)
 
@@ -403,13 +403,13 @@ class IR2:
       for var_name in args:
         info['@argument_symbols'][var_name] = args[var_name]
 
-      print "argument = ", info['@argument_symbols']
+      print("argument = ", info['@argument_symbols'])
       sys.exit(-1)
 
   def eval(self, tree):
     innerSymbolTbl = {}
     while True:
-      print tree
+      print(tree)
       if isinstance(tree, ASTDeclFunc):
         self.evalFunc(tree)
       elif isinstance(tree, ASTWord):
@@ -441,7 +441,7 @@ class IR2:
           # if fname is None, fname will be the class name.
           casting_func = self.searchFuncInClass(cname = ltype['@type'], fname = None, args = [rtype['@type']])
           if casting_func == None:
-            print "Compiler doesn't know how to convert %s into %s" % (recoverName(ltype), recoverName(rtype))
+            print("Compiler doesn't know how to convert %s into %s" % (recoverName(ltype), recoverName(rtype)))
             sys.exit(-1)
 
           tmpval = self.genRandomVariable(casting_func['@return'])
@@ -455,8 +455,8 @@ class IR2:
 
         return tmpval
       else:
-        if not tree.has_key('@type'):
-          print tree
+        if '@type' not in tree:
+          print(tree)
           break
 
         if tree['@type'] == 'function':
@@ -467,8 +467,8 @@ class IR2:
 
           info['@return'] = convertType(tree['@rettype'])
 
-          print "arguments = ", info['@arguments']
-          print "return    = ", info['@return']
+          print("arguments = ", info['@arguments'])
+          print("return    = ", info['@return'])
 
           self.info = info
 

@@ -3,45 +3,45 @@
 import traceback
 from random import Random
 
-from AST import *
-from ASTAlias import *
-from ASTType import *
-from ASTDefArg import *
-from ASTArgList import *
-from ASTAttribute import *
-from ASTClass import *
-from ASTDeclFunc import *
-from ASTEmpty import *
-from ASTExpr import *
-from ASTExprs import *
-from ASTFor import *
-from ASTFuncCall import *
-from ASTIf import *
-from ASTListGenerateType1 import *
-from ASTNames import *
-from ASTNamespace import *
-from ASTOperator import *
-from ASTRankSpecs import *
-from ASTSimpleExprs import *
-from ASTTemplateList import *
-from ASTUse import *
-from ASTVal import *
-from ASTVar import *
-from ASTWord import *
-from ASTBlock import *
-from ASTIndexing import *
-from ASTSet import *
-from ASTCase import *
-from ASTCases import *
-from ASTPatternMatch import *
-from ASTTrue import *
-from ASTFalse import *
-from ASTReturn import *
-from ASTWrap import *
-from ASTCalleeArgType1 import *
-from ASTCalleeArgType2 import *
+from .AST import *
+from .ASTAlias import *
+from .ASTType import *
+from .ASTDefArg import *
+from .ASTArgList import *
+from .ASTAttribute import *
+from .ASTClass import *
+from .ASTDeclFunc import *
+from .ASTEmpty import *
+from .ASTExpr import *
+from .ASTExprs import *
+from .ASTFor import *
+from .ASTFuncCall import *
+from .ASTIf import *
+from .ASTListGenerateType1 import *
+from .ASTNames import *
+from .ASTNamespace import *
+from .ASTOperator import *
+from .ASTRankSpecs import *
+from .ASTSimpleExprs import *
+from .ASTTemplateList import *
+from .ASTUse import *
+from .ASTVal import *
+from .ASTVar import *
+from .ASTWord import *
+from .ASTBlock import *
+from .ASTIndexing import *
+from .ASTSet import *
+from .ASTCase import *
+from .ASTCases import *
+from .ASTPatternMatch import *
+from .ASTTrue import *
+from .ASTFalse import *
+from .ASTReturn import *
+from .ASTWrap import *
+from .ASTCalleeArgType1 import *
+from .ASTCalleeArgType2 import *
 
-from Value import *
+from .Value import *
 
 import re
 
@@ -167,7 +167,7 @@ def convertNamespace_for_gcc(name, options):
   op = nameList[-1]
     
   # 마지막이 operator일 경우
-  if operatorTransTbl.has_key(op):
+  if op in operatorTransTbl:
     opName = operatorTransTbl[op]
 
     if options != None and options['unary']:
@@ -182,9 +182,9 @@ def convertNamespace_for_gcc(name, options):
   elif re.match(r'^[~`!@#\$%\^\&\*\(\)\-_\+=\{\}\[\]\|\\:;"\'<>,\.\?\/]', op):
     raise Exception('Need to implement', op)
 
-    return "".join(map(lambda x: "".join([str(len(x)), x]), nameList[:-2])) + opName 
+    return "".join(["".join([str(len(x)), x]) for x in nameList[:-2]]) + opName 
 
-  return "".join(map(lambda x: "".join([str(len(x)), x]), nameList))
+  return "".join(["".join([str(len(x)), x]) for x in nameList])
 
 def convertNamespace(namespace, options = None):
   return convertNamespace_for_gcc(namespace, options)
@@ -194,12 +194,12 @@ def convertName_for_gcc(name):
     if name[0] == 'main':
       return '_main'
     else:
-      if operatorTransTbl.has_key(name[0]):
+      if name[0] in operatorTransTbl:
         return "_Z%s" % (operatorTransTbl[name[0]])
       else:
         return "_Z%d%s" % (len(name[0]), name[0])
   else:
-    return "".join(["__ZN"] + map(lambda x: "".join([str(len(x)), x]), name) + ['E'])
+    return "".join(["__ZN"] + ["".join([str(len(x)), x]) for x in name] + ['E'])
 
 def _convertName(name):
   nameList = None
@@ -219,7 +219,7 @@ def convertType_for_gcc(type):
     if len(name) == 1:
       return '%d%s' % (len(name[0]), name[0])
     else:
-      return "".join(map(lambda x: "".join([str(len(x)), x]), name))
+      return "".join(["".join([str(len(x)), x]) for x in name])
 
   result = []
   # reference type도 쓸수있게먼가 조치를...
@@ -235,13 +235,13 @@ def convertType_for_gcc(type):
     array = type.name.split('.')
     
   pathStr = ".".join(array)
-  if longToShort.has_key(pathStr):
+  if pathStr in longToShort:
     array = [longToShort[pathStr]]
   
   cnt = len(array)
   if cnt == 1:
     name = array[0]
-    if not enm.has_key(name):
+    if name not in enm:
       result += [__converting(array)]
     else:
       result += [enm[name]]
@@ -284,12 +284,12 @@ def converting(name, tmpl):
 
 def convertToNamespace(path):
   if len(path) == 1:
-    if operatorTransTbl.has_key(path[0]):
+    if path[0] in operatorTransTbl:
       return operatorTransTbl[path[0]]
     else:
       return path[0]
 
-  return "".join("N" + map(lambda x: "%d%s" % (len(x), x), name))
+  return "".join("N" + ["%d%s" % (len(x), x) for x in name])
 
 def convertToNativeSymbol(name, args, ret):
   if name == 'main':
@@ -302,7 +302,7 @@ def convertToNativeSymbol(name, args, ret):
     mangling.append(convertToNamespace(name))
     mangling.append("E")
   else:
-    if operatorTransTbl.has_key(name):
+    if name in operatorTransTbl:
       mangling.append("%sE" % (operatorTransTbl[name]))
     else:
       mangling.append("%sE" % (name))
@@ -316,7 +316,7 @@ def convertToNativeSymbol(name, args, ret):
       elif isinstance(arg, ASTType):
         mangling.append(convertType(arg))
       else:
-        print type(arg)
+        print(type(arg))
         raise Exception("Error", "Only ASTDefArg")
  
       mangling.append("E")
@@ -348,10 +348,10 @@ def encode_for_gcc(name, args):
 
           type = item.vtype
         elif isinstance(item, dict):
-          if item.has_key('@vtype'):
+          if '@vtype' in item:
             return item['@vtype']
           else:
-            print "key error", item
+            print("key error", item)
             raise KeyError
         elif isinstance(item, str):
           return _convertName(item.split('.'))
@@ -361,7 +361,7 @@ def encode_for_gcc(name, args):
           
           type = item.type
         else:
-          print "**", item
+          print("**", item)
           raise NotImplementedError
 
         typename = convertType(type)
@@ -396,12 +396,12 @@ def encodeSymbolName(name, args = None, ends = None):
 
     return encode_for_gcc(name, args)
   else:
-    print "*2", name
+    print("*2", name)
     raise Exception('Error', 'Error')
 
 def reverseEncodedName(name):
   value = None
-  for key in enm.keys():
+  for key in list(enm.keys()):
     if enm[key] == name:
       value = key
 
@@ -428,7 +428,7 @@ def decodeMachineName(name):
     "f": "System.lang.Float",
     "d": "System.lang.Double"}
 
-  if translateTable.has_key(name):
+  if name in translateTable:
     return translateTable[name]
 
   path = []
@@ -472,5 +472,5 @@ def encodeSymbol(name, args, ends):
     return "".join(['__Z', name, 'E'] + args + ['E'] + [ends])
 
 if __name__ == '__main__':
-  print convertNamespace('i')
-  print decodeMachineName('6System3out7println')
+  print(convertNamespace('i'))
+  print(decodeMachineName('6System3out7println'))

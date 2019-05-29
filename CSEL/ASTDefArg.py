@@ -1,5 +1,5 @@
 #!/usr/bin/python 
-from AST import *
+from .AST import *
 
 class ASTDefArg(AST):
   def __init__(self, name, type, defval = None):
@@ -8,13 +8,13 @@ class ASTDefArg(AST):
     self.defval = defval 
 
   def printXML(self):
-    print "<def-func-arg>\n"
+    print("<def-func-arg>\n")
     if self.name != None:
-      print "<name>"
+      print("<name>")
       self.name.printXML()
-      print "</name>\n<type>"
+      print("</name>\n<type>")
       self.type.printXML()
-      print "</type>"
-    print "</def-func-arg>"
+      print("</type>")
+    print("</def-func-arg>")
 
 

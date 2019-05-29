@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTTemplateArg(AST):
   def __init__(self, name, type):
@@ -7,5 +7,5 @@ class ASTTemplateArg(AST):
     self.type = type
 
   def printXML(self):
-    print "<template-arg>"
-    print "</template-arg>"
+    print("<template-arg>")
+    print("</template-arg>")

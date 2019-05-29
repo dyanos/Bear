@@ -1,7 +1,7 @@
 #!/usr/bin/env pythone
 # -*- coding: utf-8 -*-
-from Intel import *
-from SymbolTable import *
+from .Intel import *
+from .SymbolTable import *
 
 class Type:
     Read = 1
@@ -23,7 +23,7 @@ class SSA:
             
             regname = str(reg)
             
-            if not version.has_key(regname):
+            if regname not in version:
                 version[regname] = 0
             else:
                 if type == Type.Write:

@@ -2,57 +2,57 @@
 # -*- coding: utf-8 -*-
 import traceback
 
-from Token import *
+from .Token import *
 
-from AST import *
-from ASTAlias import *
-from ASTDefArg import *
-from ASTArgList import *
-from ASTAttribute import *
-from ASTTemplate import *
-from ASTClass import *
-from ASTDeclFunc import *
-from ASTEmpty import *
-from ASTExpr import *
-from ASTExprs import *
-from ASTFor import *
-from ASTFuncCall import *
-from ASTIf import *
-from ASTListGenerateType1 import *
-from ASTNames import *
-from ASTNamespace import *
-from ASTOperator import *
-from ASTRankSpecs import *
-from ASTSimpleExprs import *
-from ASTTemplateList import *
-from ASTType import *
-from ASTRank import *
-from ASTRankList import *
-from ASTUse import *
-from ASTVal import *
-from ASTVar import *
-from ASTWord import *
-from ASTBlock import *
-from ASTIndexing import *
-from ASTSet import *
-from ASTCase import *
-from ASTCases import *
-from ASTPatternMatch import *
-from ASTTrue import *
-from ASTFalse import *
-from ASTReturn import *
-from ASTWrap import *
-from ASTUnary import *
-from ASTTemplateArg import *
-from ASTListValue import *
-from ASTCalleeArgType1 import *
-from ASTCalleeArgType2 import *
-from ASTNativeAdd import *
-from ASTNativeMove import *
+from .AST import *
+from .ASTAlias import *
+from .ASTDefArg import *
+from .ASTArgList import *
+from .ASTAttribute import *
+from .ASTTemplate import *
+from .ASTClass import *
+from .ASTDeclFunc import *
+from .ASTEmpty import *
+from .ASTExpr import *
+from .ASTExprs import *
+from .ASTFor import *
+from .ASTFuncCall import *
+from .ASTIf import *
+from .ASTListGenerateType1 import *
+from .ASTNames import *
+from .ASTNamespace import *
+from .ASTOperator import *
+from .ASTRankSpecs import *
+from .ASTSimpleExprs import *
+from .ASTTemplateList import *
+from .ASTType import *
+from .ASTRank import *
+from .ASTRankList import *
+from .ASTUse import *
+from .ASTVal import *
+from .ASTVar import *
+from .ASTWord import *
+from .ASTBlock import *
+from .ASTIndexing import *
+from .ASTSet import *
+from .ASTCase import *
+from .ASTCases import *
+from .ASTPatternMatch import *
+from .ASTTrue import *
+from .ASTFalse import *
+from .ASTReturn import *
+from .ASTWrap import *
+from .ASTUnary import *
+from .ASTTemplateArg import *
+from .ASTListValue import *
+from .ASTCalleeArgType1 import *
+from .ASTCalleeArgType2 import *
+from .ASTNativeAdd import *
+from .ASTNativeMove import *
 
-from SymbolTable import *
-from IR import *
-from mangle import *
+from .SymbolTable import *
+from .IR import *
+from .mangle import *
 
 import copy
 import random
@@ -234,7 +234,7 @@ class Parser:
 
   def parse(self):
     if self.isdebug == 1:
-      print "entering parse"
+      print("entering parse")
 
     parsingList = []
     while not self.isEnd():
@@ -261,7 +261,7 @@ class Parser:
         break
 
     if self.isdebug == 1:
-      print "ending parse"
+      print("ending parse")
    
   def parseNamespace(self):
     if not self.match('namespace'):
@@ -318,8 +318,8 @@ class Parser:
     while not self.match('}'):
       if self.match('val'): # 상수선언
         name = self.getName()
-        if body.has_key(name):
-          print "Error) duplicated name :", name
+        if name in body:
+          print("Error) duplicated name :", name)
           raise NameError
 
         content = {"@type": "val", "@vtype": ASTType("System.lang.Integer")}
@@ -333,8 +333,8 @@ class Parser:
         body[name] = content
       elif self.match('var'):   # 변수선언
         name = self.getName()
-        if body.has_key(name):
-          print "Error) duplicated name :", name
+        if name in body:
+          print("Error) duplicated name :", name)
           raise NameError
 
         content = {"@type": "var", "@vtype": ASTType("System.lang.Integer")}
@@ -354,7 +354,7 @@ class Parser:
         if self.match('('):
           args = self.parseDefArgsList()
           if not self.match(')'):
-            print "Error) Needed ')'"
+            print("Error) Needed ')'")
             raise SyntaxError
           content['@args'] = args
 
@@ -370,18 +370,18 @@ class Parser:
         elif self.match('{'):
           defbody = self.parseExprs()
           if not self.match('}'):
-            print "Error) Needed '}'"
+            print("Error) Needed '}'")
             raise SyntaxError
           content['@body'] = defbody
         else:
-          print "Error) Needed Body"
+          print("Error) Needed Body")
           raise SyntaxError
 
         # 함수이름을 native symbol로 변경
         realn = convertToNativeSymbol(name, content['@args'], content['@vtype'])
         # TODO : Auto Casting은 일단 지원하지 않는다.
-        if body.has_key(realn):
-          print "Error) Multiple declaration :", fname
+        if realn in body:
+          print("Error) Multiple declaration :", fname)
           raise SyntaxError
 
         body[realn] = content
@@ -406,7 +406,7 @@ class Parser:
 
     params = self.parseTemplateArguments()
     if params == None:
-      print "Error) Needs some template parameters"
+      print("Error) Needs some template parameters")
       return
 
     for param in params:
@@ -425,7 +425,7 @@ class Parser:
         "@template args": params})
       # TODO : 그리고 먼가 파일로 만드는 코드 추가
     else:
-      print "Error) Dont use template in this type"
+      print("Error) Dont use template in this type")
       raise Exception("parseTemplate", "wrong type")
 
     self.pop()
@@ -468,12 +468,12 @@ class Parser:
 
   def parseDefBody(self):
     if self.isdebug == 1:
-      print "entering parseDefBody"
+      print("entering parseDefBody")
 
     body = None
    
     if self.isdebug == 1:
-      print "getTokValue : %s" % (self.getTokValue())
+      print("getTokValue : %s" % (self.getTokValue()))
  
     if self.match('='):
       body = self.parseExpr()
@@ -482,7 +482,7 @@ class Parser:
       self.match('}')
 
     if self.isdebug == 1:
-      print "ending parseDefBody"
+      print("ending parseDefBody")
       
     return body
       
@@ -491,7 +491,7 @@ class Parser:
       return None
 
     if self.isdebug == 1:
-      print "entering parseDef"
+      print("entering parseDef")
 
     # 이름을 얻습니다.
     only = self.getNames()
@@ -508,19 +508,19 @@ class Parser:
     # check
     localSymTbl = self.localSymbolTable[-1]
     for arg in args:
-      if localSymTbl.has_key(arg.name):
-        print "Error) Duplicated Name"
+      if arg.name in localSymTbl:
+        print("Error) Duplicated Name")
         raise SyntaxError
 
       if not self.globalSymbolTable.findType(arg.type.name):
-        print "Error) Unknown Type"
+        print("Error) Unknown Type")
         raise SyntaxError
 
       localSymTbl[arg.name] = arg.type
 
     nativeSymbol = mangling(fn, args)
     if self.globalSymbolTable.find({'@type': 'def', '@name': fn, '@args': args}):
-      print "Error) Duplicated Name"
+      print("Error) Duplicated Name")
       raise Exception("Error", "Error")
     #localSymTbl.printDoc()
 
@@ -530,7 +530,7 @@ class Parser:
     # To parse body of function
     body = self.parseDefBody()
     if body == None:
-      print "Error) Body Empty : in %s" % (nativeSymbol)
+      print("Error) Body Empty : in %s" % (nativeSymbol))
       raise Exception("Error", "Error")
       
     if rettype != 'void':
@@ -542,8 +542,8 @@ class Parser:
       else: # isinstance(body, ASTExpr):
         body = ASTExpr(ASTReturn(body))
 
-    print "&&=", type(rettype)
-    print "**=", body
+    print("&&=", type(rettype))
+    print("**=", body)
 
     # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
     # 일단 지금은 영향을 받지 않는다고 가정한다.
@@ -561,7 +561,7 @@ class Parser:
     self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
 
     if self.isdebug == 1:
-      print "ending parseDef"
+      print("ending parseDef")
 
   def parseDefArgsList(self):
     if not self.match('('):
@@ -575,7 +575,7 @@ class Parser:
       if not self.match(','): break
 
     if not self.match(')'):
-      print "Error) Needed ')'"
+      print("Error) Needed ')'")
       return None
 
     return args
@@ -613,17 +613,17 @@ class Parser:
 
   def parseType(self):
     #if self.isdebug == 1:
-    print "starting parseType"
+    print("starting parseType")
 
     idStr = self.getNames()
 
     if self.isdebug == 1:
-      print ".".join(idStr)
+      print(".".join(idStr))
 
     # 해당 type이 존재하는지 검사합니다.
     tp = self.globalSymbolTable.findType(idStr)
     if tp == None:
-      print "Unknown Type : %s" % (idStr)
+      print("Unknown Type : %s" % (idStr))
       sys.exit(-1)
 
     if tp == 'alias':
@@ -649,7 +649,7 @@ class Parser:
     rank  = self.parseRankList()
  
     if self.isdebug == 1:
-      print "ending parseType"
+      print("ending parseType")
 
     return ASTType(name = idStr, templ = None, ranks = rank)
 
@@ -659,7 +659,7 @@ class Parser:
       rank = ASTRank(self.parseSimpleExpr())
       lst.append(rank)
       if not self.match(']'):
-        print "Error) Need ']'"
+        print("Error) Need ']'")
     
     return ASTRankList(lst)
 
@@ -717,14 +717,14 @@ class Parser:
 
     cond = self.parseBasicSimpleExpr()
     if cond == None:
-      print "Error) Needed to identifier"
+      print("Error) Needed to identifier")
       raise SyntaxError
     if not self.match('<='):
-      print "Error) Needed to <="
+      print("Error) Needed to <=")
       raise SyntaxError
     generator = self.parseSimpleExpr()
     if generator == None:
-      print "Error) Needed generator"
+      print("Error) Needed generator")
       raise SyntaxError
 
     body = None
@@ -734,7 +734,7 @@ class Parser:
       body = self.parseExprs()
       self.match('}')
     else:
-      print "Error) Needed '{' '}' or '='"
+      print("Error) Needed '{' '}' or '='")
       raise NotImplementedError
 
     return ASTFor(cond, generator, body)
@@ -751,7 +751,7 @@ class Parser:
       elif isinstance(obj.vtype, dict):
         return obj.vtype['@vtype']
       else:
-        print "))", obj.vtype
+        print("))", obj.vtype)
         raise NotImplementedError
     elif isinstance(obj, ASTWord) and isinstance(obj.type, ASTType):
       return obj.type
@@ -760,7 +760,7 @@ class Parser:
     elif isinstance(obj, ASTCalleeArgType1):
       return self.convertToASTType(obj.type)
     else:
-      print "**", obj
+      print("**", obj)
       raise NotImplementedError
 
   def parseVar(self):
@@ -772,8 +772,8 @@ class Parser:
     hist = []
     while True:
       name = self.getName()
-      if sym.has_key(name):
-        print "has duplicated name"
+      if name in sym:
+        print("has duplicated name")
         raise Exception('Error', 'Duplicated Name')
         return None
 
@@ -815,8 +815,8 @@ class Parser:
     hist = []
     while True:
       name = self.getName()
-      if sym.has_key(name):
-        print "has duplicated name"
+      if name in sym:
+        print("has duplicated name")
         raise Exception('Error', 'Duplicated Name')
         return None
 
@@ -836,7 +836,7 @@ class Parser:
         query = {"@name": '=', '@type': 'def'}
         query['@args'] = [type, self.convertToASTType(right)]
         symbol = self.globalSymbolTable.find(query)
-        print "3", symbol
+        print("3", symbol)
 
         tree = ASTOperator(ASTWord('id', '='), ASTWord('id', name, type), right)
         hist.append(tree)
@@ -876,7 +876,7 @@ class Parser:
       history.append(tree)
 
     nhist = len(history)
-    print "nhist = ", nhist
+    print("nhist = ", nhist)
     if nhist == 0: return None
     elif nhist == 1:
       return history[0]
@@ -886,13 +886,13 @@ class Parser:
 
   def parseSimpleExpr(self):
     if self.isdebug == 1:
-      print "entering parseSimpleExpr()"
+      print("entering parseSimpleExpr()")
 
     tree = self.parseBasicSimpleExpr()
     if tree == None: return None
     while not self.isEnd():
       if self.isdebug == 1:
-        print self.getTokValue()
+        print(self.getTokValue())
 
       if self.match('.'):
         right = self.parseBasicSimpleExpr()
@@ -923,7 +923,7 @@ class Parser:
             content['@args'] = [self.convertToASTType(right)]
             symbol = self.globalSymbolTable.find(content)
 
-          print "4", symbol, content
+          print("4", symbol, content)
           if symbol != None:
             if symbol['@type'] == 'native def':
               raise NotImplementedError
@@ -982,13 +982,13 @@ class Parser:
       else:
         path = tree.name
 
-      ret = self.globalSymbolTable.find({'@type':'def', '@name':path, '@args':map(lambda x: self.convertToASTType(x), tree.args)})
+      ret = self.globalSymbolTable.find({'@type':'def', '@name':path, '@args':[self.convertToASTType(x) for x in tree.args]})
       if ret == None:
-        print "Error) Not Symbol :", path, map(lambda x: self.convertToASTType(x), tree.args)
+        print("Error) Not Symbol :", path, [self.convertToASTType(x) for x in tree.args])
         raise SyntaxError
      
     if self.isdebug == 1:
-      print "ending parseSimpleExpr()"
+      print("ending parseSimpleExpr()")
 
     return tree
 
@@ -1050,7 +1050,7 @@ class Parser:
         args = self.parseDefArgListForFuncCall()
 
         if not self.match(')'):
-          print "Error) Need ')'"
+          print("Error) Need ')'")
 
         # TODO: 호출하려는 function에 대한 정보를 얻어서 입력된 argument들의 type과 비교하여,
         # 현재 symbol table에 호출할 수 있는 function이 있는지를 찾는 코드가 있어야 한다.
@@ -1069,7 +1069,7 @@ class Parser:
       else:
         vtype = None
         for symbolTable in reversed(self.localSymbolTable):
-          if symbolTable.has_key(tok.value):
+          if tok.value in symbolTable:
             vtype = symbolTable[tok.value]
             break
 
@@ -1114,15 +1114,15 @@ class Parser:
       if isinstance(arg, ASTWord):
         if arg.type == 'id':
           symtbl = self.localSymbolTable[-1]
-          if not symtbl.has_key(arg.value):
-            print "Error) Not found :", arg.value
+          if arg.value not in symtbl:
+            print("Error) Not found :", arg.value)
             raise SyntaxError
           
           args.append(ASTCalleeArgType1(value = arg, type = symtbl[arg.value]))
         else:
           args.append(ASTCalleeArgType1(value = arg, type = arg.type))
       else:
-        print arg
+        print(arg)
         raise NotImplementedError
 
       if not self.match(','):

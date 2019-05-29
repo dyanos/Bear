@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTPatternMatch(AST):
   def __init__(self, cond, body):
@@ -7,9 +7,9 @@ class ASTPatternMatch(AST):
     self.body = body
 
   def printXML(self):
-    print "<pattern-match>\n<cond>"
-    print self.cond
+    print("<pattern-match>\n<cond>")
+    print(self.cond)
     self.cond.printXML()
-    print "</cond>"
+    print("</cond>")
     self.body.printXML()
-    print "</pattern-match>"
+    print("</pattern-match>")

@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
 import os,sys,string
-from ASTType import *
-from SymbolTable import *
-from mangle import *
-from context import *
-from Operand import *
-from ASTCalleeArgType1 import *
-from ASTCalleeArgType2 import *
-from ASTListGenerateType1 import *
-from Value import *
-from Intel import *
+from .ASTType import *
+from .SymbolTable import *
+from .mangle import *
+from .context import *
+from .Operand import *
+from .ASTCalleeArgType1 import *
+from .ASTCalleeArgType2 import *
+from .ASTListGenerateType1 import *
+from .Value import *
+from .Intel import *
 
 #from graph import *
-import Intel
+from . import Intel
 
 Seperator = '$'
 
 def genRandomString(length):
   chars  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
   locs  = [random.randint(0, len(chars)-1) for i in range(0, length)]
-  return "".join(map(lambda loc: chars[loc], locs))
+  return "".join([chars[loc] for loc in locs])
     
 # 3-state machine code
 class Context: 
@@ -44,7 +44,7 @@ class Context:
         self.registerLoc(elem.name, loc)
 
   def registerLoc(self, name, loc):
-    if not self.undef.has_key(name):
+    if name not in self.undef:
       self.undef[name] = [loc]
     else:
       self.undef[name].append(loc)
@@ -61,7 +61,7 @@ class Context:
     self.context.append(operand)
     self.checkTemporaryReg(regList = [src, dst], loc = len(self.context))
 
-    print "mov %s, %s" % (dst, src)
+    print("mov %s, %s" % (dst, src))
 
   def emitAdd(self, srcA, srcB, dst):
     context = self.context
@@ -69,22 +69,22 @@ class Context:
       tmpReg = genTempRegister()
       self.emitMove(srcA, tmpReg)
       context.append(self.machine.OpAdd(srcB, tmpReg))
-      print "add %s, %s" % (tmpReg, srcB)
+      print("add %s, %s" % (tmpReg, srcB))
       self.emitMove(tmpReg, dst)
     else:
-      print "add %s, %s, %s" % (dst, srcB, srcA)
+      print("add %s, %s, %s" % (dst, srcB, srcA))
 
   def emitPush(self, target):
     operand = self.machine.OpPush(target)
     self.context.append(operand)
 
-    print "push %s" % (target)
+    print("push %s" % (target))
 
   def emitPop(self, target):
     operand = self.machine.OpPop(target)
     self.context.append(operand)
 
-    print "pop %s" % (target)
+    print("pop %s" % (target))
 
   def emitCall(self, target, args, ret = False):
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
@@ -100,14 +100,14 @@ class Context:
         elif reg.type == 'System.lang.Integer':
           tmpreg = IImm(reg['@value'])  
         else:
-          print reg.type, reg.value
+          print(reg.type, reg.value)
           raise NotImplementedError 
       elif isinstance(reg, IStorage):
         tmpreg = reg
       elif isinstance(reg, Value):
         tmpreg = reg.reg
       else:
-        print reg
+        print(reg)
         raise NotImplementedError
 
       if num < len(parameterList):
@@ -128,7 +128,7 @@ class Context:
     operand = self.machine.OpCall(target, len(args), ret = ret)
     self.context.append(operand)
 
-    print "call %s" % (target)
+    print("call %s" % (target))
 
     for reg in reversed(pushedRegisters):
       self.emitPop(reg)
@@ -136,26 +136,26 @@ class Context:
   def emitComp(self, target1, target2):
     operand = self.machine.OpComp(target1, target2)
     self.context.append(operand)
-    print "cmp %s, %s" % (target1, target2)
+    print("cmp %s, %s" % (target1, target2))
 
   def emitJump(self, label):
     operand = self.machine.OpJump(label)
     self.context.append(operand)
-    print "jmp %s" % (label)
+    print("jmp %s" % (label))
 
   def emitJumpZeroFlag(self, label):
     operand = self.machine.OpJumpZeroFlag(label)
     self.context.append(operand)
-    print "jz %s" % (label)
+    print("jz %s" % (label))
 
   def emitJumpUsingReg(self, reg):
     operand = self.machine.OpJumpToReg(reg)
     self.context.append(operand)
-    print "jmp %s" % (reg)
+    print("jmp %s" % (reg))
 
   def emitLabel(self, labelname):
     self.context.append(self.machine.MarkLabel(labelname))
-    print "%s:" % (labelname)
+    print("%s:" % (labelname))
 
   def calStackSize(self):
     pass
@@ -194,7 +194,7 @@ class Context:
 # 모든 Type은 일단 ASTType을 중심으로 돌아야 한다.
 class Translate:
   def __init__(self, symbolTable, mustCompileSet):
-    print "initializing translate"
+    print("initializing translate")
 
     #self.globalSymbolTable = globalSymbolTable
     self.mustCompileSet = mustCompileSet
@@ -219,13 +219,13 @@ class Translate:
     return self.datas
 
   def generateMachineCode(self):
-    print "starting generateMachineCode", self.mustCompileSet
+    print("starting generateMachineCode", self.mustCompileSet)
     if isinstance(self.mustCompileSet, list):
       raise NotImplementedError
     else:
       tree, name = self.mustCompileSet
-      print tree
-      if not tree.has_key('@type'):
+      print(tree)
+      if '@type' not in tree:
         raise KeyError
 
       if tree['@type'] == 'def':
@@ -271,7 +271,7 @@ class Translate:
     elif isinstance(body, ASTSimpleExprs):
       self.procSimpleExprs(body)
     else:
-      print tree, type(tree)
+      print(tree, type(tree))
       raise NotImplementedError
 
     opcode = ctxt.machine.OpRet()
@@ -327,7 +327,7 @@ class Translate:
       if sym == None:
         raise Exception("procExpr", "Symbol Not Found")
 
-      print sym
+      print(sym)
       retv = False
       if '@vtype' in sym and sym['@vtype'].name != 'void':
         retv = True
@@ -343,7 +343,7 @@ class Translate:
       if retv == True:
         return Value(type = ASTType(name = sym['@vtype'], templ = None, ranks = None), reg = self.machine.getRetReg())
     else:
-      print tree, type(tree)
+      print(tree, type(tree))
       raise Exception("procExpr", "Not Implemented")
 
     return None
@@ -425,7 +425,7 @@ class Translate:
         context.emitMove(self.machine.getRetReg(), left.reg)
         context.emitPop(self.machine.getRetReg())
       else:
-        print tree, type(tree)
+        print(tree, type(tree))
         raise Exception('procForCond', 'Not implemented')
     else:
       if True:
@@ -454,8 +454,8 @@ class Translate:
         nativeName = encodeSymbolName(name = 'System.lang.Array.getNext', args = [generator.type])
         context.emitCall(nativeName, [generator.reg], ret = True)
       else: 
-        print tree, type(tree)
-        print tree.cond, type(tree.cond)
+        print(tree, type(tree))
+        print(tree.cond, type(tree.cond))
         raise Exception('procForCond', 'Not implemented')
 
     ret = self.procExprs(tree.body)
@@ -488,7 +488,7 @@ class Translate:
         elif isinstance(arg, ASTWord):
           args.append(arg)
         else:
-          print arg
+          print(arg)
           raise NotImplementedError
       
       nativeName = encodeSymbolName(tree.name.array)
@@ -498,8 +498,8 @@ class Translate:
     elif isinstance(tree, ASTCalleeArgType2):
       raise NotImplementedError
     else:
-      print "procSimpleExpr : ",
-      print tree, type(tree)
+      print("procSimpleExpr : ", end=' ')
+      print(tree, type(tree))
       raise Exception('procSimpleExpr', 'Not implemented')
 
   def procListGeneratorType1(self, tree):
@@ -538,7 +538,7 @@ class Translate:
 
   def getSymbolInfo(self, native):
     for elem in reversed(self.symbolTable):
-      if elem.has_key(native):
+      if native in elem:
         return elem[native]
 
     return None
@@ -557,7 +557,7 @@ class Translate:
     elif isinstance(obj, Value):
       return obj.type
     else:
-      print obj
+      print(obj)
       raise NotImplementedError
 
   # 모든 type 정보는 ASTType을 사용하도록??
@@ -585,48 +585,48 @@ class Translate:
           if left.type == 'System.lang.Integer':
            context.emitAdd(left.reg, right.reg, tmpReg)
           else:
-           print "Not Implemented about '%s' type" % (left.type)
+           print("Not Implemented about '%s' type" % (left.type))
            raise Exception("procOperator", "Not implemented")
         elif tree.name == '-':
           if left.type == 'System.lang.Integer':
            context.emitSub(left.reg, right.reg, tmpReg)
           else:
-           print "Not Implemented about '%s' type" % (left.type)
+           print("Not Implemented about '%s' type" % (left.type))
            raise Exception("procOperator", "Not implemented")
         elif tree.name == '*':
           if left.type == 'System.lang.Integer':
            context.emitMul(left.reg, right.reg, tmpReg)
           else:
-           print "Not Implemented about '%s' type" % (left.type)
+           print("Not Implemented about '%s' type" % (left.type))
            raise Exception("procOperator", "Not implemented")
         elif tree.name == '/':
           if left.type == 'System.lang.Integer':
            context.emitDiv(left.reg, right.reg, tmpReg)
           else:
-           print "Not Implemented about '%s' type" % (left.type)
+           print("Not Implemented about '%s' type" % (left.type))
            raise Exception("procOperator", "Not implemented")
         elif tree.name == '=':
           if left.type == 'System.lang.Integer':
            context.emitMove(right.reg, left.reg)
           else:
-           print "Not Implemented about '%s' type" % (left.type)
+           print("Not Implemented about '%s' type" % (left.type))
            raise Exception("procOperator", "Not implemented")
         elif tree.name == '+=':
           if left.type == 'System.lang.Integer':
            context.emitAdd(right.reg, left.reg, left.reg)
           else:
-           print "Not Implemented about '%s' type" % (left.type)
+           print("Not Implemented about '%s' type" % (left.type))
            raise Exception("procOperator", "Not implemented")
         else:
-          print tree.name 
-          print tree.left
-          print tree.right
+          print(tree.name) 
+          print(tree.left)
+          print(tree.right)
           raise Exception("procOperator", "Not implemented")
  
       return Value(type = left.type, reg = tmpReg)
     else:
       opName = self.makeFName(left.type, tree.name)
-      print left, tree, opName
+      print(left, tree, opName)
       nativeName = encodeSymbolName(opName, args = [left.type])
       #print nativeName 
       context.emitPush(self.machine.getRetReg())
@@ -652,24 +652,24 @@ class Translate:
       return Value(type = ASTType(name = 'System.lang.Float', templ = None, ranks = None), reg = self.machine.IFloat(tree.value))
     elif tree.isType('id'):
       symtbl = self.info['@symbols'][-1]
-      if not symtbl.has_key(tree.value):
+      if tree.value not in symtbl:
         raise Exception('Error', 'Unknown type : %s' % (tree.value))
 
       info = symtbl[tree.value]
       if isinstance(info, dict):
-        if not info.has_key('@vtype'):
-          print info
+        if '@vtype' not in info:
+          print(info)
           raise Exception('Error', 'Error')
         
         info = info['@vtype']
       
       if isinstance(info, ASTType) == False:
-        print info
+        print(info)
         raise Exception('Error', 'Not ASTType')
 
       return Value(type = info, reg = self.machine.IUserReg(tree.value))
     else:
-      print tree, type(tree)
+      print(tree, type(tree))
       raise NotImplementedError
 
     return Value(type = tree.getType(), reg = tmpReg)

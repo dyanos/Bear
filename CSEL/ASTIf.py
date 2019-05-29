@@ -1,5 +1,5 @@
 #!/usr/bin/env pythone
-from AST import *
+from .AST import *
 
 class ASTIf(AST):
   def __init__(self, cond, body):
@@ -7,10 +7,10 @@ class ASTIf(AST):
     self.body = body
 
   def printXML(self):
-    print "<if>\n<cond>"
+    print("<if>\n<cond>")
     self.cond.printXML()
-    print "</cond>\n<body>"
+    print("</cond>\n<body>")
     self.body.printXML()
-    print "</body>\n</if>"
+    print("</body>\n</if>")
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTVal(AST):
   def __init__(self, name, type, code):
@@ -8,12 +8,12 @@ class ASTVal(AST):
     self.code = code
 
   def printXML(self):
-    print "<val>\n<name>"
+    print("<val>\n<name>")
     self.name.printXML()
-    print "</name>\n<type>"
+    print("</name>\n<type>")
     self.type.printXML()
-    print "</type>\n<code>"
+    print("</type>\n<code>")
     self.code.printXML()
-    print "</code>\n</val>"
+    print("</code>\n</val>")
 
 

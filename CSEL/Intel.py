@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-from Operand import *
+from .Operand import *
 import pprint,sys
 
 import networkx as nx
@@ -162,14 +162,14 @@ class RegisterAllocation:
           continue
   
         t = str(operand.dst)
-        rn = set(map(lambda x: str(x), adjectList))
-        if graph.has_key(t):
+        rn = set([str(x) for x in adjectList])
+        if t in graph:
           graph[t] |= rn
         else:
           graph[t] = rn
   
         for e in adjectList:
-          if graph.has_key(str(e)):
+          if str(e) in graph:
             graph[str(e)] |= set([t])
           else:
             graph[str(e)] = set([t])
@@ -192,14 +192,14 @@ class RegisterAllocation:
           continue
           
         t = str(operand.dst)
-        rn = set(map(lambda x: str(x), adjectList))
-        if graph.has_key(t):
+        rn = set([str(x) for x in adjectList])
+        if t in graph:
           graph[t] |= rn
         else:
           graph[t] = rn
   
         for e in adjectList:
-          if graph.has_key(str(e)):
+          if str(e) in graph:
             graph[str(e)] |= set([t])
           else:
             graph[str(e)] = set([t])        
@@ -222,12 +222,12 @@ class RegisterAllocation:
             if t == areg: 
               continue
   
-            if graph.has_key(t):
+            if t in graph:
               graph[t] |= set([areg])
             else:
               graph[t] = set([areg])
   
-            if graph.has_key(str(areg)):
+            if str(areg) in graph:
               graph[areg] |= set([t])
             else:
               graph[areg] = set([t])
@@ -265,7 +265,7 @@ class RegisterAllocation:
         return 
         
       name = str(reg)
-      if not def1.has_key(name):
+      if name not in def1:
         def1[name] = set([pos])
       else:
         def1[name] |= set([pos])
@@ -277,7 +277,7 @@ class RegisterAllocation:
         return 
   
       name = str(reg)
-      if not use1.has_key(name):
+      if name not in use1:
         use1[name] = set([pos])
       else:
         use1[name] |= set([pos])
@@ -358,7 +358,7 @@ class RegisterAllocation:
         oldIn[real]  = newIn[real]
         oldOut[real] = newOut[real]
         newOut[real] = set([])
-        if succ.has_key(real):
+        if real in succ:
           for succNodeNum in succ[real]:
             if succNodeNum < 0 or succNodeNum >= nlst:
               continue
@@ -386,12 +386,12 @@ class RegisterAllocation:
     for i in range(0, len(newIn[0])):
       reg = s[i]
       for j in range(i, len(newIn[0])):
-        if G.has_key(reg):
+        if reg in G:
           G[reg] |= set([s[j]])
         else:
           G[reg] = set([s[j]])
   
-        if G.has_key(s[j]):
+        if s[j] in G:
           G[s[j]] |= set([reg])
         else:
           G[s[j]] = set([reg])
@@ -402,12 +402,12 @@ class RegisterAllocation:
   def doGraphColoring(lst, args = []):
     G, def1, def2, use1, use2 = RegisterAllocation.getInfoForRegAllocation(lst, args)
 
-    print G
+    print(G)
   
     registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
     #registerList = ['rax','rbx','rcx','rdx'] # for test of spilling out
   
-    symbols = G.keys()
+    symbols = list(G.keys())
     nsymbols = len(symbols)
   
     #print "symbols = ", symbols
@@ -427,7 +427,7 @@ class RegisterAllocation:
         colored[pos] = True
         colored2[symbol] = True
   
-    availColorList = filter(lambda x: not x in symbols, registerList)
+    availColorList = [x for x in registerList if not x in symbols]
   
     # 1. SD가 가장 큰 것을 찾는다.
     # 2. 할당되었는지 확인 후 되어있다면, 1번으로 돌아간다.
@@ -440,7 +440,7 @@ class RegisterAllocation:
     preservedStackSize = 0
     
     # using heuristic algorithm
-    allvars  = filter(lambda x: not colored2.has_key(x), symbols) # except pre-assigned registers
+    allvars  = [x for x in symbols if x not in colored2] # except pre-assigned registers
   
     # 모든 변수들이 다 assign되었다면,
     if len(allvars) == 0:
@@ -449,11 +449,11 @@ class RegisterAllocation:
     #print "allvars = ", allvars
     while True:
       def SD(G, x, colored):
-        return len(filter(lambda e: not colored2.has_key(e), G[x]))
+        return len([e for e in G[x] if e not in colored2])
   
       # to find a node that the number of neighbor nodes is maximum
-      allvars = filter(lambda x: not colored2.has_key(x), allvars)
-      _, symbol = max(map(lambda x: (SD(G, x, colored), x), allvars))
+      allvars = [x for x in allvars if x not in colored2]
+      _, symbol = max([(SD(G, x, colored), x) for x in allvars])
       ind = symbols.index(symbol)
       
       # 해당 symbol과 관련있는 녀석들 중에 이미 색칠이 칠해진 녀석들을 찾음.
@@ -477,12 +477,10 @@ class RegisterAllocation:
         # 인접 register들을 찾는다.
         # To find no colored symbol of the other symbols connected 'symbol'
         # Don't worry when remains machine registers. because they can spill out.
-        outRegList = filter(lambda y: not y in registerList, 
-                  filter(colored2.has_key, list(G[symbol]))
-                  )
+        outRegList = [y for y in list(filter(colored2.has_key, list(G[symbol]))) if not y in registerList]
         # We will find a symbol that number of 'use1' of precolored symbols is minimum.
         # and get length of 'use1' and sort it.
-        outRegList = map(lambda x: (len(use1[x]), x), outRegList)
+        outRegList = [(len(use1[x]), x) for x in outRegList]
         outRegList.sort()
         
         #print outRegList
@@ -491,7 +489,7 @@ class RegisterAllocation:
         # to pick a symbol to spill out
         outReg = None
         for e, s in outRegList:
-          if not spilling.has_key(s):
+          if s not in spilling:
             outReg = s
             break
   
@@ -517,7 +515,7 @@ class RegisterAllocation:
       colored2[symbol] = True
       
       # to recalculate the number of colored registers
-      ncolored = len(filter(lambda x: x == True, colored))
+      ncolored = len([x for x in colored if x == True])
       if ncolored == nsymbols:
         break
       
@@ -525,14 +523,14 @@ class RegisterAllocation:
  
   @staticmethod
   def doRegisterAllocation(lst, args):
-    print "called doRegisterAllocation"
+    print("called doRegisterAllocation")
     #getInfoForRegAllocation(lst, args)
   
     codes = []
   
     ret, spilling = RegisterAllocation.doGraphColoring(lst, args)
-    keys = ret.keys()
-    skeys = spilling.keys()
+    keys = list(ret.keys())
+    skeys = list(spilling.keys())
     for operand in lst:
       if isinstance(operand, OpMove) \
         or isinstance(operand, OpAdd) \
@@ -573,12 +571,12 @@ class RegisterAllocation:
       elif isinstance(operand, OpRet):
         pass
       else:
-        print operand
+        print(operand)
         raise Exception('error', 'Not Implemented')
   
       #print operand
       codes.append(operand)
   
-    print "ending doRegisterAllocation"
+    print("ending doRegisterAllocation")
     
     return codes

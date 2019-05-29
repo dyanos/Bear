@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTCase(AST):
   def __init__(self, cond, body):
@@ -7,9 +7,9 @@ class ASTCase(AST):
     self.body = body
 
   def printXML(self):
-    print "<case>"
-    print "<condition>"
+    print("<case>")
+    print("<condition>")
     self.cond.printXML()
-    print "</condition>\n<body>"
+    print("</condition>\n<body>")
     self.body.printXML()
-    print "</body>\n</case>"
+    print("</body>\n</case>")

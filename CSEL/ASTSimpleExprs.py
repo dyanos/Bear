@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTSimpleExprs(AST):
   def __init__(self, exprs):

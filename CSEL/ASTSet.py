@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-from AST import *
+from .AST import *
 
 class ASTSet(AST):
   def __init__(self, lst):
     self.lst = lst
 
   def printXML(self):
-    print "<set>"
+    print("<set>")
     for item in self.lst:
-      print "<set-item>"
+      print("<set-item>")
       item.printXML()
-      print "</set-item>"
-    print "</set>"
+      print("</set-item>")
+    print("</set>")
