@@ -4,7 +4,7 @@ from CSEL.analysis import *
 from CSEL.Operand import *
 from CSEL.Intel import *
 
-parser = Parser("sample.prg")
+parser = Parser("code1.prg")
 parser.parse()
 
 CodeSection = {}

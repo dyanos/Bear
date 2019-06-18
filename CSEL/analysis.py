@@ -309,7 +309,7 @@ class Translate:
       raise Exception("ASTIf in procExpr", "Not Implemented")
     elif isinstance(tree, ASTFor):
       self.procFor(tree)
-    elif isinstance(tree, ASTOperator):
+    elif isinstance(tree, ASTBinOperator):
       # 여기 이렇게 놓으면 안될듯한 느낌이..
       return self.procOperator(tree)
     elif isinstance(tree, ASTReturn):
@@ -387,7 +387,7 @@ class Translate:
       context.emitMove(self.machine.getRetReg(), tmpReg)
       context.emitPop(self.machine.getRetReg())
       
-    if isinstance(tree.cond, ASTOperator):
+    if isinstance(tree.cond, ASTBinOperator):
       cond = tree.cond
       # 'for var <= list:'
       if cond.name == '<=':
@@ -472,7 +472,7 @@ class Translate:
   def procSimpleExpr(self, tree):
     if isinstance(tree, ASTWord):
       return self.procWord(tree)
-    elif isinstance(tree, ASTOperator):
+    elif isinstance(tree, ASTBinOperator):
       return self.procOperator(tree)
     elif isinstance(tree, ASTListGenerateType1):
       return self.procListGeneratorType1(tree)

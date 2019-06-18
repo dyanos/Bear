@@ -2,6 +2,9 @@
 import traceback
 
 class AST:
+  def __init__(self):
+    self.type = None
+
   def printXML(self):
     print("Empty")
 

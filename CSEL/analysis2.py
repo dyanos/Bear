@@ -16,9 +16,9 @@ class Something:
     if obj.type == "System.lang.Integer"  \
       or obj.type == "System.lang.Float"  \
       or obj.type == "System.lang.Double":
-      return false
+      return False
 
-    return true
+    return True
 
   # 주어진 object가 int형등의 natural object인지 검사
   def isNaturalObject(self, obj):

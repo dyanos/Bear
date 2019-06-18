@@ -20,7 +20,7 @@ from .ASTIf import *
 from .ASTListGenerateType1 import *
 from .ASTNames import *
 from .ASTNamespace import *
-from .ASTOperator import *
+from .ASTBinOperator import *
 from .ASTRankSpecs import *
 from .ASTSimpleExprs import *
 from .ASTTemplateList import *

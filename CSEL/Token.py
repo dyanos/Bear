@@ -139,8 +139,8 @@ class Token:
     self.nReject = 0
 
     self.tok = None
-    if fn != None or os.path.exists(fn):
-      self.code = open(fn,"rt").readlines()
+    if fn is not None or os.path.exists(fn):
+      self.code = open(fn, "rt", encoding="utf-8").readlines()
       self.lexer.input("".join(self.code))
 
     self.tok = None
