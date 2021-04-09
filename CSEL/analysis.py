@@ -644,6 +644,7 @@ class Translate:
         print(info)
         raise Exception('Error', 'Not ASTType')
 
+      print(tree.value)
       return Value(type = info, reg = self.machine.IUserReg(tree.value))
     else:
       print(tree, type(tree))

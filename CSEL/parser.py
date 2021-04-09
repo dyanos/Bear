@@ -745,7 +745,7 @@ class Parser:
         return obj.vtype
       # 이건 비정상적인 경우, 이렇게 찾아들어오면 안된다.
       elif isinstance(obj.vtype, dict):
-        return obj.vtype['@vtype']
+        return obj.vtype['vtype']
       else:
         print("))", obj.vtype)
         raise NotImplementedError
@@ -786,9 +786,9 @@ class Parser:
         raise Exception('Error', 'Duplicated Name')
         return None
 
-      type = None
+      ltype = None
       if self.match(':'):
-        type = self.parseType()
+        ltype = self.parseType()
 
       # print "name =", name
 
@@ -798,21 +798,21 @@ class Parser:
         right = self.parseSimpleExpr()
         rtype = self.guessType(right)
         if rtype:
-          if type: # 변수의 type을 명시적으로 선언했으면, 둘이 같은지 검사
-            if not self.checkSameType(type, rtype):
-              print(f"Error) Not equal between {type} and {rtype}")
+          if ltype: # 변수의 type을 명시적으로 선언했으면, 둘이 같은지 검사
+            if not self.checkSameType(ltype, rtype):
+              print(f"Error) Not equal between {ltype} and {rtype}")
               raise SyntaxError
           else:
-            type = right.type
+            ltype = right.type
 
-        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, type), right)
+        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right)
         hist.append(tree)
 
-      if type is None:
+      if ltype is None:
         print("No Variable Type")
         raise Exception('Error', 'No Variable Type')
 
-      self.localSymbolTable[name] = {"type": "val", "vtype": type, "init": tree}
+      self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree}
       if not self.match(','):
         break
 
@@ -856,11 +856,11 @@ class Parser:
         tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right)
         hist.append(tree)
 
-      if type is None:
+      if ltype is None:
         print("No Variable Type")
         raise Exception('Error', 'No Variable Type')
 
-      self.localSymbolTable[name] = {"type": "val", "vtype": type, "init": tree}
+      self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree}
       if not self.match(','):
         break
 
@@ -954,21 +954,22 @@ class Parser:
           tok = self.token.tok
 
           # Global Operator 함수로 첫번째 찾는다. (C++의 operator + (left, right)라는 식..)
-          content = {'@type': 'def', '@name': tok.value}
-          content['@args'] = [self.convertToASTType(tree), self.convertToASTType(right)]
-          symbol = self.globalSymbolTable.find(content)
+          nativeFuncname = internalMangling(tok.value, [self.convertToASTType(tree), self.convertToASTType(right)])
+          fn = f"{self.convertToASTType(tree).name}.{nativeFuncname}"
+
+          symbol = self.globalSymbolTable.find(nativeFuncname)
+          fname = nativeFuncname
           if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            content = {'@type': 'def', '@name': self.convertToASTType(tree).name + "." + tok.value}
-            content['@args'] = [self.convertToASTType(right)]
-            symbol = self.globalSymbolTable.find(content)
+            symbol = self.globalSymbolTable.find(fn)
+            fname = fn
 
           print("4", symbol, content)
           if symbol != None:
-            if symbol['@type'] == 'native def':
+            if symbol['type'] == 'native def':
               raise NotImplementedError
             else:
-              tree = ASTFuncCall(content['@name'], tree, right)
+              tree = ASTFuncCall(fname, tree, right)
           elif symbol == None:
             if compareType(tree, right):
               tree = ASTBinOperator(ASTWord(tok.type, tok.value), tree, right)
@@ -993,20 +994,21 @@ class Parser:
         right = self.parseBasicSimpleExpr()
         # print "here : ", mid, tree, right
         if right != None:
-          content = {'@type': 'def', '@name': tokVal}
-          content['@args'] = [self.convertToASTType(tree), self.convertToASTType(right)]
-          symbol = self.globalSymbolTable.find(content)
+          nativeFuncname = internalMangling(tokVal, [self.convertToASTType(tree), self.convertToASTType(right)])
+          fn = f"{self.convertToASTType(tree).name}.{nativeFuncname}"
+
+          fname = nativeFuncname
+          symbol = self.globalSymbolTable.find(nativeFuncname)
           if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            content = {'@type': 'def', '@name': self.convertToASTType(tree).name + "." + tokVal}
-            content['@args'] = [self.convertToASTType(right)]
-            symbol = self.globalSymbolTable.find(content)
+            symbol = self.globalSymbolTable.find(fn)
+            fname = fn
 
           if symbol != None:
-            if symbol['@type'] == 'native def':
+            if symbol['type'] == 'native def':
               raise NotImplementedError
             else:
-              tree = ASTFuncCall(content['@name'], [tree, right])
+              tree = ASTFuncCall(fname, [tree, right])
           else:
             tree = ASTBinOperator(mid, tree, right)
         else:
@@ -1115,6 +1117,8 @@ class Parser:
         vtype = None
         if tok.value in self.localSymbolTable:
           vtype = self.localSymbolTable[tok.value]
+          if 'type' in vtype:
+            vtype = vtype['vtype']
 
         if vtype == None:
           vtype = self.globalSymbolTable.find(tok.value)

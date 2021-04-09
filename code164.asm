@@ -1,8 +1,11 @@
 section .text
 _main:
-mov rdx, 10
+mov rsi, 10
 mov rcx, 10
-mov rax, rbx
+mov rbx, rsi
+add rbx, rcx
+mov rdx, rbx
+mov rax, rdx
 ret
 
 section .data
