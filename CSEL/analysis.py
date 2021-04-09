@@ -193,12 +193,10 @@ class Context:
 # 모든 Return은 Value를 끼고 있어야 한다.
 # 모든 Type은 일단 ASTType을 중심으로 돌아야 한다.
 class Translate:
-  def __init__(self, symbolTable, mustCompileSet):
+  def __init__(self, symbolTable):
     print("initializing translate")
 
     #self.globalSymbolTable = globalSymbolTable
-    self.mustCompileSet = mustCompileSet
-
     self.symbolTable = symbolTable
 
     self.context = []
@@ -219,24 +217,13 @@ class Translate:
     return self.datas
 
   def generateMachineCode(self):
-    print("starting generateMachineCode", self.mustCompileSet)
-    if isinstance(self.mustCompileSet, list):
-      raise NotImplementedError
-    else:
-      tree, name = self.mustCompileSet
-      print(tree)
-      if '@type' not in tree:
-        raise KeyError
-
-      if tree['@type'] == 'def':
-        self.procFunc(tree)
+    if "_main" in self.symbolTable:
+      self.procFunc(self.symbolTable["_main"])
  
   def getLastContext(self):
     return self.context[-1]
 
   def procFunc(self, tree):
-    #print tree
-
     self.context.append(Context())
 
     # 일단 함수 인자들을 machine stack에 밀어넣는다.
@@ -244,12 +231,12 @@ class Translate:
 
     # 여기서 system dependent한 메모리 레지스터를 사용하는 것은 좋아보이지 않는다.
     # Intel.py로 코드를 이동시켜야할듯.(2013/03/12)
-    args = tree['@args']
+    args = tree['args']
     for pos, arg in enumerate(args):
       content, name = {}, None
       if isinstance(arg, ASTDefArg):
         name = arg.name
-        content['@type'] = arg.type
+        content['ret_type'] = arg.type
       else:
         raise NotImplementedError
 
@@ -261,7 +248,7 @@ class Translate:
       self.external[name] = content
 
     self.info = tree
-    body = tree['@body']
+    body = tree['body']
     body.printXML()
     # ASTReturn은 아래 것들 중에 걸리는게 없다... 근데 왜 Exception이 안나왔지??
     if isinstance(body, ASTExprs):
@@ -651,17 +638,7 @@ class Translate:
     elif tree.isType('System.lang.Float'):
       return Value(type = ASTType(name = 'System.lang.Float', templ = None, ranks = None), reg = self.machine.IFloat(tree.value))
     elif tree.isType('id'):
-      symtbl = self.info['@symbols'][-1]
-      if tree.value not in symtbl:
-        raise Exception('Error', 'Unknown type : %s' % (tree.value))
-
-      info = symtbl[tree.value]
-      if isinstance(info, dict):
-        if '@vtype' not in info:
-          print(info)
-          raise Exception('Error', 'Error')
-        
-        info = info['@vtype']
+      info = tree.vtype
       
       if isinstance(info, ASTType) == False:
         print(info)

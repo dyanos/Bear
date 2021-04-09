@@ -19,7 +19,7 @@ def convertFloatToHex(value):
   string = str(value)
   return None
 
-# ¾Æ·¡ ÄÚµå´Â ¼öÁ¤ÇÒ ¿¹Á¤ÀÓ  
+# ï¿½Æ·ï¿½ ï¿½Úµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 class Transformation:
   def __init__(self, symtbl):
     self.symtbl = symtbl
@@ -32,7 +32,7 @@ class Transformation:
     for key in self.symtbl:
       ast = self.symtbl[key]
       if isinstance(ast, ASTDeclFunc):
-        # local º¯¼ö Stack ÇÊ¿ä.
+        # local ï¿½ï¿½ï¿½ï¿½ Stack ï¿½Ê¿ï¿½.
         continue
       elif isinstance(ast, ASTDefVar):
         continue
@@ -81,7 +81,7 @@ class Transformation:
         return {"type": "string", "index": index}
       elif now.type == 'id':
         regnum = len(self.symboltbl)
-        # ´ÜÀÏÀÌ¸é register, Å©±â°¡ ÀÖ´Ù¸é start address¸¦ register
+        # ï¿½ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ register, Å©ï¿½â°¡ ï¿½Ö´Ù¸ï¿½ start addressï¿½ï¿½ register
         type   = self.searchSymbol(now.value)
         if self.isBasicType(type):
           return {"type": type, "register-num": regnum}
@@ -307,9 +307,8 @@ class IR:
     self.eval(tree.left)
     self.eval(tree.right)
     
-
-    l_classname, ltypestr  = getTypeOf(lsubtree)
-    ret      = searchFunctionInClass(ltypestr, tree.name)
+    l_classname, ltypestr = getTypeOf(lsubtree)
+    ret = searchFunctionInClass(ltypestr, tree.name)
     if ret == None:
       print("Error) Operator Not Found! : %s" % (tree.name))
       sys.exit(-1)
@@ -351,6 +350,7 @@ class IR:
   def eval(self, tree):
     if isinstance(tree, ASTWord):
       ret = self.evalTerminalToken(tree)
+
     pass
 
 class IR2:
@@ -405,6 +405,8 @@ class IR2:
 
       print("argument = ", info['@argument_symbols'])
       sys.exit(-1)
+    else:
+      tree.
 
   def eval(self, tree):
     innerSymbolTbl = {}

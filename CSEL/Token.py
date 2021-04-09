@@ -17,6 +17,7 @@ reserved = {
     'for' : 'FOR',
 
     'else' : 'ELSE',
+    'val' : 'VAL',
     'var' : 'VAR',
     'def' : 'DEF',
     'true' : 'TRUE',
@@ -28,7 +29,10 @@ reserved = {
     'return' : 'RETURN',
     'match' : 'MATCH',
     '?' : 'MATCH',
+    '->' : 'RIGHTARROW',
     '=>' : 'RIGHTBIGARROW',
+    '<:' : 'LEFTSUCCESSION',
+    ':>' : 'RIGHTSUCCESSION',
     ':' : 'COLONS',
     '_' : '_',
     }
@@ -106,7 +110,7 @@ def t_mathLiteral(t):
     return t
 
 def t_symbolLiteral(t):
-    r"""'[^\w\[\]\.\n;]"""
+    r"""'[^\w\[\]\.\n;]'"""
     return t
 
 # id��� `��� ������������ ��������� ������ ������ ������ ������ ������(2013.03.12)

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import os,sys,string
 
+from CSEL.AST import *
+
+
 class IRStorage:
     def __init__(self):
         pass
@@ -203,22 +206,58 @@ class IROpLoad(IROp):
     def toString(self):
         return "load %s, %s" % (self.loc, self.dst)
 
-# save src, loc
-# meaing : src -> [loc]
-class IROpLoad(IROp):
-    def __init__(self, src, loc):
-        if not isinstance(loc, IRStorage):
-            raise TypeError()
-        elif not isinstance(src, IRRegister):
-            raise TypeError()
 
-        self.loc = loc
-        self.src = src
+class IRLabel(IROp):
+    def __init__(self, name):
+        self.name = name
 
     def __str__(self):
         return self.toString()
 
     def toString(self):
-        return "save %s, %s" % (self.src, self.loc)
+        return "{}:" % (self.name)
 
-    
+
+class IRFuncEntry(IROp):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return self.toString()
+
+    def toString(self):
+        return "push rbp\nmove rsp, rbp"
+
+
+class IRFuncDeparture(IROp):
+    def __init__(self):
+        pass
+
+    def __str__(self):
+        return self.toString()
+
+    def toString(self):
+        return "pop ebp\nret"
+
+
+class CodeGenerator:
+    def __init__(self, tree):
+        self.tree = tree
+
+        self.opcode = []
+
+    def getAsmName(self):
+        """
+        IR코드에서 사용하는 label을 생성합니다.
+        """
+        return ""
+
+    def genFuncCode(self, subtree: AST):
+        self.opcode.append(IRLabel(self.getAsmName()))
+        self.opcode.append(IRFuncEntry())
+        self.genCode(subtree)
+        self.opcode.append(IRFuncDeparture())
+
+    def genCode(self, subtree: AST):
+        # TODO: 코드 미완성
+        pass

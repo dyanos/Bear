@@ -12,19 +12,21 @@ DataSection = {}
 
 print("Parsing End")
 asmf = open(parser.basename+"64.asm", "wt")
-for symbol in parser.mustcompile:
-  print(symbol)
-  _, name = symbol
-  machine = Translate(parser.globalSymbolTable, symbol)
 
-  if machine.codes == None:
-    continue
+machine = None
+if "_main" in parser.globalSymbolTable:
+  machine = Translate(parser.globalSymbolTable)
+
+if machine.codes == None:
+  print("machine.codes is None")
+else:
+  print(machine.codes)
 
   ds = machine.getDataSection()
   for key in list(ds.keys()):
     DataSection[key] = ds[key]
 
-  CodeSection[name] = machine.codes
+  CodeSection["_main"] = machine.codes
 
 print("printing code(sample)")
 
@@ -50,12 +52,12 @@ asmf.close()
 #        OpMove(IUserReg('y'), IUserReg('w')), 
 #        OpAdd(IUserReg('x'), IUserReg('w'))]
 
-test = [OpMove(IInteger(1), IUserReg('z')),   # z = 1
-        OpMove(IUserReg('w'), IUserReg('x')), # x = w
-        OpAdd(IUserReg('z'), IUserReg('x')),  # x += z
-        OpMove(IUserReg('w'), IUserReg('y')), # y = w
-        OpAdd(IUserReg('x'), IUserReg('y')),  # y += x
-        OpMove(IUserReg('y'), IUserReg('w')), # w = y
-        OpAdd(IUserReg('x'), IUserReg('w'))]  # w += x
+#test = [OpMove(IInteger(1), IUserReg('z')),   # z = 1
+#        OpMove(IUserReg('w'), IUserReg('x')), # x = w
+#        OpAdd(IUserReg('z'), IUserReg('x')),  # x += z
+#        OpMove(IUserReg('w'), IUserReg('y')), # y = w
+#        OpAdd(IUserReg('x'), IUserReg('y')),  # y += x
+#        OpMove(IUserReg('y'), IUserReg('w')), # w = y
+#        OpAdd(IUserReg('x'), IUserReg('w'))]  # w += x
 
-print(doRegisterAllocation(test, []))
+#print(doRegisterAllocation(test, []))
