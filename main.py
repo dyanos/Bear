@@ -15,9 +15,6 @@ import CSEL.ASTType as ASTType
 def doInternalMangling(name: str, args: List[str]) -> str:
   return encodeSymbolName(name, args)
 
-print(mangle("System.lang.Int.operator +"))
-print(doInternalMangling("+", []))
-sys.exit(-1)
 
 parser = Parser("code1.prg")
 parser.parse()

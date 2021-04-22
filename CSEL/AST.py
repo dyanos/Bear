@@ -8,9 +8,9 @@ class AST:
   def printXML(self):
     print("Empty")
 
-  def isType(self, typeStr):
+  def isType(self, typeStr: str) -> bool:
     # if this class doesn't have the 'type' member variable,
-    if self.type == None:
+    if self.type is None:
       return False
 
     if self.type == typeStr:
@@ -18,8 +18,8 @@ class AST:
 
     return False
 
-  def getType(self):
-    if self.type == None:
+  def getType(self) -> str:
+    if self.type is None:
       return None
 
     return self.type

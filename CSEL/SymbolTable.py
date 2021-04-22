@@ -31,6 +31,13 @@ class SymbolTable:
     self.table["System.lang.Double"] = DoubleType()
     self.table["System.lang.Array"] = ArrayType()
     self.table["System.lang.String"] = StringType()
+    self.table["System.lang.Int.operator +"] = FuncType("+", [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                                              FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator +"] = FuncType("+", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator -"] = FuncType("-", [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                                              FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator -"] = FuncType("-", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    
     self.table["char"] = AliasType("char", self.table["System.lang.Char"])
     self.table["byte"] = AliasType("byte", self.table["System.lang.Byte"])
     self.table["short"] = AliasType("short", self.table["System.lang.Short"])
@@ -44,6 +51,11 @@ class SymbolTable:
     self.table["float"] = AliasType("float", self.table["System.lang.Float"])
     self.table["double"] = AliasType("double", self.table["System.lang.Double"])
     self.table["string"] = AliasType("string", self.table["System.lang.String"])
+    
+    self.cvttbl = {"+": "operator +",
+                   "-": "operator -",
+                   "*": "operator *",
+                   "/": "operator /"}
 
   def registerNamespace(self, path: str):
     if path in self.table:
@@ -65,8 +77,9 @@ class SymbolTable:
   def registerFunc(self, path: str, args: List[Type], rettype: Type) -> NoReturn:
     self.table[path] = FuncType(path, args, rettype)
 
-  def findByLastName(self, idStr: str) -> List[Type]:
-    return [self.table[key] for key in self.table if key.endswith(idStr)]
+  def findByLastName(self, idStr: str) -> Dict[str, Type]:
+    print(idStr)
+    return {key: self.table[key] for key in self.table if key.endswith(idStr)}
 
   def glob(self, path: str, args: List[Type]) -> Type:
     # path는 일단 두 개의 것을 나눈다.
@@ -157,10 +170,24 @@ class SymbolTable:
       elif name == 'System.lang.String' or name == 'string':
         return StringType()
       else:
-        return self.table.findByLastName(name)
+        symbols = self.findByLastName(name)
+        keys = list(symbols.keys())
+        if len(keys) == 1:
+          return symbols[keys[0]]
+        else:
+          print(f"Error) multiple definition!! {name}")
+          print(symbols)
+          raise NotImplementedError
 
     # 일단 template은 무시
-    ret = convertType(_type.name)
+    if isinstance(_type, ASTCalleeArgType1):
+      if isinstance(_type.type, Type):
+        return _type.type
+      else:
+        raise NotImplementedError
+    else:
+      ret = convertType(_type.name)
+      
     for templ in _type.templ:
       ret = TemplateType(ret, self.convert(templ))
     for rank in _type.ranks:

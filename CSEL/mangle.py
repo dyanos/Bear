@@ -146,7 +146,7 @@ eoperatorTransTbl = {
   "alignof(a type)": "at",
   "alignof(an expression)": "az",
   "cast": "cv<type>",
-  "vendor" : "v<digit><source-name>",
+  "vendor": "v<digit><source-name>",
 }
 
 def validNamespaceName(name):
@@ -248,7 +248,7 @@ def convertType_for_gcc(type):
     else:
       result += [enm[name]]
   else:
-    result += ["N" +  __converting(array)]
+    result += ["N" + __converting(array)]
 
   if type.templ != None:
     result += ["I"]

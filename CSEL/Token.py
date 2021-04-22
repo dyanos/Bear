@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 #!/usr/bin/env python
-import os,sys,string
+from typing import *
+import os, sys, string
 
 import re
+
+import ply.lex
 import ply.lex as lex
 import ply.yacc as yacc
 
 # for debugging
 import traceback
+
+import CSEL.Token
 
 literals = ",.(){}[]:#@"
 
@@ -130,11 +135,11 @@ def t_error(t):
     t.lexer.skip(1)
  
 class Token:
-  def __init__(self, fn = None):
+  def __init__(self, fn: str = None):
     self.lexer = lex.lex(debug = 0)
     
-    self.locking:bool = False
-    self.history = []
+    self.locking: bool = False
+    self.history: List[ply.lex.LexToken] = []
     self.checkpt = []
     self.pos = 0
     self.refcnt = 0
@@ -142,15 +147,13 @@ class Token:
     self.nAccept = 0
     self.nReject = 0
 
-    self.tok = None
+    self.tok: ply.lex.LexToken = None
     if fn is not None or os.path.exists(fn):
-      self.code = open(fn, "rt", encoding="utf-8").readlines()
+      self.code: List[str] = open(fn, "rt", encoding="utf-8").readlines()
       self.lexer.input("".join(self.code))
 
-    self.tok = None
-
-  def save(self):
-    if self.locking == False:
+  def save(self) -> NoReturn:
+    if self.locking is False:
       self.locking = True
       self.nAccept = 0
       self.nReject = 0
@@ -160,32 +163,32 @@ class Token:
     
     self.incRef()
 
-  def incRef(self):
+  def incRef(self) -> NoReturn:
     self.refcnt = self.refcnt + 1
 
-  def decRef(self):
+  def decRef(self) -> NoReturn:
     self.refcnt = self.refcnt - 1
 
-  def accept(self):
+  def accept(self) -> NoReturn:
     self.decRef()
     self.nAccept = self.nAccept + 1
     del self.checkpt[len(self.checkpt)-1] # To remove the last element of checkpt
     self.cleanup()
 
-  def cleanup(self):
+  def cleanup(self) -> NoReturn:
     if self.refcnt == 0:
       self.locking = False
       self.history = []
       self.checkpt = []
       self.pos = 0
         
-  def reject(self):
+  def reject(self) -> NoReturn:
     self.decRef()
     del self.checkpt[len(self.checkpt)-1] # To remove the last element of checkpt
     self.pos, self.tok = self.checkpt[self.refcnt]
 
-  def nextToken(self):
-    if self.locking == False:
+  def nextToken(self) -> ply.lex.LexToken:
+    if self.locking is False:
       self.tok = self.lexer.token()
     else:
       if self.pos == len(self.history):
@@ -199,8 +202,8 @@ class Token:
     #traceback.print_stack()
     return self.tok
 
-  def same(self, val:str) -> bool:
-    if self.tok == None:
+  def same(self, val: str) -> bool:
+    if self.tok is None:
       return False
 
     if self.tok.value == val:
@@ -208,8 +211,8 @@ class Token:
 
     return False
 
-  def match(self, val:str) -> bool:
-    if self.tok == None:
+  def match(self, val: str) -> bool:
+    if self.tok is None:
         return False
     
     if self.tok.value == val:
@@ -218,14 +221,14 @@ class Token:
 
     return False
 
-  def sameType(self, typeStr:str) -> bool:
+  def sameType(self, typeStr: str) -> bool:
     if self.tok.type == typeStr:
       val = self.tok.value
       return True
 
     return False
 
-  def matchType(self, typeStr:str) -> str:
+  def matchType(self, typeStr: str) -> str:
     if self.tok.type == typeStr:
       val = self.tok.value
       self.nextToken()
@@ -234,13 +237,13 @@ class Token:
     return None
 
   def reachEnd(self) -> bool:
-    if self.tok == None or self.tok.type == 'EOF':
+    if self.tok is None or self.tok.type == 'EOF':
       return True
 
     return False
 
   def __str__(self) -> str:
-    if self.tok != None:
+    if self.tok is not None:
       return "(%s) '%s'" % (self.tok.type, self.tok.value)
 
     return None
