@@ -133,7 +133,7 @@ class Token:
   def __init__(self, fn = None):
     self.lexer = lex.lex(debug = 0)
     
-    self.locking = False
+    self.locking:bool = False
     self.history = []
     self.checkpt = []
     self.pos = 0
@@ -199,7 +199,7 @@ class Token:
     #traceback.print_stack()
     return self.tok
 
-  def same(self, val):
+  def same(self, val:str) -> bool:
     if self.tok == None:
       return False
 
@@ -208,7 +208,7 @@ class Token:
 
     return False
 
-  def match(self, val):
+  def match(self, val:str) -> bool:
     if self.tok == None:
         return False
     
@@ -218,14 +218,14 @@ class Token:
 
     return False
 
-  def sameType(self, typeStr):
+  def sameType(self, typeStr:str) -> bool:
     if self.tok.type == typeStr:
       val = self.tok.value
       return True
 
     return False
 
-  def matchType(self, typeStr):
+  def matchType(self, typeStr:str) -> str:
     if self.tok.type == typeStr:
       val = self.tok.value
       self.nextToken()
@@ -233,13 +233,13 @@ class Token:
 
     return None
 
-  def reachEnd(self):
+  def reachEnd(self) -> bool:
     if self.tok == None or self.tok.type == 'EOF':
       return True
 
     return False
 
-  def __str__(self):
+  def __str__(self) -> str:
     if self.tok != None:
       return "(%s) '%s'" % (self.tok.type, self.tok.value)
 

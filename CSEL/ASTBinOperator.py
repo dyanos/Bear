@@ -2,10 +2,11 @@
 from .AST import *
 
 class ASTBinOperator(AST):
-  def __init__(self, name, left, right):
+  def __init__(self, name, left, right, vtype=None):
     self.name  = name
     self.left  = left
     self.right = right
+    self.vtype = vtype
 
   def printXML(self):
     print("<binary-operator name=\"%s\">\n<left>" % (self.name))

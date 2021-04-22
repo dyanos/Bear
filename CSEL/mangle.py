@@ -1,5 +1,7 @@
 #!/usr/bin/env pythone
 # -*- coding: utf-8 -*-
+from typing import *
+
 import traceback
 from random import Random
 
@@ -325,7 +327,7 @@ def convertToNativeSymbol(name, args, ret):
 
 # 모든 이름은 root namespace부터 있어야 한다.
 # 즉, Full name space이어야한다.
-def encode_for_gcc(name, args):
+def encode_for_gcc(name: str, args: List[AST]):
   mangling = []
   if True:
     cnt = len(name)

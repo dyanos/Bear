@@ -1,5 +1,6 @@
 #!/usr/bin/env pythone
 # -*- coding: utf-8 -*-
+from typing import *
 import traceback
 
 from .Token import *
@@ -52,7 +53,7 @@ from .ASTNativeAdd import *
 from .ASTNativeMove import *
 
 from .SymbolTable import *
-from .TypeTable import TypeTable
+from .TypeTable import *
 from .IR import *
 from .mangle import *
 
@@ -60,23 +61,23 @@ import copy
 import random
 import re
 
+
 sourceSets = []
 
-
-def checkNamespaceGroup(name):
+def checkNamespaceGroup(name: str) -> bool:
   if re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*\*$', name):
     return True
 
   return False
 
-def mangling(name, args, rettype=None, extern=False):
+def mangling(name: str, args: List[AST], rettype:ASTType=None, extern:bool=False):
   # name들은 무조건 C++기준으로, 단 extern이 있으면 C로 가정한다.
   if extern == True:
     return "_" + name
 
   return encodeSymbolName(name, args)
 
-def internalMangling(name, args):
+def doInternalMangling(name: str, args: List[AST]) -> str:
   return encodeSymbolName(name, args)
 
 class ClassSuccessionInfo:
@@ -84,7 +85,7 @@ class ClassSuccessionInfo:
   PROTECTED = 2
   PRIVATE = 3
 
-  def __init__(self, path, type):
+  def __init__(self, path:str, type:ASTType):
     self.path = path
     self.type = type
 
@@ -93,7 +94,7 @@ class SyntaxError(Exception):
     pass
 
 class Library:
-  def __init__(self, libraryPaths):
+  def __init__(self, libraryPaths: List[str]):
     self.libraryPaths = libraryPaths
     self.getLibraryPaths()
 
@@ -101,14 +102,14 @@ class Library:
     import os
     import glob
 
-    libraries = []
+    libraries: List[str] = []
     for p in libraryPaths:
       temp = glob.glob(os.paths.join(p, "*"))
       libraries.extends(temp)
 
     self.library_paths = libraries
 
-  def loadSymbolFrom(self, path):
+  def loadSymbolFrom(self, path: str):
     # 모든 symbol들은 System.lang.Object형태로 변경된 후 다루어진다.
 
     # 1. 상위이름으로 매칭되는 파일명 찾기 : 예를 들어, System.lang.Object를 찾는다면, System.lang.Object.dll을 찾으면 됨
@@ -124,7 +125,7 @@ class Library:
 # thread환경일 경우는 '<-'은 synchronized한 동작을 한다(thread-safe)
 # 하지만 '='은 no-thread-safe하게 동작한다. (2013.03.12)
 class Parser:
-  def __init__(self, fn, isdebug=False):
+  def __init__(self, fn:str, isdebug:bool=False):
     self.isdebug = isdebug  # 0은 디버깅하지 않겠다는 의미
 
     self.basename = fn[:fn.rfind('.')]
@@ -139,8 +140,6 @@ class Parser:
     self.globalSymbolTable = SymbolTable()
     self.localSymbolTable = []
 
-    self.typeTable = TypeTable()
-
     # function이나 class앞의 template이나 attribute같은 것들의 정보를 가지고 있는...
     self.directive = []
 
@@ -150,43 +149,41 @@ class Parser:
 
     self.mustcompile = []
 
-  def initSymbolTable(self):
+  def initSymbolTable(self) -> SymbolTable:
     symTbl = SymbolTable()
-    typeTbl = TypeTable()
-
     return symTbl
 
-  def nextToken(self):
+  def nextToken(self) -> NoReturn:
     self.token.nextToken()
 
-  def match(self, word):
+  def match(self, word:str) -> bool:
     return self.token.match(word)
 
-  def same(self, word):
+  def same(self, word:str) -> bool:
     return self.token.same(word)
 
-  def matchType(self, word):
+  def matchType(self, word:str) -> str:
     return self.token.matchType(word)
 
-  def sameType(self, word):
+  def sameType(self, word:str) -> bool:
     return self.token.sameType(word)
 
-  def isEnd(self):
+  def isEnd(self) -> bool:
     return self.token.reachEnd()
 
-  def getTokValue(self):
+  def getTokValue(self) -> str:
     return self.token.tok.value
 
-  def getTokType(self):
+  def getTokType(self) -> str:
     return self.token.tok.type
 
-  def getName(self):
+  def getName(self) -> str:
     if self.match('_'):
       return ASTUnit()
 
     return self.token.matchType('id')
 
-  def getNames(self):
+  def getNames(self) -> str:
     names = []
     while not self.isEnd():
       names.append(self.getName())
@@ -195,7 +192,7 @@ class Parser:
 
     return ".".join(names)
 
-  def parse(self):
+  def parse(self) -> NoReturn:
     if self.isdebug:
       print("entering parse")
 
@@ -228,7 +225,7 @@ class Parser:
     if self.isdebug:
       print("ending parse")
 
-  def parseImport(self):
+  def parseImport(self) -> NoReturn:
     path = self.getImportNames()
     alias = None
     if self.match('as'):
@@ -236,11 +233,11 @@ class Parser:
 
     # TODO: 실제 해당 namespace 또는 class가 있는지 체크한다.
     symbols = loadSymbolFrom(path)
-    matched = symbols.find(path)
+    matched = symbols.findByLastName(path)
     for symbol in matched:
       self.globalSymbolTable.register(symbol)
 
-  def getImportNames(self):
+  def getImportNames(self) -> str:
     names = []
     while not self.isEnd():
       names.append(self.getName())
@@ -249,7 +246,7 @@ class Parser:
 
     return ".".join(names)
 
-  def parseNamespace(self):
+  def parseNamespace(self) -> NoReturn:
     if not self.match('namespace'):
       return
 
@@ -261,10 +258,10 @@ class Parser:
     self.globalSymbolTable.registerNamespace(name) # TODO: 수정필요
     self.namespaceStack.pop()  # symbol search할때도 사용할예정
 
-  def getWorkingPath(self):
+  def getWorkingPath(self) -> str:
     return ".".join(self.namespaceStack)
 
-  def parseNamespaceBody(self):
+  def parseNamespaceBody(self) -> NoReturn:
     if not self.match('{'):
       return
 
@@ -272,7 +269,7 @@ class Parser:
 
     self.match('}')
 
-  def parseClass(self):
+  def parseClass(self) -> NoReturn:
     if not self.match('class'):
       return
 
@@ -299,7 +296,7 @@ class Parser:
     self.globalSymbolTable.registerClass(".".join(self.namespaceStack), parents) # TODO: Body는 어딘가에 등록이 되어야 할 듯?
     self.namespaceStack.pop()
 
-  def parseClassBody(self):
+  def parseClassBody(self) -> NoReturn:
     if not self.match('{'):
       return
 
@@ -375,21 +372,21 @@ class Parser:
         self.globalSymbolTable.registerFunc(name, args, rettype, body)
         self.namespaceStack.pop()
 
-  def parseInitExpr(self):
+  def parseInitExpr(self) -> NoReturn:
     # 여긴 상수나 간단한 계산하는 루틴정도?
     # 아님 배열
 
     raise NotImplementedError
 
-  def parseAttribute(self):
+  def parseAttribute(self) -> NoReturn:
     if not self.match('@'):
       return
 
     pass
 
-  def parseTemplate(self):
+  def parseTemplate(self) -> ASTTemplate:
     if not self.match('template'):
-      return None
+      return
 
     params = self.parseTemplateArguments()
     if params == None:
@@ -419,7 +416,7 @@ class Parser:
 
     return ASTTemplate(params, target)
 
-  def parseTemplateArguments(self):
+  def parseTemplateArguments(self) -> List[ASTTemplateArg]:
     if not self.match('<'):
       return None
 
@@ -433,7 +430,7 @@ class Parser:
 
     return args
 
-  def parseTemplateArgument(self):
+  def parseTemplateArgument(self) -> ASTTemplateArg:
     name = self.getName()
     type = "typename"  # 일단 임시로
     if self.match(':'):
@@ -450,10 +447,10 @@ class Parser:
   # def variableName:variableType;
   # def variableName = <initial expr>;  // 이거랑
   # def variableName:variableType = <initial expr>; // 이거는 함수취급
-  def makeFullPath(self, fn):
+  def makeFullPath(self, fn:str) -> str:
     return ".".join(self.namespaceStack + [fn])
 
-  def parseDefBody(self):
+  def parseDefBody(self) -> NoReturn:
     if self.isdebug:
       print("entering parseDefBody")
 
@@ -473,13 +470,13 @@ class Parser:
 
     return body
 
-  def parseFuncName(self):
+  def parseFuncName(self) -> NoReturn:
     tmp = self.token.matchType('id')
     # template!!
     if self.same('['):
       typeName = self.parseTemplateName()
       
-  def parseDef(self):
+  def parseDef(self) -> NoReturn:
     if not self.match('def'):
       return None
 
@@ -503,16 +500,16 @@ class Parser:
         print("Error) Duplicated Name")
         raise SyntaxError
 
-      if not self.globalSymbolTable.find(arg.type.name):
+      if not self.globalSymbolTable.findByLastName(arg.type.name):
         print("Error) Unknown Type")
         raise SyntaxError
 
       self.localSymbolTable[arg.name] = arg.type
 
-    nativeFuncname = internalMangling(funcname, args)
+    nativeFuncname = doInternalMangling(funcname, args)
     fn = ".".join(self.namespaceStack + [nativeFuncname])
     # global symbol table에서 체크 : 인자 다양성 부분에 대한 고려가 필요
-    if self.globalSymbolTable.find(fn):
+    if self.globalSymbolTable.findByLastName(fn):
       name = ".".join(self.namespaceStack + [funcname])
       print(f"Error) Already defined : {name}")
       raise SyntaxError
@@ -550,7 +547,7 @@ class Parser:
     if self.isdebug:
       print("ending parseDef")
 
-  def parseDefArgsList(self):
+  def parseDefArgsList(self) -> List[ASTDefArg]:
     if not self.match('('):
       return None
 
@@ -567,19 +564,19 @@ class Parser:
 
     return args
 
-  def parseReturnType(self):
+  def parseReturnType(self) -> ASTType:
     # if return type is none,
     if not self.match(':'):
-      return ASTType(name="System.lang.Integer", templ=None, ranks=None)
+      return ASTType(name="System.lang.Int", templ=None, ranks=None)
 
     return self.parseType()
 
-  def parseDefArg(self):
+  def parseDefArg(self) -> ASTDefArg:
     name = self.getName()
     if name == None:
       return None
 
-    typeStr = ASTType(name="System.lang.Integer", templ=None, ranks=None)
+    typeStr = ASTType(name="System.lang.Int", templ=None, ranks=None)
     if self.match(':'):
       typeStr = self.parseType()
 
@@ -590,23 +587,26 @@ class Parser:
     # if typeStr == None: makeError
     return ASTDefArg(name=name, type=typeStr, defval=defval)
 
-  def parseTemplatePart(self):
-    if self.match('['):
-      name = self.getNames()
+  def parseTemplatePart(self) -> ASTType:
+    if self.match('<'):
+      name = self.parseType()
       if name is None:
         print("Expected class name")
         sys.exit(-1)
         
       template = self.parseTemplatePart()
 
-      self.match(']')
+      self.match('>')
+      
+      return template
+      
     return None
 
-  def matchTemplateInfo(self, typeInfo, templateInfo):
+  def matchTemplateInfo(self, typeInfo, templateInfo) -> bool:
     # raise Exception('matchTemplateInfo', 'Not Implemented')
     return True
 
-  def parseType(self):
+  def parseType(self) -> ASTType:
     if self.isdebug:
       print("starting parseType")
 
@@ -617,27 +617,27 @@ class Parser:
       print(idStr)
 
     # 해당 type이 존재하는지 검사합니다.
-    tp = self.globalSymbolTable.find(idStr)
+    tp = self.globalSymbolTable.findByLastName(idStr)
     if tp == None:
       print("Unknown Type : %s" % (idStr))
       sys.exit(-1)
 
     if tp == 'alias':
-      idStr = self.globalSymbolTable.find(idStr)
+      idStr = self.globalSymbolTable.findByLastName(idStr)
       # print "(", idStr
 
     # tmpl = self.parseTemplatePart()
     # if not self.matchTemplateInfo(result, tmpl):
     #  # 일단 현재는 pass
-    #  print "Error) Not matched template information"
+    #  print("Error) Not matched template information")
     #  pass
 
-    # print "type's full name = %s" % (idStr)
+    # print("type's full name = %s" % (idStr))
 
     # tmpl  = self.parseTemplatePart()
     # ename, body = symbolTable.search(names.array)
     # if ename == None:
-    #  print "doesn't exist symbol : %s" % (".".join(names.array))
+    #  print("doesn't exist symbol : %s" % (".".join(names.array)))
     #  sys.exit(-1) # 일단 죽이고... 나중에 에러처리 생각
     # else:
     #  names.array = ename
@@ -647,7 +647,7 @@ class Parser:
     if self.isdebug:
       print("ending parseType")
 
-    return ASTType(name=idStr, templ=None, ranks=rank)
+    return ASTType(name=idStr, templ=template, ranks=rank)
 
   def parseRankList(self):
     lst = []
@@ -805,7 +805,7 @@ class Parser:
           else:
             ltype = right.type
 
-        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right)
+        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right, ltype)
         hist.append(tree)
 
       if ltype is None:
@@ -853,7 +853,7 @@ class Parser:
           else:
             ltype = right.type
 
-        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right)
+        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right, ltype)
         hist.append(tree)
 
       if ltype is None:
@@ -954,14 +954,14 @@ class Parser:
           tok = self.token.tok
 
           # Global Operator 함수로 첫번째 찾는다. (C++의 operator + (left, right)라는 식..)
-          nativeFuncname = internalMangling(tok.value, [self.convertToASTType(tree), self.convertToASTType(right)])
+          nativeFuncname = doInternalMangling(tok.value, [self.convertToASTType(tree), self.convertToASTType(right)])
           fn = f"{self.convertToASTType(tree).name}.{nativeFuncname}"
 
-          symbol = self.globalSymbolTable.find(nativeFuncname)
+          symbol = self.globalSymbolTable.findByLastName(nativeFuncname)
           fname = nativeFuncname
           if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            symbol = self.globalSymbolTable.find(fn)
+            symbol = self.globalSymbolTable.findByLastName(fn)
             fname = fn
 
           print("4", symbol, content)
@@ -972,7 +972,7 @@ class Parser:
               tree = ASTFuncCall(fname, tree, right)
           elif symbol == None:
             if compareType(tree, right):
-              tree = ASTBinOperator(ASTWord(tok.type, tok.value), tree, right)
+              tree = ASTBinOperator(ASTWord(tok.type, tok.value), tree, right, vtype=None)
             else:
               print("Error: they has difference type between two values")
               sys.exit(-1)
@@ -994,14 +994,14 @@ class Parser:
         right = self.parseBasicSimpleExpr()
         # print "here : ", mid, tree, right
         if right != None:
-          nativeFuncname = internalMangling(tokVal, [self.convertToASTType(tree), self.convertToASTType(right)])
+          nativeFuncname = doInternalMangling(tokVal, [self.convertToASTType(tree), self.convertToASTType(right)])
           fn = f"{self.convertToASTType(tree).name}.{nativeFuncname}"
 
           fname = nativeFuncname
-          symbol = self.globalSymbolTable.find(nativeFuncname)
+          symbol = self.globalSymbolTable.findByLastName(nativeFuncname)
           if symbol == None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            symbol = self.globalSymbolTable.find(fn)
+            symbol = self.globalSymbolTable.findByLastName(fn)
             fname = fn
 
           if symbol != None:
@@ -1010,10 +1010,13 @@ class Parser:
             else:
               tree = ASTFuncCall(fname, [tree, right])
           else:
-            tree = ASTBinOperator(mid, tree, right)
+            if mid.type == '=':
+              tree = ASTBinOperator(mid, tree, right, vtype=tree.vtype)
+            else:
+              tree = ASTBinOperator(mid, tree, right, vtype=self.calcBinOperatorRetType(mid, tree, right))
         else:
           # for example, 'a++' or 'a+'
-          tree = ASTUnary(tree, mid)
+          tree = ASTUnary(tree, mid, tree.vtype)
       else:
         break
 
@@ -1028,16 +1031,52 @@ class Parser:
       else:
         path = tree.name
 
-      ret = self.globalSymbolTable.find(
-        {'@type': 'def', '@name': path, '@args': [self.convertToASTType(x) for x in tree.args]})
+      fn = doInternalMangling(path, [self.convertToASTType(x) for x in tree.args])
+
+      ret = self.globalSymbolTable.findByLastName(fn)
       if ret == None:
-        print("Error) Not Symbol :", path, [self.convertToASTType(x) for x in tree.args])
+        print(f"Error) Not Symbol : {fn}")
         raise SyntaxError
 
     if self.isdebug:
       print("ending parseSimpleExpr()")
 
     return tree
+
+  def calcBinOperatorRetType(self, mid: ASTWord, left: AST, right: AST) -> ASTType:
+    if mid.type == '=':
+      return left.vtype
+    
+    # 여기서는 우선 순위가 중요함
+    # C++의 friend함수와 같은 것을 여기에 허용할 것인가?
+    # 1. 우선 friend함수를 찾아본다.
+    # 2. left를 기준으로 찾아본다.
+    # 3. right를 기준으로 찾아본다.
+
+    fn = doInternalMangling(mid.type, [])
+    left_native_fn = left.vtype + "." + fn
+    right_native_fn = right.vtype + "." + fn
+    # step 1
+
+    # step 2
+    fn = doInternalMangling(left.vtype + mid.type, [])
+    candidates = self.globalSymbolTable.startswiths(fn)
+    if len(candidates) != 0:
+      pass
+
+    if len(candidates) == 0:
+      # 이제 right를 찾아본다.
+      fn = doInternalMangling(right.vtype + mid.type, []) # ... + right
+      candidates = self.globalSymbolTable.startswiths(fn)
+      if len(candidates) == 0:
+        print(f"Error) can't operator {mid.type}")
+        return ASTType("Unit")
+      else:
+        pass
+    else:
+      pass
+
+    return ASTType("Unit")
 
   def parseBasicSimpleExpr(self):
     tok = self.token.tok
@@ -1047,7 +1086,7 @@ class Parser:
     if self.matchType('stringLiteral'):
       return ASTWord(ASTType('System.lang.String'), tok.value)
     elif self.matchType('integerLiteral'):
-      return ASTWord(ASTType('System.lang.Integer'), tok.value)
+      return ASTWord(ASTType('System.lang.Int'), tok.value)
     elif self.matchType('floatLiteral'):
       return ASTWord(ASTType('System.lang.Float'), tok.value)
     elif self.match('true'):
@@ -1069,7 +1108,7 @@ class Parser:
     # realname = ret.name[0]
     # if realname == '_':
     #  realname = self.genTemporaryName()
-    # if self.findAt(tbl = self.local_symtbl, target = ret.name):
+    # if self.findByLastNameAt(tbl = self.local_symtbl, target = ret.name):
     #  print "already defined!"
     #  sys.exit(-1)
 
@@ -1121,11 +1160,11 @@ class Parser:
             vtype = vtype['vtype']
 
         if vtype == None:
-          vtype = self.globalSymbolTable.find(tok.value)
+          vtype = self.globalSymbolTable.findByLastName(tok.value)
 
         return ASTWord(tok.type, tok.value, vtype)
     elif self.match('_'):
-      return ASTWord('v', tok.value)
+      return ASTWord('v', tok.value, ASTType("Unit"))
     elif self.match('['):
       history = []
       tree = self.parseSimpleExpr()
@@ -1168,6 +1207,9 @@ class Parser:
           args.append(ASTCalleeArgType1(value=arg, type=symtbl[arg.value]))
         else:
           args.append(ASTCalleeArgType1(value=arg, type=arg.type))
+      elif isinstance(arg, ASTBinOperator):
+        # type checking때문에 type guessing을 해야하나??
+        args.append(ASTCalleeArgType1(value=arg, type=arg.vtype))
       else:
         print(arg)
         raise NotImplementedError

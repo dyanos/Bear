@@ -1,144 +1,266 @@
-﻿from .ASTNativeDef import *
+﻿from typing import *
+from .ASTType import ASTType
+from .ASTNativeDef import *
 
 class Type:
-	def __init__(self, typename, name):
+	def __init__(self, typename: str):
 		self.typename = typename
-		self.name = name
 
-	def getTypename(self):
+	def getTypename(self) -> str:
 		return self.typename
 
-	def getName(self):
-		return self.name
+	def __eq__(self, right: type):
+		right_type = right
+		if isinstance(right, AliasType):
+			right_type = right.original_type
 
-
-class AliasType(Type):
-	def __init__(self, name, oname):
-		super(AliasType, self).__init__(typename="alias", name=name)
-		self.original = oname
-
-	def getOriginalName(self):
-		return self.original
-
-
-class DefType(Type):
-	def __init__(self, name, body):
-		super(DefType, self).__init__(typename="DefType", name=name)
-		self.body = body
-
-	def getBody(self):
-		return self.body
-
-
-class ClassType(Type):
-	def __init__(self, name, typeInfo):
-		super(ClassType, self).__init__(typename="class", name=name)
-		self.info = typeInfo
-
-	def find(self, name):
-		# method또는 attribute에서 해당 name을 검색한다.
-		table = self.info["@symbolTable"]
-		if name in table:
+		if right_type.typename == self.typename:
 			return True
 
 		return False
 
 
+class AliasType(Type):
+	def __init__(self, name: str, oname: Type):
+		super(AliasType, self).__init__(typename="alias")
+		self.name = name
+		self.original_type = oname
+
+	def __eq__(self, right: Type) -> bool:
+		if isinstance(right, AliasType):
+			if self.original_type == right.original_type:
+				return True
+		else:
+			if self.original_type == right:
+				return True
+
+		return False
+
+
+class ObjectType(Type):
+	def __init__(self):
+		super(ObjectType, self).__init__(typename="System.lang.Object")
+		self.name = ''
+
+
+class CharType(Type):
+	def __init__(self):
+		super(CharType, self).__init__(typename="System.lang.Char")
+		self.name = ''
+
+
+class ByteType(Type):
+	def __init__(self):
+		super(ByteType, self).__init__(typename="System.lang.Byte")
+		self.name = ''
+
+
+class ShortType(Type):
+	def __init__(self):
+		super(ShortType, self).__init__(typename="System.lang.Short")
+		self.name = ''
+
+
+class WordType(Type):
+	def __init__(self):
+		super(WordType, self).__init__(typename="System.lang.Word")
+		self.name = ''
+
+
+class IntegerType(Type):
+	def __init__(self):
+		super(IntegerType, self).__init__(typename="System.lang.Int")
+		self.name = ''
+
+
+class Integer32Type(Type):
+	def __init__(self):
+		super(Integer32Type, self).__init__(typename="System.lang.Int32")
+		self.name = ''
+
+
+class Integer64Type(Type):
+	def __init__(self):
+		super(Integer64Type, self).__init__(typename="System.lang.Int64")
+		self.name = ''
+
+
+class Integer128Type(Type):
+	def __init__(self):
+		super(Integer128Type, self).__init__(typename="System.lang.Int128")
+		self.name = ''
+
+
+class Integer256Type(Type):
+	def __init__(self):
+		super(Integer256Type, self).__init__(typename="System.lang.Int256")
+		self.name = ''
+
+
+class FloatType(Type):
+	def __init__(self):
+		super(FloatType, self).__init__(typename="System.lang.Float")
+		self.name = ''
+
+
+class DoubleType(Type):
+	def __init__(self):
+		super(DoubleType, self).__init__(typename="System.lang.Double")
+		self.name = ''
+
+
+class LongType(Type):
+	def __init__(self):
+		super(LongType, self).__init__(typename="System.lang.Long")
+		self.name = ''
+
+
+class StringType(Type):
+	def __init__(self):
+		super(StringType, self).__init__(typename="System.lang.String")
+		self.name = ''
+
+
+class ArrayType(Type):
+	def __init__(self, default_type, rank):
+		super(ArrayType, self).__init__(typename="array")
+		self.name = ''
+		self.default_type = default_type
+		self.rank = rank
+
+	def __eq__(self, right: Type) -> bool:
+		right_type = right
+		if isinstance(right_type, AliasType):
+			right_type = right_type.original_type
+
+		if self.typename != right_type.typename:
+			return False
+
+		if self.default_type != right.default_type:
+			return False
+
+		if self.rank != right.rank:
+			return False
+
+		return True
+
+
+class PointerType(Type):
+	def __init__(self):
+		super(PointerType, self).__init__(typename="pointer")
+		self.name = ''
+
+
+class TemplateType(Type):
+	def __init__(self, type: Type, arg: Type):
+		super(TemplateType, self).__init__(typename="template")
+		self.type = type
+		self.arg = arg
+
+	def __eq__(self, right: Type) -> bool:
+		right_type = right
+		if isinstance(right_type, AliasType):
+			right_type = right_type.original_type
+
+		if self.typename != right_type.typename:
+			return False
+
+		if self.type != right_type.type:
+			return False
+
+		if self.arg != right_type.arg:
+			return False
+
+		return True
+
+
+class FuncArgInfo:
+	def __init__(self, name: str, type: Type, default_val: Any):
+		self.name = name
+		self.type = type
+		self.default_val = default_val
+
+
+class FuncType(Type):
+	def __init__(self, name: str, args: List[FuncArgInfo], rettype: ASTType):
+		super(FuncType, self).__init__(typename="function")
+		self.name = name
+		self.args = args	# list[Type]
+		self.rettype = rettype
+
+
+class ClassType(Type):
+	def __init__(self, name: str, parents: List[Type]):
+		super(ClassType, self).__init__(typename="class")
+		self.name = name
+		self.parents = parents
+
+	def __eq__(self, right: Type) -> bool:
+		right_type = right
+		if isinstance(right_type, AliasType):
+			right_type = right_type.original_type
+
+		if self.typename != right_type.typename:
+			return False
+
+		if self.name != right_type.name:
+			for parent in self.parents:
+				if parent == right_type:
+					return True
+
+			return False
+
+		return True
+
 class NamespaceType(Type):
-	def __init__(self, name, namespaceInfo):
-		super(NamespaceType, self).__init__(typename="namespace", name=name)
+	def __init__(self, name: str, namespaceInfo: Any):
+		super(NamespaceType, self).__init__(typename="namespace")
+		self.name = name
 		self.info = namespaceInfo
 
-	def find(self, name):
-		# method또는 attribute에서 해당 name을 검색한다.
-		table = self.info["@symbolTable"]
-		if name in table:
-			return True
+	def __eq__(self, right: Type) -> bool:
+		right_type = right
+		if isinstance(right_type, AliasType):
+			right_type = right_type.original_type
 
-		return False	
+		if self.typename != right_type.typename:
+			return False
+
+		if self.name != right_type.name:
+			return False
+
+		return True
 
 
-class TypeTable:
+class ValueType(Type):
+	def __init__(self, name: str, type: Type, default_val: Any=None):
+		super(ValueType, self).__init__(typename="value")
+		self.name = name
+		self.type = type
+		self.default_val = default_val
+
+	def __eq__(self, right: Type) -> bool:
+		if self.type != right.type:
+			return False
+		
+		return True
+
+
+class VariableType(Type):
+	def __init__(self, name: str, type: Type, default_val: Any=None):
+		super(VariableType, self).__init__(typename="variable")
+		self.name = name
+		self.type = type
+		self.default_val = default_val
+
+	def __eq__(self, right: Type) -> bool:
+		if self.type != right.type:
+			return False
+		
+		return True
+
+
+class ElipsisType(Type):
 	def __init__(self):
-		# table은 dict
-		# key는 type이름, value는 해당 type의 속성정보를 담고 있음(template도)
-		self.table = {}
-		# backward search를 위해서
-		self.backward = {}
-		self.dictionary = {}
-
-		# 기본 정보
-		self.add(AliasType("char", "System.lang.Char"))
-		self.add(AliasType("byte", "System.lang.Byte"))
-		self.add(AliasType("int", "System.lang.Integer"))
-		self.add(AliasType("long", "System.lang.Long"))
-		self.add(AliasType("string", "System.lang.String"))
-		self.add(AliasType("float", "System.lang.Float"))
-		self.add(AliasType("double", "System.lang.Double"))
-		self.add(AliasType("boolean", "System.lang.Boolean"))
-		self.add(AliasType("bool", "System.lang.Boolean"))
-
-		self.add(NamespaceType("System", {"@children": ["lang", "out"]}))
-		self.add(NamespaceType("System.lang", {"@children": ["Char", "Byte", "Integer", "Long", "String", "Float", "Double", "Boolean"]}))
-		self.add(NamespaceType("System.out", {"@children": ["println"]}))
-
-		content = {"@name": "Integer", 
-			"@shortname": "int", 
-			"@fullname": "System.lang.Integer",
-			"@native": True,
-		    "@symbolTable": {
-				"toString": ASTNativeDef("System.lang.Integer.toString")
-			}}
-		self.add(ClassType("System.lang.Integer", content))
-
-		content = {"@name": "String", 
-			"@shortname": "string", 
-			"@fullname": "System.lang.String",
-			"@native": True,
-		    "@symbolTable": {
-				"toString": ASTNativeDef("System.lang.String.toString")
-			}}
-		self.add(ClassType("System.lang.String", content))
-
-		content = {"@name": "Array", 
-			"@fullname": "System.lang.Array",
-			"@native": True,
-		    "@symbolTable": {
-				"toString": ASTNativeDef("System.lang.Array.toString")
-			}}
-		self.add(ClassType("System.lang.Array", content))
-
-		self.add(DefType("System.out.println", {"@native": True}))
-	
-
-	def add(self, element: Type):
-		if element.getName() in self.table:
-			# 중복?
-			print("duplicated symbol! {}".format(element.getName()))
-			return
-
-		if element.getTypename() == "alias":
-			self.table[element.getName()] = element.getOriginalName()
-			self.backward[element.getName()] = element.getName()
-		elif element.getTypename() == "class" or \
-			element.getTypename() == "namespace":
-			self.table[element.getName()] = element
-			lastname = element.getName().split(".")[-1]
-			self.backward[lastname] = element.getName()
-		elif element.getTypename() == "def":
-			self.table[element.getName()] = element.getBody()
-
-	def find_backward(self, name):
-		if name not in self.backward:
-			# 해당 type의 것이 존재하지 않는다.
-			return False
-
-		return self.backward[name]
-			
-	def find(self, name):
-		if name not in self.table:
-			# 해당 type의 것이 존재하지 않는다.
-			return False
-
-		return self.table[name]
-	
+		super(ElipsisType, self).__init__(typename="elipsis")
+		self.name = ''

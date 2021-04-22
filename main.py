@@ -1,8 +1,23 @@
 #!/usr/bin/env python
+from typing import *
+import sys
+
+from cppmangle import mangle, demangle
+
 from CSEL.parser import *
 from CSEL.analysis import *
 from CSEL.Operand import *
 from CSEL.Intel import *
+from CSEL.mangle import *
+import CSEL.ASTType as ASTType
+
+
+def doInternalMangling(name: str, args: List[str]) -> str:
+  return encodeSymbolName(name, args)
+
+print(mangle("System.lang.Int.operator +"))
+print(doInternalMangling("+", []))
+sys.exit(-1)
 
 parser = Parser("code1.prg")
 parser.parse()
