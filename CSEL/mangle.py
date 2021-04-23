@@ -29,6 +29,7 @@ from .ASTTemplateList import *
 from .ASTUse import *
 from .ASTVal import *
 from .ASTVar import *
+from .ASTID import *
 from .ASTWord import *
 from .ASTBlock import *
 from .ASTIndexing import *
@@ -42,6 +43,7 @@ from .ASTReturn import *
 from .ASTWrap import *
 from .ASTCalleeArgType1 import *
 from .ASTCalleeArgType2 import *
+from .ASTListGenerateType1 import *
 
 from .Value import *
 
@@ -216,54 +218,63 @@ def _convertName(name):
   #else:
   # return convertName_for_other(tree)
  
-def convertType_for_gcc(type):
+def convertType_for_gcc(type: Type):
   def __converting(name):
     if len(name) == 1:
       return '%d%s' % (len(name[0]), name[0])
     else:
       return "".join(["".join([str(len(x)), x]) for x in name])
 
-  result = []
-  # reference type도 쓸수있게먼가 조치를...
-  # result = ["R"]
-  if type.ranks != None:
-    if len(type.ranks.ranks) != 0:
-      result = ["P"] * len(type.ranks.ranks)
-
-  array = None
-  if isinstance(type.name, list):
-    array = type.name
+  if isinstance(type, IntegerType):
+    return enm['int']
+  elif isinstance(type, FloatType):
+    return enm['float']
+  elif isinstance(type, DoubleType):
+    return enm['double']
+  elif isinstance(type, ClassType):
+    return "N" + __converting(type.name.split("."))
   else:
-    array = type.name.split('.')
-    
-  pathStr = ".".join(array)
-  if pathStr in longToShort:
-    array = [longToShort[pathStr]]
+    result = []
+    # reference type도 쓸수있게먼가 조치를...
+    # result = ["R"]
+    if type.ranks != None:
+      if len(type.ranks.ranks) != 0:
+        result = ["P"] * len(type.ranks.ranks)
   
-  cnt = len(array)
-  if cnt == 1:
-    name = array[0]
-    if name not in enm:
-      result += [__converting(array)]
+    array = None
+    if isinstance(type.name, list):
+      array = type.name
     else:
-      result += [enm[name]]
-  else:
-    result += ["N" + __converting(array)]
-
-  if type.templ != None:
-    result += ["I"]
-    for item in type.templ.history:
-      tmp = convertType(item)
-      result += [tmp]
-    result += ["E"]
+      array = type.name.split('.')
+      
+    pathStr = ".".join(array)
+    if pathStr in longToShort:
+      array = [longToShort[pathStr]]
+    
+    cnt = len(array)
+    if cnt == 1:
+      name = array[0]
+      if name not in enm:
+        result += [__converting(array)]
+      else:
+        result += [enm[name]]
+    else:
+      result += ["N" + __converting(array)]
   
-  if cnt != 1:
-    result += ["E"]
-
-  return "".join(result)
+    if type.templ != None:
+      result += ["I"]
+      for item in type.templ.history:
+        tmp = convertType(item)
+        result += [tmp]
+      result += ["E"]
+    
+    if cnt != 1:
+      result += ["E"]
+  
+    return "".join(result)
 
 def convertType(type):
-  if not isinstance(type, ASTType):
+  if not isinstance(type, Type):
     raise Exception("Error", "Needed ASTType")
 
   #if option.compilertype == 'gcc':
@@ -346,6 +357,7 @@ def encode_for_gcc(name: str, args: List[AST]):
           type = item.type
         elif isinstance(item, ASTWord) and item.vtype != None:
           if not isinstance(item.vtype, ASTType):
+            print(item)
             raise NotImplementedError
 
           type = item.vtype
@@ -358,7 +370,8 @@ def encode_for_gcc(name: str, args: List[AST]):
         elif isinstance(item, str):
           return _convertName(item.split('.'))
         elif isinstance(item, Value):
-          if not isinstance(item.type, ASTType):
+          if not isinstance(item.type, Type):
+            print(item)
             raise NotImplementedError
           
           type = item.type

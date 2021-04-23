@@ -2,23 +2,23 @@
 from typing import Any, NoReturn
 from .AST import *
 from .ASTType import *
-from .TypeTable import Type
+from .TypeTable import *
 
 class ASTWord(AST):
-  def __init__(self, type: str, value: Any, vtype: Type = None):
-    self.type = type
+  def __init__(self, value: Any, _type: Type):
+    super().__init__()
+    self.type = _type
     self.value = value
-    self.vtype = vtype
 
   def printXML(self) -> NoReturn:
-    if self.type == 'Pc':
+    if self.type == StringType():
       print("<string>%s</string>" % (self.value))
-    elif self.type == 'i':
+    elif self.type == IntegerType():
       print("<integer>%s</integer>" % (self.value))
-    elif self.type == 'f':
+    elif self.type == FloatType():
       print("<float>%s</float>" % (self.value))
-    elif self.type == 'id':
-      print("<identifier>%s</identifier>" % (self.value))
+    elif self.type == DoubleType():
+      print("<double>%s</double>" % (self.value))
     else:
       print("%s" % (self.value))
 

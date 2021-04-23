@@ -1,8 +1,10 @@
-#!/usr/bin/python 
+#!/usr/bin/python
+from typing import *
 from .AST import *
+from .TypeTable import *
 
 class ASTDefArg(AST):
-  def __init__(self, name, type, defval = None):
+  def __init__(self, name: str, type: Type, defval: Any = None):
     self.name = name
     self.type = type
     self.defval = defval 

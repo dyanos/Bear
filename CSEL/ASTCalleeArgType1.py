@@ -1,7 +1,7 @@
 #!?usr/bin/env python
 from typing import NoReturn
 from .AST import *
-from .TypeTable import Type
+from .TypeTable import *
 
 
 class ASTCalleeArgType1(AST):
@@ -12,7 +12,18 @@ class ASTCalleeArgType1(AST):
   def printXML(self) -> NoReturn:
     print("<callee-type1>")
     self.value.printXML()
-    self.type.printXML()
+    if self.type == IntegerType():
+      print("<integer/>")
+    elif self.type == StringType():
+      print("<string/>")
+    elif self.type == FloatType():
+      print("<float/>")
+    elif self.type == DoubleType():
+      print("<double/>")
+    else:
+      print(self.type)
+      raise NotImplementedError
+      
     print("</callee-type1>")
 
   def __eq__(self, right: AST) -> bool:

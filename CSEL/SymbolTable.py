@@ -31,12 +31,15 @@ class SymbolTable:
     self.table["System.lang.Double"] = DoubleType()
     self.table["System.lang.Array"] = ArrayType()
     self.table["System.lang.String"] = StringType()
+    self.table["System.lang.Boolean"] = BooleanType()
+    self.table["System.lang.Unit"] = UnitType()
     self.table["System.lang.Int.operator +"] = FuncType("+", [FuncArgInfo("left", self.table["System.lang.Int"]),
                                                               FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
     self.table["System.lang.Int.operator +"] = FuncType("+", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
     self.table["System.lang.Int.operator -"] = FuncType("-", [FuncArgInfo("left", self.table["System.lang.Int"]),
                                                               FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
     self.table["System.lang.Int.operator -"] = FuncType("-", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.out.println"] = FuncType("println", [FuncArgInfo("...", ElipsisType())])
     
     self.table["char"] = AliasType("char", self.table["System.lang.Char"])
     self.table["byte"] = AliasType("byte", self.table["System.lang.Byte"])
@@ -51,6 +54,8 @@ class SymbolTable:
     self.table["float"] = AliasType("float", self.table["System.lang.Float"])
     self.table["double"] = AliasType("double", self.table["System.lang.Double"])
     self.table["string"] = AliasType("string", self.table["System.lang.String"])
+    self.table["bool"] = AliasType("bool", self.table["System.lang.Boolean"])
+    self.table["_"] = AliasType("_", self.table["System.lang.Unit"])
     
     self.cvttbl = {"+": "operator +",
                    "-": "operator -",
@@ -74,22 +79,27 @@ class SymbolTable:
   def registerVariable(self, path: str, type: Type) -> NoReturn:
     self.table[path] = VariableType(path, type)
 
-  def registerFunc(self, path: str, args: List[Type], rettype: Type) -> NoReturn:
-    self.table[path] = FuncType(path, args, rettype)
+  def registerFunc(self, path: str, args: List[Type], rettype: Type, body: AST, symtbl: Any) -> NoReturn:
+    self.table[path] = FuncType(path, args, rettype, body, symtbl)
 
+  def find(self, node: Type) -> Dict[str, Type]:
+    elems = self.findByLastName(node.name)
+    pass
+  
   def findByLastName(self, idStr: str) -> Dict[str, Type]:
-    print(idStr)
     return {key: self.table[key] for key in self.table if key.endswith(idStr)}
 
   def glob(self, path: str, args: List[Type]) -> Type:
     # path는 일단 두 개의 것을 나눈다.
     # 1. full path : System.lang.Int.toString()
     # 2. short path : println()
+    print(f"path={path}")
     result = self.findByLastName(path)
     if len(result) == 0:
       return None
     elif len(result) == 1:
-      return result[0]
+      key = list(result.keys())[0]
+      return result[key]
     else:
       r = []
       for _type in result:
@@ -169,6 +179,10 @@ class SymbolTable:
         return DoubleType()
       elif name == 'System.lang.String' or name == 'string':
         return StringType()
+      elif name == "System.lang.Boolean" or name == "bool":
+        return BooleanType()
+      elif name == "System.lang.Unit" or name == "_":
+        return UnitType()
       else:
         symbols = self.findByLastName(name)
         keys = list(symbols.keys())
@@ -187,11 +201,13 @@ class SymbolTable:
         raise NotImplementedError
     else:
       ret = convertType(_type.name)
-      
-    for templ in _type.templ:
-      ret = TemplateType(ret, self.convert(templ))
-    for rank in _type.ranks:
-      ret = ArrayType(ret, rank)
+
+    if _type.templ is not None:
+      for templ in _type.templ:
+        ret = TemplateType(ret, self.convert(templ))
+    if _type.ranks is not None and len(_type.ranks.ranks) != 0:
+      for rank in _type.ranks.ranks:
+        ret = ArrayType(ret, rank)
 
     return ret
 

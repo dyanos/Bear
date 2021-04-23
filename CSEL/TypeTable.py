@@ -10,7 +10,7 @@ class Type:
   def getTypename(self) -> str:
     return self.typename
   
-  def __eq__(self, right: type):
+  def __eq__(self, right: Type):
     right_type = right
     if isinstance(right, AliasType):
       right_type = right.original_type
@@ -19,6 +19,16 @@ class Type:
       return True
     
     return False
+
+  def __ne__(self, right: Type):
+    right_type = right
+    if isinstance(right, AliasType):
+      right_type = right.original_type
+  
+    if right_type.typename == self.typename:
+      return False
+  
+    return True
 
 
 class AliasType(Type):
@@ -36,6 +46,12 @@ class AliasType(Type):
         return True
     
     return False
+
+
+class UnitType(Type):
+  def __init__(self):
+    super(UnitType, self).__init__(typename="System.lang.Unit")
+    self.name = ''
 
 
 class ObjectType(Type):
@@ -122,6 +138,12 @@ class StringType(Type):
     self.name = ''
 
 
+class BooleanType(Type):
+  def __init__(self):
+    super(BooleanType, self).__init__(typename="System.lang.Boolean")
+    self.name = ''
+
+
 class ArrayType(Type):
   def __init__(self, default_type: Type = None, rank: List[int] = None):
     super(ArrayType, self).__init__(typename="array")
@@ -183,15 +205,17 @@ class FuncArgInfo:
 
 
 class FuncType(Type):
-  def __init__(self, name: str, args: List[FuncArgInfo], rettype: Type):
+  def __init__(self, name: str, args: List[FuncArgInfo], rettype: Type = UnitType(), body: AST = None, symtbl: Any = None):
     super(FuncType, self).__init__(typename="function")
     self.name = name
     self.args = args  # list[Type]
     self.rettype = rettype
+    self.body = body
+    self.symtbl = symtbl
     
     
 class NativeFuncType(Type):
-  def __init__(self, name: str, args: List[FuncArgInfo], rettype: Type):
+  def __init__(self, name: str, args: List[FuncArgInfo], rettype: Type = UnitType()):
     super(NativeFuncType, self).__init__(typename="function")
     self.name = name
     self.args = args  # list[Type]

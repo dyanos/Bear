@@ -33,6 +33,7 @@ from .ASTUse import *
 from .ASTUnit import *
 from .ASTVal import *
 from .ASTVar import *
+from .ASTID import *
 from .ASTWord import *
 from .ASTBlock import *
 from .ASTIndexing import *
@@ -178,8 +179,21 @@ class Parser:
   def getTokValue(self) -> str:
     return self.token.tok.value
   
-  def getTokType(self) -> str:
-    return self.token.tok.type
+  def getTokType(self) -> Type:
+    print(f"getTokType = {self.token.tok.type}")
+    if self.token.tok.type == 'stringLiteral':
+      return self.globalSymbolTable.convert(ASTType('System.lang.String'))
+    elif self.token.tok.type == 'integerLiteral':
+      return self.globalSymbolTable.convert(ASTType('System.lang.Int'))
+    elif self.token.tok.type == 'floatLiteral':
+      return self.globalSymbolTable.convert(ASTType('System.lang.Float'))
+    elif self.token.tok.type == 'true':
+      return self.globalSymbolTable.convert(ASTType('System.lang.Boolean'))
+    elif self.token.tok.type == 'false':
+      return self.globalSymbolTable.convert(ASTType('System.lang.Boolean'))
+    else:
+      print(self.token.tok.type)
+      return None
   
   def getName(self) -> str:
     if self.match('_'):
@@ -528,7 +542,7 @@ class Parser:
       print("Error) Body Empty : in %s" % (fn))
       raise Exception("Error", "Error")
     
-    if rettype != 'void':
+    if rettype != UnitType():
       if isinstance(body, ASTExprs) or isinstance(body, ASTSimpleExprs):
         # return을 명시적으로 적지 않았다면, 마지막 expression의 결과를 return값으로 한다.
         lastExpr = body.exprs[-1]
@@ -581,7 +595,7 @@ class Parser:
     if name is None:
       return None
     
-    typeStr = ASTType(name="System.lang.Int", templ=None, ranks=None)
+    typeStr = self.globalSymbolTable.convert(ASTType(name="System.lang.Int", templ=None, ranks=None))
     if self.match(':'):
       typeStr = self.parseType()
     
@@ -592,7 +606,7 @@ class Parser:
     # if typeStr is None: makeError
     return ASTDefArg(name=name, type=typeStr, defval=defval)
   
-  def parseTemplatePart(self) -> ASTType:
+  def parseTemplatePart(self) -> Type:
     if self.match('<'):
       name = self.parseType()
       if name is None:
@@ -611,7 +625,7 @@ class Parser:
     # raise Exception('matchTemplateInfo', 'Not Implemented')
     return True
   
-  def parseType(self) -> ASTType:
+  def parseType(self) -> Type:
     if self.isdebug:
       print("starting parseType")
     
@@ -652,9 +666,9 @@ class Parser:
     if self.isdebug:
       print("ending parseType")
     
-    return ASTType(name=idStr, templ=template, ranks=rank)
+    return self.globalSymbolTable.convert(ASTType(name=idStr, templ=template, ranks=rank))
   
-  def parseRankList(self):
+  def parseRankList(self) -> ASTRankList:
     lst = []
     while self.match('['):
       rank = ASTRank(self.parseSimpleExpr())
@@ -664,7 +678,7 @@ class Parser:
     
     return ASTRankList(lst)
   
-  def parseExprs(self):
+  def parseExprs(self) -> ASTExprs:
     lst = []
     while not self.isEnd():
       ret = self.parseExpr()
@@ -682,7 +696,7 @@ class Parser:
     
     return ASTExprs(lst, copy.deepcopy(self.localSymbolTable))
   
-  def parseExpr(self):
+  def parseExpr(self) -> AST:
     ret = None
     
     if self.same('if'):
@@ -703,7 +717,7 @@ class Parser:
     
     return ret
   
-  def parseIfStmt(self):
+  def parseIfStmt(self) -> ASTIf:
     if not self.match('if'):
       return None
     
@@ -712,7 +726,7 @@ class Parser:
     body = self.parseExpr()
     return ASTIf(cond, body)
   
-  def parseForStmt(self):
+  def parseForStmt(self) -> ASTFor:
     if not self.match('for'):
       return None
     
@@ -740,33 +754,37 @@ class Parser:
     
     return ASTFor(cond, generator, body)
   
-  def convertToASTType(self, obj: AST) -> ASTType:
+  def convertToASTType(self, obj: AST) -> Type:
     if isinstance(obj, ASTType):
-      return obj
+      return self.globalSymbolTable.convert(obj)
     elif isinstance(obj, ASTListGenerateType1):
       return self.convertToASTType(obj.start)
-    elif isinstance(obj, ASTWord) and obj.vtype is not None:
-      if isinstance(obj.vtype, ASTType):
-        return obj.vtype
+    elif isinstance(obj, ASTWord) and obj.type is not None:
+      if isinstance(obj.type, ASTType):
+        return self.globalSymbolTable.convert(obj.type)
       # 이건 비정상적인 경우, 이렇게 찾아들어오면 안된다.
-      elif isinstance(obj.vtype, dict):
-        return obj.vtype['vtype']
+      elif isinstance(obj.type, dict):
+        return obj.type['vtype']
+      elif isinstance(obj.type, Type):
+        return obj.type
       else:
-        print("))", obj.vtype)
+        print("))", obj.type)
         raise NotImplementedError
     elif isinstance(obj, ASTWord) and isinstance(obj.type, ASTType):
-      return obj.type
+      return self.globalSymbolTable.convert(obj.type)
     elif isinstance(obj, ASTListGenerateType1):
-      return ASTType('System.lang.Array')
+      return self.globalSymbolTable.convert(ASTType('System.lang.Array'))
     elif isinstance(obj, ASTCalleeArgType1):
-      return self.convertToASTType(obj.type)
+      return obj.type
+    elif isinstance(obj, ASTID):
+      return obj.type
     else:
-      print("**", obj)
+      print("**", type(obj))
       raise NotImplementedError
     
     return None
   
-  def guessType(self, expr: AST) -> ASTType:
+  def guessType(self, expr: AST) -> Type:
     if isinstance(expr, ASTWord):
       return expr.type
     
@@ -812,7 +830,7 @@ class Parser:
           else:
             ltype = right.type
         
-        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right, ltype)
+        tree = ASTBinOperator('=', ASTID(name, ltype), right, ltype)
         hist.append(tree)
       
       if ltype is None:
@@ -860,7 +878,7 @@ class Parser:
           else:
             ltype = right.type
         
-        tree = ASTBinOperator(ASTWord('id', '='), ASTWord('id', name, ltype), right, ltype)
+        tree = ASTBinOperator('=', ASTID(name, ltype), right, ltype)
         hist.append(tree)
       
       if ltype is None:
@@ -922,10 +940,10 @@ class Parser:
     return ASTSimpleExprs(history)
   
   def parseSimpleExpr(self) -> AST:
-    def getType(node):
+    def getType(node: AST) -> Type:
       return node.type
     
-    def compareType(left, right):
+    def compareType(left: AST, right: AST) -> bool:
       if getType(left) == getType(right):
         return True
       else:
@@ -943,20 +961,22 @@ class Parser:
       
       if self.match('.'):
         right = self.parseBasicSimpleExpr()
-        if isinstance(tree, ASTWord):
-          if isinstance(right, ASTWord):
-            tree = ASTNames([tree.value, right.value])
+        if isinstance(tree, ASTID):
+          if isinstance(right, ASTID):
+            tree = ASTNames([tree.name, right.name])
           elif isinstance(right, ASTFuncCall):
-            tree = ASTFuncCall(ASTNames([tree.value, right.name.value]), right.body)
+            tree = ASTFuncCall(ASTNames([tree.name, right.name.value]), right.body)
           elif isinstance(right, ASTIndexing):
-            tree = ASTIndexing(ASTNames([tree.value, right.name.value]), right.history)
+            tree = ASTIndexing(ASTNames([tree.name, right.name.value]), right.history)
+        elif isinstance(tree, ASTWord):
+          raise NotImplementedError
         elif isinstance(tree, ASTNames):
-          if isinstance(right, ASTWord):
-            tree = ASTNames(tree.array + [right.value])
+          if isinstance(right, ASTID):
+            tree = ASTNames(tree.array + [right.name])
           elif isinstance(right, ASTFuncCall):
-            tree = ASTFuncCall(ASTNames(tree.array + [right.name.value]), right.args)
+            tree = ASTFuncCall(ASTNames(tree.array + [right.name.name]), right.args)
           elif isinstance(right, ASTIndexing):
-            tree = ASTIndexing(ASTNames(tree.array + [right.name.value]), right.history)
+            tree = ASTIndexing(ASTNames(tree.array + [right.name.name]), right.history)
         else:
           tok = self.token.tok
           tokVal = tok.value
@@ -988,7 +1008,7 @@ class Parser:
         tokVal = self.getTokValue()
         tokType = self.getTokType()
         
-        mid = ASTWord(tokType, tokVal)
+        mid = ASTWord(tokVal, tokType)
         
         self.token.nextToken()
         
@@ -1026,7 +1046,9 @@ class Parser:
       else:
         path = tree.name
       
-      fn = FuncType(path, [FuncArgInfo("", self.globalSymbolTable.convert(x)) for x in tree.args], None)
+      print(tree.args)
+      
+      fn = FuncType(path, [FuncArgInfo("", self.getType(x)) for x in tree.args], None)
       
       ret = self.globalSymbolTable.findByLastName(path)
       if ret is None:
@@ -1038,7 +1060,20 @@ class Parser:
     
     return tree
   
-  def calcBinOperatorRetType(self, mid: ASTWord, left: AST, right: AST) -> ASTType:
+  def getType(self, node: AST) -> Type:
+    if isinstance(node, Type):
+      return node
+    elif isinstance(node, ASTWord):
+      return node.type
+    elif isinstance(node, ASTID):
+      return node.type
+    elif isinstance(node, ASTBinOperator):
+      return node.vtype
+    else:
+      print(node)
+      raise NotImplementedError
+  
+  def calcBinOperatorRetType(self, mid: ASTWord, left: AST, right: AST) -> Type:
     if mid.type == '=':
       return left.vtype
     
@@ -1047,8 +1082,8 @@ class Parser:
     # 1. 우선 friend함수를 찾아본다.
     # 2. left를 기준으로 찾아본다.
     # 3. right를 기준으로 찾아본다.
-    t = FuncType(mid.value, [FuncArgInfo("", left.vtype),
-                             FuncArgInfo("", right.vtype)], None)
+    t = FuncType(mid.value, [FuncArgInfo("", left.type),
+                             FuncArgInfo("", right.type)], None)
     fn = mid.value
     if mid.value in self.globalSymbolTable.cvttbl:
       fn = self.globalSymbolTable.cvttbl[mid.value]
@@ -1079,6 +1114,8 @@ class Parser:
         raise NotImplementedError
       
       return bestOne.rettype
+    
+    return None
   
   def parseBasicSimpleExpr(self) -> AST:
     tok = self.token.tok
@@ -1086,15 +1123,15 @@ class Parser:
     # print "calling parseBasicSimpleExpr"
     # print "value =", tok.value, tok.type
     if self.matchType('stringLiteral'):
-      return ASTWord(ASTType('System.lang.String'), tok.value)
+      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType('System.lang.String')))
     elif self.matchType('integerLiteral'):
-      return ASTWord(ASTType('System.lang.Int'), tok.value)
+      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType('System.lang.Int')))
     elif self.matchType('floatLiteral'):
-      return ASTWord(ASTType('System.lang.Float'), tok.value)
+      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType('System.lang.Float')))
     elif self.match('true'):
-      return ASTWord(ASTType('System.lang.Boolean'), '1')
+      return ASTWord('true', self.globalSymbolTable.convert(ASTType('System.lang.Boolean')))
     elif self.match('false'):
-      return ASTWord(ASTType('System.lang.Boolean'), '0')
+      return ASTWord('false', self.globalSymbolTable.convert(ASTType('System.lang.Boolean')))
     elif self.match('return'):
       # print "entering return"
       expr = self.parseSimpleExpr()
@@ -1132,7 +1169,7 @@ class Parser:
         while self.match('['):
           history.append(self.parseSimpleExpr())
           self.match(']')
-        return ASTIndexing(ASTWord(tok.type, tok.value), history)
+        return ASTIndexing(ASTID(tok.value, tok.type), history)
       elif self.match('('):
         # TODO 함수의 그것인지 아닌지에 대한 구분이 필요하다.
         args = self.parseDefArgListForFuncCall()
@@ -1150,10 +1187,10 @@ class Parser:
         # 알고리즘
         # 1. 현재의 argument들의 type들로 구성된 function을 찾는다.
         # 2. 만일 없다면, argument들의 갯수가 동일한 함수.... (이건 내일 생각)
-        return ASTFuncCall(ASTWord(tok.type, tok.value), args)
+        return ASTFuncCall(ASTID(tok.value, tok.type), args)
       elif self.match('...'):
         right = self.parseSimpleExpr()
-        return ASTListGenerateType1(ASTWord(tok.type, tok.value), right)  # 여기서 빠진 것은 Arrya<T이어야 한다는 사실(Type이 빠졌다는 소리)
+        return ASTListGenerateType1(ASTWord(tok.value, tok.type ), right)  # 여기서 빠진 것은 Arrya<T이어야 한다는 사실(Type이 빠졌다는 소리)
       else:
         vtype = None
         if tok.value in self.localSymbolTable:
@@ -1164,9 +1201,9 @@ class Parser:
         if vtype is None:
           vtype = self.globalSymbolTable.findByLastName(tok.value)
         
-        return ASTWord(tok.type, tok.value, vtype)
+        return ASTID(tok.value, vtype)
     elif self.match('_'):
-      return ASTWord('v', tok.value, ASTType("Unit"))
+      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType("Unit")))
     elif self.match('['):
       history = []
       tree = self.parseSimpleExpr()
@@ -1200,18 +1237,17 @@ class Parser:
     while True:
       arg = self.parseSimpleExpr()
       if isinstance(arg, ASTWord):
-        if arg.type == 'id':
-          symtbl = self.localSymbolTable[-1]
-          if arg.value not in symtbl:
-            print("Error) Not found :", arg.value)
-            raise SyntaxError
-          
-          args.append(ASTCalleeArgType1(value=arg, type=symtbl[arg.value]))
-        else:
-          args.append(ASTCalleeArgType1(value=arg, type=arg.type))
+        args.append(arg)
+      elif isinstance(arg, ASTID):
+        symtbl = self.localSymbolTable[-1]
+        if arg.name not in symtbl:
+          print("Error) Not found :", arg.name)
+          raise SyntaxError
+
+        args.append(arg)
       elif isinstance(arg, ASTBinOperator):
         # type checking때문에 type guessing을 해야하나??
-        args.append(ASTCalleeArgType1(value=arg, type=arg.vtype))
+        args.append(arg)
       else:
         print(arg)
         raise NotImplementedError
