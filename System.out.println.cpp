@@ -1,8 +1,10 @@
 #include <iostream>
+#include <cstdarg>
 
+// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
 namespace System {
   namespace out {
-    void println(const char* format, ...) {
+    void println(const char* fmt, ...) {
         va_list args;
         va_start(args, fmt);
 

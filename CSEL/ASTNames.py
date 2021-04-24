@@ -18,3 +18,4 @@ class ASTNames(AST):
 
   def getNameList(self) -> List[str]:
     return self.array
+  

@@ -274,6 +274,9 @@ class ValueType(Type):
     self.default_val = default_val
   
   def __eq__(self, right: Type) -> bool:
+    if self.typename != right.typename:
+      return False
+    
     if self.type != right.type:
       return False
     
@@ -294,7 +297,7 @@ class VariableType(Type):
     return True
 
 
-class ElipsisType(Type):
+class EllipsisType(Type):
   def __init__(self):
-    super(ElipsisType, self).__init__(typename="elipsis")
+    super(EllipsisType, self).__init__(typename="ellipsis")
     self.name = ''

@@ -11,6 +11,8 @@ from .Intel import *
 
 # from graph import *
 from . import Intel
+import traceback
+
 
 Seperator = '$'
 
@@ -307,21 +309,26 @@ class Translate:
     elif isinstance(tree, ASTFuncCall):
       # 양쪽의 Argument들은 Evaluate되어야만 한다.
       new_args = []
-      for argument in tree.args:
-        new_args.append(self.procSimpleExpr(argument))
+      for arg in tree.args:
+        if isinstance(arg, ASTBinOperator):
+          new_args.append(arg.vtype)
+        elif isinstance(arg, ASTType):
+          raise SyntaxError
+        else:
+          print(arg)
+          raise NotImplementedError
       
       if isinstance(tree.name, ASTNames):
         sym = self.symbolTable.glob(path=".".join(tree.name.array), args=new_args)
-        nativeName = encodeSymbolName(".".join(tree.name.array), args=new_args)
       else:
         sym = self.symbolTable.glob(path=tree.name, args=new_args)
-        nativeName = encodeSymbolName(tree.name, args=new_args)
+        
+      nativeName = mangling(sym)
       
       # return value가 있는지 체크해야만 한다.
       if sym is None:
         raise Exception("procExpr", "Symbol Not Found")
       
-      print(sym)
       retv = False
       if sym != UnitType():
         retv = True
@@ -338,7 +345,7 @@ class Translate:
         return Value(type=sym, reg=self.machine.getRetReg())
     elif isinstance(tree, ASTCalleeArgType1):
       ret = self.procExpr(tree.value)
-      print(ret)
+      #print(ret)
     else:
       print(tree, type(tree))
       raise Exception("procExpr", "Not Implemented")
@@ -561,6 +568,9 @@ class Translate:
   
   # 모든 type 정보는 ASTType을 사용하도록??
   def procOperator(self, tree):
+    #print("calling procOperator")
+    #traceback.print_stack()
+    
     context = self.getLastContext()
     
     left = self.procExpr(tree.left)
@@ -668,6 +678,5 @@ class Translate:
       print(info)
       raise Exception('Error', 'Not Type')
     
-    print(tree.name)
     return Value(type=info, reg=self.machine.IUserReg(tree.name))
     # return Value(type=tree.getType(), reg=tmpReg)

@@ -47,40 +47,43 @@ from .ASTListGenerateType1 import *
 
 from .Value import *
 
+from .mangling_msvc import mangling_msvc
+
 import re
 
+
 # ms compiler용 mangling 함수 작성 필요 
-enm = {      '_': 'v',
+enm = {'_': 'v',
        'wchar_t': 'w',
-          'bool': 'b',
-          'char': 'c',
-   'signed char': 'a',
- 'unsigned char': 'h',
-         'short': 's',
-'unsigned short': 't',
-           'int': 'i',
-  'unsigned int': 'j',
-          'long': 'l',
- 'unsigned long': 'm',
-     'long long': 'x',
+       'bool': 'b',
+       'char': 'c',
+       'signed char': 'a',
+       'unsigned char': 'h',
+       'short': 's',
+       'unsigned short': 't',
+       'int': 'i',
+       'unsigned int': 'j',
+       'long': 'l',
+       'unsigned long': 'm',
+       'long long': 'x',
        '__int64': 'x',
-'unsigned long long': 'y',
-      '__uint64': 'y',
-      '__int128': 'n',
-'unsigned __int128': 'o',
-         'float': 'f',
-        'double': 'd',
-   'long double': 'e',
-     '__float80': 'e',
-    '__float128': 'g',
+       'unsigned long long': 'y',
+       '__uint64': 'y',
+       '__int128': 'n',
+       'unsigned __int128': 'o',
+       'float': 'f',
+       'double': 'd',
+       'long double': 'e',
+       '__float80': 'e',
+       '__float128': 'g',
        'float64': 'Dd',
-      'float128': 'De',
+       'float128': 'De',
        'float32': 'Df',
        'float16': 'Dh',
-      'char32_t': 'Di',
-      'char16_t': 'Ds',
-          'auto': 'Da',
-'std::nullptr_t': 'Dn'}
+       'char32_t': 'Di',
+       'char16_t': 'Ds',
+       'auto': 'Da',
+       'std::nullptr_t': 'Dn'}
 
 longToShort = {
   "System.lang.Char": 'char',
@@ -151,29 +154,34 @@ eoperatorTransTbl = {
   "vendor": "v<digit><source-name>",
 }
 
+
 def validNamespaceName(name):
   if re.match(r'^(_|[a-zA-Z])[a-zA-Z0-9_]*$', name) and name != '_':
     return True
-
+  
   return False
 
-def convertPathToNative(name, options = None):
-    # name의 유효성 검사 
-    if not re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*(_|[a-zA-Z])[a-zA-Z0-9_]*$', name):
-        return None
-    
-def convertNamespace_for_gcc(name, options):
-  if not re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*((_|[a-zA-Z])[a-zA-Z0-9_]*|[~`!@#\$%\^\&\*\(\)\-_\+=\{\}\[\]\|\\:;"\'<>,\.\?\/]*)$', name):
+
+def convertPathToNative(name, options=None):
+  # name의 유효성 검사
+  if not re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*(_|[a-zA-Z])[a-zA-Z0-9_]*$', name):
     return None
 
-  nameList = name.split('.')
 
+def convertNamespace_for_gcc(name, options):
+  if not re.match(
+    r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*((_|[a-zA-Z])[a-zA-Z0-9_]*|[~`!@#\$%\^\&\*\(\)\-_\+=\{\}\[\]\|\\:;"\'<>,\.\?\/]*)$',
+    name):
+    return None
+  
+  nameList = name.split('.')
+  
   op = nameList[-1]
-    
+  
   # 마지막이 operator일 경우
   if op in operatorTransTbl:
     opName = operatorTransTbl[op]
-
+    
     if options != None and options['unary']:
       if op == '+':
         opName = 'ps'
@@ -185,13 +193,15 @@ def convertNamespace_for_gcc(name, options):
         opName = 'de'
   elif re.match(r'^[~`!@#\$%\^\&\*\(\)\-_\+=\{\}\[\]\|\\:;"\'<>,\.\?\/]', op):
     raise Exception('Need to implement', op)
-
-    return "".join(["".join([str(len(x)), x]) for x in nameList[:-2]]) + opName 
-
+    
+    return "".join(["".join([str(len(x)), x]) for x in nameList[:-2]]) + opName
+  
   return "".join(["".join([str(len(x)), x]) for x in nameList])
 
-def convertNamespace(namespace, options = None):
+
+def convertNamespace(namespace, options=None):
   return convertNamespace_for_gcc(namespace, options)
+
 
 def convertName_for_gcc(name):
   if len(name) == 1:
@@ -205,26 +215,28 @@ def convertName_for_gcc(name):
   else:
     return "".join(["__ZN"] + ["".join([str(len(x)), x]) for x in name] + ['E'])
 
+
 def _convertName(name):
   nameList = None
   if isinstance(name, list):
     nameList = name
   else:
-    nameList = name.split('.') 
-  #if option.compilertype == 'gcc':
+    nameList = name.split('.')
+    # if option.compilertype == 'gcc':
   return convertName_for_gcc(nameList)
-  #elif option.compilertype == 'msvc':
+  # elif option.compilertype == 'msvc':
   # return convertName_for_msvc(tree)
-  #else:
+  # else:
   # return convertName_for_other(tree)
- 
+
+
 def convertType_for_gcc(type: Type):
   def __converting(name):
     if len(name) == 1:
       return '%d%s' % (len(name[0]), name[0])
     else:
       return "".join(["".join([str(len(x)), x]) for x in name])
-
+  
   if isinstance(type, IntegerType):
     return enm['int']
   elif isinstance(type, FloatType):
@@ -240,13 +252,13 @@ def convertType_for_gcc(type: Type):
     if type.ranks != None:
       if len(type.ranks.ranks) != 0:
         result = ["P"] * len(type.ranks.ranks)
-  
+    
     array = None
     if isinstance(type.name, list):
       array = type.name
     else:
       array = type.name.split('.')
-      
+    
     pathStr = ".".join(array)
     if pathStr in longToShort:
       array = [longToShort[pathStr]]
@@ -260,7 +272,7 @@ def convertType_for_gcc(type: Type):
         result += [enm[name]]
     else:
       result += ["N" + __converting(array)]
-  
+    
     if type.templ != None:
       result += ["I"]
       for item in type.templ.history:
@@ -270,20 +282,22 @@ def convertType_for_gcc(type: Type):
     
     if cnt != 1:
       result += ["E"]
-  
+    
     return "".join(result)
+
 
 def convertType(type):
   if not isinstance(type, Type):
     raise Exception("Error", "Needed ASTType")
-
-  #if option.compilertype == 'gcc':
+  
+  # if option.compilertype == 'gcc':
   return convertType_for_gcc(type)
-  #elif option.compilertype == 'msvc':
+  # elif option.compilertype == 'msvc':
   # return convertType_for_msvc(tree)
-  #else:
+  # else:
   # return convertType_for_other(tree)
- 
+
+
 def converting(name, tmpl):
   mangling_name = []
   mangling_name += _convertName(name)
@@ -295,22 +309,24 @@ def converting(name, tmpl):
   mangling_name.apeend("E")
   return "".join(mangling_name)
 
+
 def convertToNamespace(path):
   if len(path) == 1:
     if path[0] in operatorTransTbl:
       return operatorTransTbl[path[0]]
     else:
       return path[0]
+  
+  return "".join("N" + [f"{len(x):d}{x}" for x in path])
 
-  return "".join("N" + ["%d%s" % (len(x), x) for x in name])
 
 def convertToNativeSymbol(name, args, ret):
   if name == 'main':
     return "_main"
-
+  
   mangling = []
-
-  #나중에 바꾸더라도...
+  
+  # 나중에 바꾸더라도...
   if isinstance(name, list):
     mangling.append(convertToNamespace(name))
     mangling.append("E")
@@ -319,7 +335,7 @@ def convertToNativeSymbol(name, args, ret):
       mangling.append("%sE" % (operatorTransTbl[name]))
     else:
       mangling.append("%sE" % (name))
-
+  
   if args != None:
     for arg in args:
       if isinstance(arg, ASTDefArg):
@@ -331,10 +347,11 @@ def convertToNativeSymbol(name, args, ret):
       else:
         print(type(arg))
         raise Exception("Error", "Only ASTDefArg")
- 
+      
       mangling.append("E")
-
+  
   return "".join(mangling)
+
 
 # 모든 이름은 root namespace부터 있어야 한다.
 # 즉, Full name space이어야한다.
@@ -344,10 +361,10 @@ def encode_for_gcc(name: str, args: List[AST]):
     cnt = len(name)
     _name = _convertName(name)
     mangling.append(_name)
-
+    
     if args != None:
       for item in args:
-        #type = args[item]
+        # type = args[item]
         type = None
         if isinstance(item, ASTType):
           type = item
@@ -359,7 +376,7 @@ def encode_for_gcc(name: str, args: List[AST]):
           if not isinstance(item.vtype, ASTType):
             print(item)
             raise NotImplementedError
-
+          
           type = item.vtype
         elif isinstance(item, dict):
           if '@vtype' in item:
@@ -378,10 +395,10 @@ def encode_for_gcc(name: str, args: List[AST]):
         else:
           print("**", item)
           raise NotImplementedError
-
+        
         typename = convertType(type)
         mangling.append(typename)
-
+    
     return "".join(mangling)
   elif isinstance(tree, ASTVar) or isinstance(tree, ASTVal):
     cnt = len(tree.name.array)
@@ -389,63 +406,67 @@ def encode_for_gcc(name: str, args: List[AST]):
       return "_" + tree.name.array[0]
     else:
       name = _convertName(tree.name.array)
-      mangling.append("".join(["__ZN"]+name+["E"]))
-     
-    return "".join(mangling)
+      mangling.append("".join(["__ZN"] + name + ["E"]))
     
-def encodeSymbolName(name, args = None, ends = None):
+    return "".join(mangling)
+
+
+def encodeSymbolName(name, args=None, ends=None):
   if isinstance(name, list):
     if len(name) == 1:
       if name[0] == 'main':
         return '_main'
-
-    #if option.compilertype == 'gcc':
+    
+    # if option.compilertype == 'gcc':
     return encode_for_gcc(name, args)
-    #elif option.compilertype == 'msvc':
+    # elif option.compilertype == 'msvc':
     # return encode_for_msvc(tree)
-    #else:
+    # else:
     # return encode_for_other(tree)
   elif isinstance(name, str):
     if name == 'main':
       return '_main'
-
+    
     return encode_for_gcc(name, args)
   else:
     print("*2", name)
     raise Exception('Error', 'Error')
+
 
 def reverseEncodedName(name):
   value = None
   for key in list(enm.keys()):
     if enm[key] == name:
       value = key
-
+  
   if value == None:
     value = name
-
+  
   return value
 
+
 def convertSimpleTypeName(name):
-  #shortName = {
+  # shortName = {
   #  "System.lang.Integer": "i",
   #  "System.lang.Boolean": "b",
   #  "System.lang.Float": "f",
   #  "System.lang.Double": "d"}
-
+  
   # for gcc
   nameList = name.split('.')
   return _convertName(nameList)
 
-def decodeMachineName(name):
+
+def decodeMachineName(name) -> str:
   translateTable = {
     "i": "System.lang.Integer",
     "b": "System.lang.Boolean",
     "f": "System.lang.Float",
     "d": "System.lang.Double"}
-
+  
   if name in translateTable:
     return translateTable[name]
-
+  
   path = []
   
   pos = 0
@@ -456,35 +477,48 @@ def decodeMachineName(name):
       if not ch.isdigit():
         break
       pos += 1
-  
+    
     num = int(name[loc:pos])
-    path.append(name[pos:pos+num])
+    path.append(name[pos:pos + num])
     pos += num
-
+    
     if pos == len(name):
       break
-
+  
   return ".".join(path)
+
 
 # def System.out.println(abs:First[])
 # void System::out::println(First[] abs);
-#name = ASTNames(["System", "out", "println"])
-#args = ASTArgList([ASTDefArg(ASTNames(["abc"]), ASTType(ASTNames(["First"]), ASTTemplateList([ASTType(ASTNames(["int"]), None, None)]), [ASTEmpty()]))])
-#tree = ASTDeclFunc(name = name, args = args, ret = None, body = None, type = None)
-#print encode_for_gcc(tree)
+# name = ASTNames(["System", "out", "println"])
+# args = ASTArgList([ASTDefArg(ASTNames(["abc"]), ASTType(ASTNames(["First"]), ASTTemplateList([ASTType(ASTNames(["int"]), None, None)]), [ASTEmpty()]))])
+# tree = ASTDeclFunc(name = name, args = args, ret = None, body = None, type = None)
+# print encode_for_gcc(tree)
 
-def encodeSymbol(name, args, ends):
+def encodeSymbol(name, args, ends) -> str:
   if name == 'main':
     return '_main'
-
+  
   if ends == None:
     ends = ''
-
+  
   # 숫자로 시작하면, namespace symbol임
   if re.match(r'[0-9]', name[0]):
     return "".join(['__ZN', name, 'E'] + args + ['E'] + [ends])
   else:
     return "".join(['__Z', name, 'E'] + args + ['E'] + [ends])
+
+
+def mangling(obj: Type, machine_type:str="msvc") -> str:
+  if machine_type == "msvc":
+    return mangling_msvc(obj)
+  elif machine_type == "linux":
+    if isinstance(obj, FuncType):
+      return encodeSymbol(obj.name, obj.args, obj.rettype)
+    else:
+      print(obj)
+      raise NotImplementedError
+  
 
 if __name__ == '__main__':
   print(convertNamespace('i'))

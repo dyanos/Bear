@@ -33,13 +33,15 @@ class SymbolTable:
     self.table["System.lang.String"] = StringType()
     self.table["System.lang.Boolean"] = BooleanType()
     self.table["System.lang.Unit"] = UnitType()
-    self.table["System.lang.Int.operator +"] = FuncType("+", [FuncArgInfo("left", self.table["System.lang.Int"]),
-                                                              FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
-    self.table["System.lang.Int.operator +"] = FuncType("+", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
-    self.table["System.lang.Int.operator -"] = FuncType("-", [FuncArgInfo("left", self.table["System.lang.Int"]),
-                                                              FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
-    self.table["System.lang.Int.operator -"] = FuncType("-", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
-    self.table["System.out.println"] = FuncType("println", [FuncArgInfo("...", ElipsisType())])
+    self.table["System.lang.Int.operator+"] = FuncType("System.lang.Int.operator+", [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                                            FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    #self.table["System.lang.Int.operator+"] = FuncType("+", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator-"] = FuncType("System.lang.Int.operator-", [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                                            FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    #self.table["System.lang.Int.operator-"] = FuncType("-", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.out.println"] = FuncType("System.out.println", [
+      FuncArgInfo("fmt", ValueType("fmt", StringType(), "")),
+      FuncArgInfo("...", EllipsisType())])
     
     self.table["char"] = AliasType("char", self.table["System.lang.Char"])
     self.table["byte"] = AliasType("byte", self.table["System.lang.Byte"])
@@ -106,6 +108,11 @@ class SymbolTable:
         if isinstance(_type, FuncType):
           loc, nloc = 0, len(_type.args)
           for arg in args:
+            # EllipsisType이 나타난 시점부터는 argument matching에 대한 검사는 수행하지 않는다.
+            if _type.args[loc].type == EllipsisType():
+              loc = nloc
+              break
+              
             # arg.name이 없으면 그냥 처음부터 비교하면 됨
             if arg.name is None:
               if arg.type == _type.args[loc].type:
@@ -119,12 +126,15 @@ class SymbolTable:
                 break
           
           if loc != nloc:
-            # 나머지는 default값이 들어있어야 함
-            while loc < nloc:
-              if _type.args[loc].default_val is None:
-                break
-              
-              loc += 1
+            if _type.args[loc].type == EllipsisType():
+              loc = nloc
+            else:
+              # 나머지는 default값이 들어있어야 함
+              while loc < nloc:
+                if _type.args[loc].default_val is None:
+                  break
+                
+                loc += 1
 
           if loc == nloc:
             r.append(_type)
