@@ -33,8 +33,10 @@ class SymbolTable:
     self.table["System.lang.String"] = StringType()
     self.table["System.lang.Boolean"] = BooleanType()
     self.table["System.lang.Unit"] = UnitType()
-    self.table["System.lang.Int.operator+"] = FuncType("System.lang.Int.operator+", [FuncArgInfo("left", self.table["System.lang.Int"]),
-                                                            FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator+"] = FuncType("System.lang.Int.operator+",
+                                                       [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                                        FuncArgInfo("right", self.table["System.lang.Int"])],
+                                                       self.table["System.lang.Int"])
     #self.table["System.lang.Int.operator+"] = FuncType("+", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
     self.table["System.lang.Int.operator-"] = FuncType("System.lang.Int.operator-", [FuncArgInfo("left", self.table["System.lang.Int"]),
                                                             FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
@@ -59,10 +61,10 @@ class SymbolTable:
     self.table["bool"] = AliasType("bool", self.table["System.lang.Boolean"])
     self.table["_"] = AliasType("_", self.table["System.lang.Unit"])
     
-    self.cvttbl = {"+": "operator +",
-                   "-": "operator -",
-                   "*": "operator *",
-                   "/": "operator /"}
+    self.cvttbl = {"+": "operator+",
+                   "-": "operator-",
+                   "*": "operator*",
+                   "/": "operator/"}
 
   def registerNamespace(self, path: str):
     if path in self.table:
@@ -99,53 +101,37 @@ class SymbolTable:
     result = self.findByLastName(path)
     if len(result) == 0:
       return None
-    elif len(result) == 1:
-      key = list(result.keys())[0]
-      return result[key]
     else:
       r = []
-      for _type in result:
+      for key in result:
+        _type = result[key]
         if isinstance(_type, FuncType):
-          loc, nloc = 0, len(_type.args)
-          for arg in args:
-            # EllipsisType이 나타난 시점부터는 argument matching에 대한 검사는 수행하지 않는다.
-            if _type.args[loc].type == EllipsisType():
-              loc = nloc
+          is_completed: bool = True
+          idx, loc, nargs = 0, 0, len(_type.args)
+          while idx < nargs:
+            print(_type.args[idx], args[loc])
+            if EllipsisType() == _type.args[idx].type:
+              is_completed = True
               break
               
-            # arg.name이 없으면 그냥 처음부터 비교하면 됨
-            if arg.name is None:
-              if arg.type == _type.args[loc].type:
-                loc += 1
-              else:
-                break
-            elif arg.name:
-              if arg.name == _type.args[loc].name and arg.type == _type.args[loc].type:
-                loc += 1
-              else:
-                break
-          
-          if loc != nloc:
-            if _type.args[loc].type == EllipsisType():
-              loc = nloc
-            else:
-              # 나머지는 default값이 들어있어야 함
-              while loc < nloc:
-                if _type.args[loc].default_val is None:
-                  break
-                
-                loc += 1
+            print(_type.args[idx].type.type, args[loc])
+            if _type.args[idx].type != args[loc]:
+              is_completed = False
+              break
+              
+            idx += 1
+            loc += 1
 
-          if loc == nloc:
+          if is_completed:
             r.append(_type)
         else:
-          print(".....")
+          print(_type)
           raise NotImplementedError
 
       if len(r) == 1:
         return r[0]
 
-      print("duplicated functions")
+      print(f"duplicated functions: {r}")
       return None
 
   def startswiths(self, start_str: str) -> List[str]:

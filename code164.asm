@@ -1,13 +1,16 @@
 section .text
 _main:
+mov r8, 10
 mov rsi, 10
-mov rdx, 10
-mov rbx, rsi
-add rbx, rdx
+mov rbx, r8
+add rbx, rsi
 mov rdi, rbx
 push rcx
-mov rcx, rdi
-call ?println@out@System@@YAXPEBDZZ
+mov rcx, "%d"
+push rdx
+mov rdx, rdi
+call ?println@out@System@@YAXPEADZZ
+pop rdx
 pop rcx
 mov rax, 0
 ret

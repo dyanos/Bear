@@ -32,28 +32,29 @@ def _convertToMSVCType(t: CSEL.TypeTable.Type) -> cppmangle.ast.Type:
       ret.target.cv = cv_const
     else:
       ret.cv = cv_const
-      
+    
     return ret
   elif isinstance(t, VariableType):
     return _convertToMSVCType(t.type)
   else:
     print(t)
     raise NotImplementedError
-    
+
 
 def mangling_msvc(funcObj: CSEL.TypeTable.FuncType):
+  print(funcObj)
   names = funcObj.name
   if isinstance(names, str):
     names = names.split(".")
-
-  #funcObj = Function(["System", "out", "println"],
+  
+  # funcObj = Function(["System", "out", "println"],
   #                   FunctionType(cconv_cdecl, SimpleType(0, t_void),
   #                                [PtrType(cv_const, SimpleType(0, t_char), False, as_msvc_x64_absolute),
   #                                 SimpleType(0, t_ellipsis)], None),
   #                   fn_free,
   #                   None,
   #                   as_default)
-
+  
   cconv_type = cconv_cdecl
   rettype = _convertToMSVCType(funcObj.rettype)
   ftype = Function(names,
@@ -64,19 +65,5 @@ def mangling_msvc(funcObj: CSEL.TypeTable.FuncType):
                    fn_free,
                    None,
                    as_default)
-
-  print(ftype.qname)
-  print(ftype.type.cconv)
-  print(ftype.type.ret_type)
-  print("cv=", ftype.type.params[0].cv)
-  print("target=", ftype.type.params[0].target.cv)
-  print("target=", ftype.type.params[0].target.basic_type)
-  print("ref=", ftype.type.params[0].ref)
-  print("addr_space=", ftype.type.params[0].addr_space)
-  print(ftype.type.params[1])
-  print(ftype.type.this_cv)
-  print(ftype.kind)
-  print(ftype.access_spec)
-  print(ftype.addr_space)
   
   return msvc_mangle(ftype)

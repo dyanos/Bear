@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/env python
 import os, sys, string
+
+import CSEL.TypeTable
 from .ASTType import *
 from .SymbolTable import *
 from .mangle import *
@@ -8,6 +10,7 @@ from .context import *
 from .Operand import *
 from .Value import *
 from .Intel import *
+from .TypeTable import *
 
 # from graph import *
 from . import Intel
@@ -314,15 +317,21 @@ class Translate:
           new_args.append(arg.vtype)
         elif isinstance(arg, ASTType):
           raise SyntaxError
+        elif isinstance(arg, ASTWord):
+          new_args.append(arg.type)
         else:
-          print(arg)
+          print(type(arg), arg.type, isinstance(arg.type, CSEL.TypeTable.Type))
           raise NotImplementedError
       
       if isinstance(tree.name, ASTNames):
         sym = self.symbolTable.glob(path=".".join(tree.name.array), args=new_args)
       else:
         sym = self.symbolTable.glob(path=tree.name, args=new_args)
-        
+
+      if sym is None:
+        print(f"Error) symbol is not found {tree.name}")
+        raise SyntaxError
+      
       nativeName = mangling(sym)
       
       # return value가 있는지 체크해야만 한다.

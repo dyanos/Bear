@@ -1088,9 +1088,11 @@ class Parser:
     if mid.value in self.globalSymbolTable.cvttbl:
       fn = self.globalSymbolTable.cvttbl[mid.value]
     
+    print(fn)
     symbols = self.globalSymbolTable.findByLastName(fn)
     if symbols is None or len(symbols) == 0:
-      return None
+      print("Error) symbol is not found")
+      raise SyntaxError
     elif len(symbols) == 1:
       symbol = symbols[list(symbols.keys())[0]]
       if isinstance(symbol, FuncType):

@@ -25,6 +25,7 @@ class Type:
     if isinstance(right, AliasType):
       right_type = right.original_type
   
+    print(right_type.typename, self.typename)
     if right_type.typename == self.typename:
       return False
   
@@ -274,14 +275,24 @@ class ValueType(Type):
     self.default_val = default_val
   
   def __eq__(self, right: Type) -> bool:
-    if self.typename != right.typename:
-      return False
-    
-    if self.type != right.type:
-      return False
+    if isinstance(right, ValueType) or isinstance(right, VariableType):
+      if self.type != right.type:
+        return False
+    else:
+      if self.type != right:
+        return False
     
     return True
 
+  def __ne__(self, right: Type) -> bool:
+    if isinstance(right, ValueType) or isinstance(right, VariableType):
+      if self.type != right.type:
+        return True
+    else:
+      if self.type != right:
+        return True
+  
+    return False
 
 class VariableType(Type):
   def __init__(self, name: str, type: Type, default_val: Any = None):
@@ -289,13 +300,26 @@ class VariableType(Type):
     self.name = name
     self.type = type
     self.default_val = default_val
-  
+
   def __eq__(self, right: Type) -> bool:
-    if self.type != right.type:
-      return False
-    
+    if isinstance(right, ValueType) or isinstance(right, VariableType):
+      if self.type != right.type:
+        return False
+    else:
+      if self.type != right:
+        return False
+  
     return True
 
+  def __ne__(self, right: Type) -> bool:
+    if isinstance(right, ValueType) or isinstance(right, VariableType):
+      if self.type != right.type:
+        return True
+    else:
+      if self.type != right:
+        return True
+  
+    return False
 
 class EllipsisType(Type):
   def __init__(self):
