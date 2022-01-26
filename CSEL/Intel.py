@@ -132,7 +132,7 @@ class RegisterAllocation:
     pass
    
   @staticmethod
-  def genInterferenceGraph(lst, outLive, args):
+  def genInterferenceGraph(lst, outLive, args, _isdebug=False):
     liveList = outLive
     parameterList = [IReg('rcx'), IReg('rdx'), IReg('r8'), IReg('r9')]
     parameterListForFloating = [IReg('xmm0'), IReg('xmm1'), IReg('xmm2'), IReg('xmm3')]
@@ -238,7 +238,9 @@ class RegisterAllocation:
   
       loc += 1
   
-    pprint.pprint(graph)
+    if _isdebug:
+      pprint.pprint(graph)
+      
     return graph
  
   @staticmethod
@@ -399,10 +401,11 @@ class RegisterAllocation:
     return G, def1, def2, use1, use2
  
   @staticmethod
-  def doGraphColoring(lst, args = []):
+  def doGraphColoring(lst, args=[], _isdebug=False):
     G, def1, def2, use1, use2 = RegisterAllocation.getInfoForRegAllocation(lst, args)
 
-    print(G)
+    if _isdebug:
+      print(G)
   
     registerList = ['rax','rbx','rcx','rdx','rsi','rdi','r8','r9','r10','r11','r12','r13','r14','r15']
     #registerList = ['rax','rbx','rcx','rdx'] # for test of spilling out

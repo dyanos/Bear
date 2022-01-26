@@ -14,6 +14,8 @@ def processError():
 
 class SymbolTable:
   def __init__(self):
+    self.isdebug = False
+
     self.table: Dict[str, Type] = {}
     
     # To register default symbols
@@ -33,13 +35,21 @@ class SymbolTable:
     self.table["System.lang.String"] = StringType()
     self.table["System.lang.Boolean"] = BooleanType()
     self.table["System.lang.Unit"] = UnitType()
-    self.table["System.lang.Int.operator+"] = FuncType("System.lang.Int.operator+",
-                                                       [FuncArgInfo("left", self.table["System.lang.Int"]),
-                                                        FuncArgInfo("right", self.table["System.lang.Int"])],
+    self.table["operator+"] = NativeFuncType("operator+",
+                                       [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                        FuncArgInfo("right", self.table["System.lang.Int"])],
+                                       self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator+"] = NativeFuncType("System.lang.Int.operator+",
+                                                       [FuncArgInfo("right", self.table["System.lang.Int"])],
                                                        self.table["System.lang.Int"])
     #self.table["System.lang.Int.operator+"] = FuncType("+", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
-    self.table["System.lang.Int.operator-"] = FuncType("System.lang.Int.operator-", [FuncArgInfo("left", self.table["System.lang.Int"]),
-                                                            FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
+    self.table["operator-"] = NativeFuncType("operator-", 
+                                       [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                        FuncArgInfo("right", self.table["System.lang.Int"])], 
+                                       self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator-"] = NativeFuncType("System.lang.Int.operator-",
+                                                       [FuncArgInfo("right", self.table["System.lang.Int"])],
+                                                       self.table["System.lang.Int"])
     #self.table["System.lang.Int.operator-"] = FuncType("-", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
     self.table["System.out.println"] = FuncType("System.out.println", [
       FuncArgInfo("fmt", ValueType("fmt", StringType(), "")),
@@ -59,6 +69,7 @@ class SymbolTable:
     self.table["double"] = AliasType("double", self.table["System.lang.Double"])
     self.table["string"] = AliasType("string", self.table["System.lang.String"])
     self.table["bool"] = AliasType("bool", self.table["System.lang.Boolean"])
+    self.table["array"] = AliasType("array", self.table["System.lang.Array"])
     self.table["_"] = AliasType("_", self.table["System.lang.Unit"])
     
     self.cvttbl = {"+": "operator+",
@@ -97,7 +108,9 @@ class SymbolTable:
     # path는 일단 두 개의 것을 나눈다.
     # 1. full path : System.lang.Int.toString()
     # 2. short path : println()
-    print(f"path={path}")
+    if self.isdebug:
+      print(f"path={path}")
+
     result = self.findByLastName(path)
     if len(result) == 0:
       return None
@@ -105,16 +118,20 @@ class SymbolTable:
       r = []
       for key in result:
         _type = result[key]
-        if isinstance(_type, FuncType):
+        if isinstance(_type, FuncType) or isinstance(_type, NativeFuncType):
           is_completed: bool = True
           idx, loc, nargs = 0, 0, len(_type.args)
           while idx < nargs:
-            print(_type.args[idx], args[loc])
+            if self.isdebug:
+              print(_type.args[idx], args[loc])
+
             if EllipsisType() == _type.args[idx].type:
               is_completed = True
               break
-              
-            print(_type.args[idx].type.type, args[loc])
+
+            if self.isdebug:  
+              print(_type.args[idx].type.type, args[loc])
+
             if _type.args[idx].type != args[loc]:
               is_completed = False
               break
@@ -130,6 +147,10 @@ class SymbolTable:
 
       if len(r) == 1:
         return r[0]
+      elif len(r) >= 1:
+        return sorted(r, key=lambda x: -len(x.args))[0]
+      else:
+        return None
 
       print(f"duplicated functions: {r}")
       return None

@@ -25,9 +25,13 @@ class Type:
     if isinstance(right, AliasType):
       right_type = right.original_type
   
-    print(right_type.typename, self.typename)
-    if right_type.typename == self.typename:
+    #print(right_type.typename, self.typename)
+    if isinstance(right_type, str) and right_type == self.typename:
       return False
+    elif isinstance(right_type, Type) and right_type.getTypename() == self.typename:
+      return False
+    else:
+      return True
   
     return True
 

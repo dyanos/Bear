@@ -200,6 +200,8 @@ class Context:
 class Translate:
   def __init__(self, symbolTable):
     print("initializing translate")
+
+    self.isdebug = False
     
     # self.globalSymbolTable = globalSymbolTable
     self.symbolTable = symbolTable
@@ -255,7 +257,9 @@ class Translate:
     
     self.info = tree
     body = tree.body
-    body.printXML()
+    if self.isdebug:
+      body.printXML()
+
     # ASTReturn은 아래 것들 중에 걸리는게 없다... 근데 왜 Exception이 안나왔지??
     if isinstance(body, ASTExprs):
       self.procExprs(body)
@@ -326,7 +330,10 @@ class Translate:
       if isinstance(tree.name, ASTNames):
         sym = self.symbolTable.glob(path=".".join(tree.name.array), args=new_args)
       else:
-        sym = self.symbolTable.glob(path=tree.name, args=new_args)
+        if isinstance(tree.name, ASTID):
+          path = tree.name.name
+
+        sym = self.symbolTable.glob(path=path, args=new_args)
 
       if sym is None:
         print(f"Error) symbol is not found {tree.name}")
@@ -356,7 +363,7 @@ class Translate:
       ret = self.procExpr(tree.value)
       #print(ret)
     else:
-      print(tree, type(tree))
+      print(tree, type(tree), tree.lst)
       raise Exception("procExpr", "Not Implemented")
     
     return None
@@ -512,9 +519,16 @@ class Translate:
       raise NotImplementedError
     elif isinstance(tree, ASTCalleeArgType2):
       raise NotImplementedError
+    elif isinstance(tree, ASTWrap):
+      if isinstance(tree.history, ASTSimpleExprs):
+        for expr in tree.history.exprs:
+          self.procExpr(expr)
+      else:
+        print(f"tree.history={tree.history}")
+        raise NotImplementedError
     else:
       print("procSimpleExpr : ", end=' ')
-      print(tree, type(tree))
+      print(tree, type(tree), tree.history)
       raise Exception('procSimpleExpr', 'Not implemented')
   
   def procListGeneratorType1(self, tree):
@@ -644,7 +658,7 @@ class Translate:
       return Value(type=left.type, reg=tmpReg)
     else:
       opName = self.makeFName(left.type, tree.name)
-      print(left, tree, opName)
+      #print(left, tree, opName)
       nativeName = encodeSymbolName(opName, args=[left.type])
       # print nativeName
       context.emitPush(self.machine.getRetReg())

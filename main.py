@@ -26,13 +26,14 @@ print("Parsing End")
 asmf = open(parser.basename+"64.asm", "wt")
 
 machine = None
-if "_main" in parser.globalSymbolTable:
-  machine = Translate(parser.globalSymbolTable)
+if "_main" in parser.symbolTable:
+  machine = Translate(parser.symbolTable)
 
 if machine.codes == None:
   print("machine.codes is None")
+  sys.exit(-1)
 else:
-  print(machine.codes)
+  #print(machine.codes)
 
   ds = machine.getDataSection()
   for key in list(ds.keys()):

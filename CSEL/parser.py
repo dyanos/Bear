@@ -3,6 +3,7 @@
 from typing import *
 import traceback
 
+import CSEL.TypeTable
 from .Token import *
 
 from .AST import *
@@ -63,6 +64,14 @@ import random
 import re
 
 sourceSets = []
+
+# symbol의 type등에 대한 부분은 string match로...
+# class나 struct일 경우는 hierachy탐색이 추가
+# template은 macro에 가까우므로, 별도의 table을 두고, realization할때 가상의 class name을 부여하여 사용 예) <templatename>_<realization type string>
+class PROPERTY:
+  PUBLIE = 1
+  PRIVATE = 2
+  PROTECTED = 3
 
 
 def checkNamespaceGroup(name: str) -> bool:
@@ -142,8 +151,9 @@ class Parser:
     self.token.nextToken()
     
     # Root Symbol Table 등록
-    self.globalSymbolTable: SymbolTable = SymbolTable()
-    self.localSymbolTable: List[Type] = []
+    self.symbolTable: SymbolTable = SymbolTable()
+    # 함수 시작되면, 사용
+    self.localSymbolTable = []
     
     # function이나 class앞의 template이나 attribute같은 것들의 정보를 가지고 있는...
     self.directive = []
@@ -180,20 +190,32 @@ class Parser:
     return self.token.tok.value
   
   def getTokType(self) -> Type:
-    print(f"getTokType = {self.token.tok.type}")
+    if self.isdebug:
+      print(f"getTokType = {self.token.tok.type}")
+
     if self.token.tok.type == 'stringLiteral':
-      return self.globalSymbolTable.convert(ASTType('System.lang.String'))
+      return self.symbolTable.convert(ASTType('System.lang.String'))
     elif self.token.tok.type == 'integerLiteral':
-      return self.globalSymbolTable.convert(ASTType('System.lang.Int'))
+      return self.symbolTable.convert(ASTType('System.lang.Int'))
     elif self.token.tok.type == 'floatLiteral':
-      return self.globalSymbolTable.convert(ASTType('System.lang.Float'))
+      return self.symbolTable.convert(ASTType('System.lang.Float'))
     elif self.token.tok.type == 'true':
-      return self.globalSymbolTable.convert(ASTType('System.lang.Boolean'))
+      return self.symbolTable.convert(ASTType('System.lang.Boolean'))
     elif self.token.tok.type == 'false':
-      return self.globalSymbolTable.convert(ASTType('System.lang.Boolean'))
+      return self.symbolTable.convert(ASTType('System.lang.Boolean'))
     else:
-      print(self.token.tok.type)
+      if self.isdebug:
+        print(self.token.tok.type)
+
       return None
+
+  def searchSymbol(self, name: str):
+    # 우선 local에서... 마지막 scope에서부터 찾는다.
+    for scope in reversed(self.localSymbolTable):
+      if name in scope:
+        return scope[name]
+
+    return self.symbolTable.find(name)
   
   def getName(self) -> str:
     if self.match('_'):
@@ -254,7 +276,7 @@ class Parser:
     symbols = library.loadSymbolFrom(path)
     matched = symbols.findByLastName(path)
     for symbol in matched:
-      self.globalSymbolTable.register(symbol)
+      self.symbolTable.register(symbol)
   
   def getImportNames(self) -> str:
     names = []
@@ -274,7 +296,7 @@ class Parser:
     self.namespaceStack.append(path)
     self.parseNamespaceBody()
     name = ".".join(self.namespaceStack)
-    self.globalSymbolTable.registerNamespace(name)  # TODO: 수정필요
+    self.symbolTable.registerNamespace(name)  # TODO: 수정필요
     self.namespaceStack.pop()  # symbol search할때도 사용할예정
   
   def getWorkingPath(self) -> str:
@@ -306,21 +328,29 @@ class Parser:
     
     if self.match(';'):
       self.namespaceStack.append(names)
-      self.globalSymbolTable.registerClass(".".join(self.namespaceStack), parents)  # TODO: 상속등의 class정보도 주어져야...
+      self.symbolTable.registerClass(".".join(self.namespaceStack), parents)  # TODO: 상속등의 class정보도 주어져야...
       self.namespaceStack.pop()
       return
     
     self.namespaceStack.append(names)
     self.parseClassBody()
-    self.globalSymbolTable.registerClass(".".join(self.namespaceStack), parents)  # TODO: Body는 어딘가에 등록이 되어야 할 듯?
+    self.symbolTable.registerClass(".".join(self.namespaceStack), parents)  # TODO: Body는 어딘가에 등록이 되어야 할 듯?
     self.namespaceStack.pop()
   
   def parseClassBody(self) -> NoReturn:
     if not self.match('{'):
       return
     
+    property = PROPERTY.PUBLIC
     body = {}
     while not self.match('}'):
+      if self.match('public'):
+        property = PROPERTY.PUBLIE
+      elif self.match('prviate'):
+        property = PROPERTY.PRIVATE
+      elif self.match('protected'):
+        property = PROPERTY.PROTECTED
+
       if self.match('val'):  # 상수선언
         name = self.getName()
         if name in body:
@@ -334,9 +364,16 @@ class Parser:
         if self.match('='):
           body = self.parseInitExpr()
         
-        self.namespaceStack.append(name)
-        self.globalSymbolTable.registerValue(name, type, body)
-        self.namespaceStack.pop()
+        if property == PROPERTY.PUBLIC or property == PROPERTY.PROTECTED:
+          self.namespaceStack.append(name)
+          self.symbolTable.registerValue(name, type, body)
+          self.namespaceStack.pop()
+        else:
+          if name in self.localSymbolTable[-1]:
+            raise Exception(f"already {name}")
+          else:
+            self.localSymbolTable[-1][name] = {'type': type, 'body': body, 'property': PROPERTY.PRIVATE}
+            
       elif self.match('var'):  # 변수선언
         name = self.getName()
         if name in body:
@@ -350,7 +387,7 @@ class Parser:
           body = self.parseInitExpr()
         
         self.namespaceStack.append(name)
-        self.globalSymbolTable.registerVariable(name, type, body)
+        self.symbolTable.registerVariable(name, type, body)
         self.namespaceStack.pop()
       elif self.match('def'):  # 함수
         if 'native' in self.directive:
@@ -388,7 +425,7 @@ class Parser:
           raise SyntaxError
         
         self.namespaceStack.append(name)
-        self.globalSymbolTable.registerFunc(name, args, self.globalSymbolTable.convert(rettype), body)
+        self.symbolTable.registerFunc(name, args, self.symbolTable.convert(rettype), body)
         self.namespaceStack.pop()
   
   def parseInitExpr(self) -> NoReturn:
@@ -413,14 +450,14 @@ class Parser:
       return None
     
     for param in params:
-      self.globalSymbolTable.registerTemplateVariable(param.name, param.type)
+      self.symbolTable.registerTemplateVariable(param.name, param.type)
     
     if self.same('class'):
       target = self.parseClass()
     elif self.same('def'):
       target = self.parseDef()
       
-      self.globalSymbolTable.register({
+      self.symbolTable.register({
         "@type": 'template def',
         "@name": target['name'],
         "@vtype": target['rettype'],
@@ -519,7 +556,7 @@ class Parser:
         print("Error) Duplicated Name")
         raise SyntaxError
       
-      if not self.globalSymbolTable.findByLastName(arg.type.name):
+      if not self.symbolTable.findByLastName(arg.type.name):
         print("Error) Unknown Type")
         raise SyntaxError
       
@@ -528,7 +565,7 @@ class Parser:
     nativeFuncname = doInternalMangling(funcname, args)
     fn = ".".join(self.namespaceStack + [nativeFuncname])
     # global symbol table에서 체크 : 인자 다양성 부분에 대한 고려가 필요
-    if self.globalSymbolTable.findByLastName(fn):
+    if self.symbolTable.findByLastName(fn):
       name = ".".join(self.namespaceStack + [funcname])
       print(f"Error) Already defined : {name}")
       raise SyntaxError
@@ -556,12 +593,12 @@ class Parser:
     
     # 바로전에 template이 선언되었다면 여기도 영향을 받아야만 한다.
     # 일단 지금은 영향을 받지 않는다고 가정한다.
-    self.globalSymbolTable.registerFunc(fn, args, rettype, body, copy.deepcopy(self.localSymbolTable))
+    self.symbolTable.registerFunc(fn, args, rettype, body, copy.deepcopy(self.localSymbolTable))
     
     self.localSymbolTable = {}
     
-    # print "1", nativeSymbol, self.globalSymbolTable[nativeSymbol]
-    # self.mustcompile.append((self.globalSymbolTable[nativeSymbol], nativeSymbol))
+    # print "1", nativeSymbol, self.symbolTable[nativeSymbol]
+    # self.mustcompile.append((self.symbolTable[nativeSymbol], nativeSymbol))
     
     if self.isdebug:
       print("ending parseDef")
@@ -595,7 +632,7 @@ class Parser:
     if name is None:
       return None
     
-    typeStr = self.globalSymbolTable.convert(ASTType(name="System.lang.Int", templ=None, ranks=None))
+    typeStr = self.symbolTable.convert(ASTType(name="System.lang.Int", templ=None, ranks=None))
     if self.match(':'):
       typeStr = self.parseType()
     
@@ -636,13 +673,13 @@ class Parser:
       print(idStr)
     
     # 해당 type이 존재하는지 검사합니다.
-    tp = self.globalSymbolTable.findByLastName(idStr)
+    tp = self.symbolTable.findByLastName(idStr)
     if tp is None:
       print("Unknown Type : %s" % (idStr))
       sys.exit(-1)
     
     if tp == 'alias':
-      idStr = self.globalSymbolTable.findByLastName(idStr)
+      idStr = self.symbolTable.findByLastName(idStr)
       # print "(", idStr
     
     # tmpl = self.parseTemplatePart()
@@ -666,7 +703,7 @@ class Parser:
     if self.isdebug:
       print("ending parseType")
     
-    return self.globalSymbolTable.convert(ASTType(name=idStr, templ=template, ranks=rank))
+    return self.symbolTable.convert(ASTType(name=idStr, templ=template, ranks=rank))
   
   def parseRankList(self) -> ASTRankList:
     lst = []
@@ -756,12 +793,12 @@ class Parser:
   
   def convertToASTType(self, obj: AST) -> Type:
     if isinstance(obj, ASTType):
-      return self.globalSymbolTable.convert(obj)
+      return self.symbolTable.convert(obj)
     elif isinstance(obj, ASTListGenerateType1):
       return self.convertToASTType(obj.start)
     elif isinstance(obj, ASTWord) and obj.type is not None:
       if isinstance(obj.type, ASTType):
-        return self.globalSymbolTable.convert(obj.type)
+        return self.symbolTable.convert(obj.type)
       # 이건 비정상적인 경우, 이렇게 찾아들어오면 안된다.
       elif isinstance(obj.type, dict):
         return obj.type['vtype']
@@ -771,9 +808,9 @@ class Parser:
         print("))", obj.type)
         raise NotImplementedError
     elif isinstance(obj, ASTWord) and isinstance(obj.type, ASTType):
-      return self.globalSymbolTable.convert(obj.type)
+      return self.symbolTable.convert(obj.type)
     elif isinstance(obj, ASTListGenerateType1):
-      return self.globalSymbolTable.convert(ASTType('System.lang.Array'))
+      return self.symbolTable.convert(ASTType('System.lang.Array'))
     elif isinstance(obj, ASTCalleeArgType1):
       return obj.type
     elif isinstance(obj, ASTID):
@@ -787,7 +824,14 @@ class Parser:
   def guessType(self, expr: AST) -> Type:
     if isinstance(expr, ASTWord):
       return expr.type
-    
+    elif isinstance(expr, ASTBinOperator):
+      return expr.vtype
+    elif isinstance(expr, ASTID):
+      return expr.type
+
+    if self.isdebug:
+      print("=", expr)
+
     return None
   
   def checkSameType(self, last: ASTType, rast: ASTType) -> bool:
@@ -828,7 +872,7 @@ class Parser:
               print(f"Error) Not equal between {ltype} and {rtype}")
               raise SyntaxError
           else:
-            ltype = right.type
+            ltype = rtype
         
         tree = ASTBinOperator('=', ASTID(name, ltype), right, ltype)
         hist.append(tree)
@@ -939,6 +983,45 @@ class Parser:
     # self.match(';') # caution!!
     return ASTSimpleExprs(history)
   
+  def getSymbolNames(self, tree: AST) -> str:
+    path = None
+    if isinstance(tree, ASTNames):
+      path = ".".join(tree.array)
+    elif isinstance(tree.name, ASTNames):
+      path = ".".join(tree.name.array)
+    elif isinstance(tree.name, ASTID):
+      path = tree.name.name
+    else:
+      path = tree.name
+
+    return path
+
+  def guessBestSymbol(self, left: AST, mid: AST, right: AST):
+    # binary operator에 대해서 symbol table에서 위 3가지 심볼에 대해서 가장 잘 매칭되는 함수 형태를 찾는다.
+    left_type = self.guessType(left).getTypename()
+    right_type = self.guessType(right).getTypename()
+    # 1. global binary operator(mid) function을 찾는다.
+    if isinstance(mid, ASTWord):
+      mid_name = "operator{}".format(mid.value)
+    else:
+      raise NotImplementedError
+
+    retType = self.symbolTable.glob(mid_name, [left_type, right_type])
+
+    if retType is not None:
+      return retType
+
+    # 2. 'right'에서 operator(mid)에 대한 정의가 있는지 찾는다.
+
+    # 3. 'left'에서 operator(mid)에 대한 정의가 있는지 찾는다.
+    fname = "{}.operator{}".format(left_type, mid_name)
+    retType = self.symbolTable.glob(fname, [right_type])
+    if retType is not None:
+      return retType
+
+    # 4. 없으면 오류
+    return None
+
   def parseSimpleExpr(self) -> AST:
     def getType(node: AST) -> Type:
       return node.type
@@ -983,17 +1066,19 @@ class Parser:
           
           # Global Operator 함수로 첫번째 찾는다. (C++의 operator + (left, right)라는 식..)
           fn = f"{self.convertToASTType(tree).name}.{tokVal}"
-          if tokVal in self.globalSymbolTable.cvttbl:
-            fn = f"{self.convertToASTType(tree).name}.{self.globalSymbolTable.cvttbl[tokVal]}"
+          if tokVal in self.symbolTable.cvttbl:
+            fn = f"{self.convertToASTType(tree).name}.{self.symbolTable.cvttbl[tokVal]}"
           
-          symbol = self.globalSymbolTable.findByLastName(fn)
+          symbol = self.symbolTable.findByLastName(fn)
           if symbol is None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
             print(f"Error) Function or operator not exists : {tokVal}")
             raise NotImplementedError
           
-          print("4", symbol)
-          if tokVal not in self.globalSymbolTable.cvttbl:
+          if self.isdebug:
+            print("4", symbol)
+
+          if tokVal not in self.symbolTable.cvttbl:
             tree = ASTFuncCall(fn, tree, right)
           else:
             tree = ASTBinOperator(tokVal, tree, right, vtype=self.calcBinOperatorRetType(tokVal, tree, right))
@@ -1007,28 +1092,18 @@ class Parser:
         #    tree = ASTCasting(tree.lst[0], ASTWord(tok.type, tok.value))
         tokVal = self.getTokValue()
         tokType = self.getTokType()
-        
         mid = ASTWord(tokVal, tokType)
         
-        self.token.nextToken()
-        
+        self.nextToken()
+
         right = self.parseBasicSimpleExpr()
-        # print "here : ", mid, tree, right
-        if right is not None:
-          fn = f"{self.convertToASTType(tree).name}.{tokVal}"
-          if tokVal in self.globalSymbolTable.cvttbl:
-            fn = f"{self.convertToASTType(tree).name}.{self.globalSymbolTable.cvttbl[tokVal]}"
-          
-          symbol = self.globalSymbolTable.findByLastName(fn)
-          if symbol is None:
-            # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            print(f"Error) Function or operator not exists : {tokVal}")
-            raise NotImplementedError
-          
-          if tokVal not in self.globalSymbolTable.cvttbl:
-            tree = ASTFuncCall(fn, [tree, right])
-          else:
-            tree = ASTBinOperator(mid, tree, right, vtype=self.calcBinOperatorRetType(mid, tree, right))
+
+        best_guess = self.guessBestSymbol(tree, mid, right)
+
+        if isinstance(best_guess, FuncType):
+          tree = ASTFuncCall(tokVal, [tree, right])
+        elif isinstance(best_guess, NativeFuncType):
+          tree = ASTBinOperator(mid, tree, right, vtype=best_guess.rettype)
         else:
           # for example, 'a++' or 'a+'
           tree = ASTUnary(tree, mid, tree.vtype)
@@ -1043,14 +1118,17 @@ class Parser:
         path = ".".join(tree.array)
       elif isinstance(tree.name, ASTNames):
         path = ".".join(tree.name.array)
+      elif isinstance(tree.name, ASTID):
+        path = tree.name.name
       else:
         path = tree.name
       
-      print(tree.args)
-      
       fn = FuncType(path, [FuncArgInfo("", self.getType(x)) for x in tree.args], None)
+
+      if self.isdebug:
+        print(fn, path, type(path))
       
-      ret = self.globalSymbolTable.findByLastName(path)
+      ret = self.symbolTable.findByLastName(path)
       if ret is None:
         print(f"Error) Not Symbol : {fn}")
         raise SyntaxError
@@ -1085,11 +1163,13 @@ class Parser:
     t = FuncType(mid.value, [FuncArgInfo("", left.type),
                              FuncArgInfo("", right.type)], None)
     fn = mid.value
-    if mid.value in self.globalSymbolTable.cvttbl:
-      fn = self.globalSymbolTable.cvttbl[mid.value]
+    if mid.value in self.symbolTable.cvttbl:
+      fn = self.symbolTable.cvttbl[mid.value]
     
-    print(fn)
-    symbols = self.globalSymbolTable.findByLastName(fn)
+    if self.isdebug:
+      print(fn)
+
+    symbols = self.symbolTable.findByLastName(fn)
     if symbols is None or len(symbols) == 0:
       print("Error) symbol is not found")
       raise SyntaxError
@@ -1125,15 +1205,15 @@ class Parser:
     # print "calling parseBasicSimpleExpr"
     # print "value =", tok.value, tok.type
     if self.matchType('stringLiteral'):
-      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType('System.lang.String')))
+      return ASTWord(tok.value, self.symbolTable.convert(ASTType('System.lang.String')))
     elif self.matchType('integerLiteral'):
-      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType('System.lang.Int')))
+      return ASTWord(tok.value, self.symbolTable.convert(ASTType('System.lang.Int')))
     elif self.matchType('floatLiteral'):
-      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType('System.lang.Float')))
+      return ASTWord(tok.value, self.symbolTable.convert(ASTType('System.lang.Float')))
     elif self.match('true'):
-      return ASTWord('true', self.globalSymbolTable.convert(ASTType('System.lang.Boolean')))
+      return ASTWord('true', self.symbolTable.convert(ASTType('System.lang.Boolean')))
     elif self.match('false'):
-      return ASTWord('false', self.globalSymbolTable.convert(ASTType('System.lang.Boolean')))
+      return ASTWord('false', self.symbolTable.convert(ASTType('System.lang.Boolean')))
     elif self.match('return'):
       # print "entering return"
       expr = self.parseSimpleExpr()
@@ -1166,12 +1246,23 @@ class Parser:
     
     # return ret
     elif self.matchType('id'):
+      names = [tok.value]
+      while self.match('.'):
+        tok = self.token.tok
+        if self.matchType('id'):
+          names.append(tok.value)
+        else:
+          print(tok.value)
+          raise NotImplementedError
+          
+      path = ".".join(names)
+
       if self.same('['):
         history = []
         while self.match('['):
           history.append(self.parseSimpleExpr())
           self.match(']')
-        return ASTIndexing(ASTID(tok.value, tok.type), history)
+        return ASTIndexing(ASTID(path, tok.type), history)
       elif self.match('('):
         # TODO 함수의 그것인지 아닌지에 대한 구분이 필요하다.
         args = self.parseDefArgListForFuncCall()
@@ -1189,23 +1280,27 @@ class Parser:
         # 알고리즘
         # 1. 현재의 argument들의 type들로 구성된 function을 찾는다.
         # 2. 만일 없다면, argument들의 갯수가 동일한 함수.... (이건 내일 생각)
-        return ASTFuncCall(ASTID(tok.value, tok.type), args)
+        return ASTFuncCall(ASTID(path, tok.type), args)
       elif self.match('...'):
         right = self.parseSimpleExpr()
-        return ASTListGenerateType1(ASTWord(tok.value, tok.type ), right)  # 여기서 빠진 것은 Arrya<T이어야 한다는 사실(Type이 빠졌다는 소리)
+        return ASTListGenerateType1(ASTWord(path, tok.type), right)  # 여기서 빠진 것은 Arrya<T이어야 한다는 사실(Type이 빠졌다는 소리)
       else:
         vtype = None
-        if tok.value in self.localSymbolTable:
-          vtype = self.localSymbolTable[tok.value]
+        if path in self.localSymbolTable:
+          vtype: CSEL.TypeTable.Type = self.localSymbolTable[path]
           if 'type' in vtype:
-            vtype = vtype['vtype']
+            vtype: CSEL.TypeTable.Type = vtype['vtype']
+        elif path in self.symbolTable:
+          vtype: CSEL.TypeTable.Type = self.symbolTable[path]
+          if isinstance(vtype, AliasType):
+            vtype: CSEL.TypeTable.Type = vtype.original_type
+        #else:
+        #  print(f"Error) Not found symbol {path}")
+        #  raise SyntaxError
         
-        if vtype is None:
-          vtype = self.globalSymbolTable.findByLastName(tok.value)
-        
-        return ASTID(tok.value, vtype)
+        return ASTID(path, vtype)
     elif self.match('_'):
-      return ASTWord(tok.value, self.globalSymbolTable.convert(ASTType("Unit")))
+      return ASTWord(tok.value, self.symbolTable.convert(ASTType("Unit")))
     elif self.match('['):
       history = []
       tree = self.parseSimpleExpr()

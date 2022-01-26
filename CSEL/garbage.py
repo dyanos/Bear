@@ -108,10 +108,10 @@ parser.parse()
 #  print key
 
 def makeSymbolName(cname, fname, args):
-  print("debug) %s, %s" % (cname, fname))
+  #print("debug) %s, %s" % (cname, fname))
 
   name = [cname, str(len(fname)), fname, convertType(args)]
-  print("debug) full : %s" % ("".join(name)))
+  #print("debug) full : %s" % ("".join(name)))
   return "".join(name)
 
 class Register:
@@ -360,7 +360,7 @@ class IR2:
     self.info    = {}
 
   def getType(self, node):
-    print("getType = ", node)
+    #print("getType = ", node)
     if node is ASTWord:
       type = None
       if node.type is str:
@@ -406,12 +406,12 @@ class IR2:
       print("argument = ", info['@argument_symbols'])
       sys.exit(-1)
     else:
-      tree.
+      raise NotImplemented
 
   def eval(self, tree):
     innerSymbolTbl = {}
     while True:
-      print(tree)
+      #print(tree)
       if isinstance(tree, ASTDeclFunc):
         self.evalFunc(tree)
       elif isinstance(tree, ASTWord):
@@ -469,8 +469,8 @@ class IR2:
 
           info['@return'] = convertType(tree['@rettype'])
 
-          print("arguments = ", info['@arguments'])
-          print("return    = ", info['@return'])
+          #print("arguments = ", info['@arguments'])
+          #print("return    = ", info['@return'])
 
           self.info = info
 

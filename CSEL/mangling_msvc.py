@@ -42,7 +42,7 @@ def _convertToMSVCType(t: CSEL.TypeTable.Type) -> cppmangle.ast.Type:
 
 
 def mangling_msvc(funcObj: CSEL.TypeTable.FuncType):
-  print(funcObj)
+  #print(funcObj)
   names = funcObj.name
   if isinstance(names, str):
     names = names.split(".")
