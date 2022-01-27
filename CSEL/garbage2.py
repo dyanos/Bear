@@ -98,8 +98,8 @@ class Translate2:
             self.context.emitMove(tmpreg, dname)
             ret = Value(reg = tmpreg, reftype = "memory", type = tree.type)
 
-        elif tree.isType('System.lang.Integer') 
-            or tree.isType("System.lang.Float")
+        elif tree.isType('System.lang.Int') \
+            or tree.isType("System.lang.Float") \
             or tree.isType("System.lang.Double"):
             tmpreg = self.generateLocalTempSymbol()
             self.localSymbolTable[tmpreg] = {"type": tree.getType()}

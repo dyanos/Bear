@@ -121,7 +121,7 @@ def isRegister(storage):
 
   return False
 
-def getRetReg(type = 'System.lang.Integer'):
+def getRetReg(type = 'System.lang.Int'):
   if type == 'System.lang.Double' or type == 'System.lang.Float':
     return IReg('xmm0')
   
@@ -480,10 +480,11 @@ class RegisterAllocation:
         # 인접 register들을 찾는다.
         # To find no colored symbol of the other symbols connected 'symbol'
         # Don't worry when remains machine registers. because they can spill out.
-        outRegList = [y for y in list(filter(colored2.has_key, list(G[symbol]))) if not y in registerList]
+        outRegList = [y for y in filter(lambda x: x in colored2, list(G[symbol])) if not y in registerList]
         # We will find a symbol that number of 'use1' of precolored symbols is minimum.
         # and get length of 'use1' and sort it.
-        outRegList = [(len(use1[x]), x) for x in outRegList]
+
+        outRegList = [(len(use1[x]), x) if x in use1 else (0, x) for x in outRegList]
         outRegList.sort()
         
         #print outRegList

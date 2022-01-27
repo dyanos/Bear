@@ -33,6 +33,9 @@ class ASTType(AST):
   def __str__(self) -> str:
     return self.name
 
+  def getType(self) -> str:
+    return self.name
+
   def printXML(self) -> NoReturn:
     print("<type>\n<name>")
     self.name.printXML()

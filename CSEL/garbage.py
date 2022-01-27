@@ -331,7 +331,7 @@ class IR:
       label = genRandomString(16)
       self.data[label] = {"type": realName, "value": tree.value}
       self.stack.append(ILabel(label))
-    elif tree.type == 'System.lang.Integer':
+    elif tree.type == 'System.lang.Int':
       self.stack.append(IImmediate(convertIntToHex(tree.value)))
     elif tree.type == 'System.lang.Float':
       #label = genRandomString(16)

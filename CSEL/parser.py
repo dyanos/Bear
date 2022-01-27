@@ -824,10 +824,15 @@ class Parser:
   def guessType(self, expr: AST) -> Type:
     if isinstance(expr, ASTWord):
       return expr.type
-    elif isinstance(expr, ASTBinOperator):
+    elif isinstance(expr, ASTBinOperator) or isinstance(expr, ASTUnary):
       return expr.vtype
     elif isinstance(expr, ASTID):
       return expr.type
+    elif isinstance(expr, ASTListGenerateType1):
+      return self.guessType(expr.start)
+    else:
+      print(expr)
+      raise NotImplementedError
 
     if self.isdebug:
       print("=", expr)
@@ -920,7 +925,7 @@ class Parser:
               print(f"Error) Not equal between {ltype} and {rtype}")
               raise SyntaxError
           else:
-            ltype = right.type
+            ltype = rtype
         
         tree = ASTBinOperator('=', ASTID(name, ltype), right, ltype)
         hist.append(tree)
@@ -1106,7 +1111,7 @@ class Parser:
           tree = ASTBinOperator(mid, tree, right, vtype=best_guess.rettype)
         else:
           # for example, 'a++' or 'a+'
-          tree = ASTUnary(tree, mid, tree.vtype)
+          tree = ASTUnary(tree, mid, self.guessType(tree))
       else:
         break
     

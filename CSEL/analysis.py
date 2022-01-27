@@ -77,7 +77,29 @@ class Context:
       self.emitMove(tmpReg, dst)
     else:
       print("add %s, %s, %s" % (dst, srcB, srcA))
+
+  def emitMul(self, srcA, srcB, dst):
+    context = self.context
+    if self.machine == Intel:
+      tmpReg = genTempRegister()
+      self.emitMove(srcA, tmpReg)
+      context.append(self.machine.OpMul(srcB, tmpReg))
+      print("mul %s, %s" % (tmpReg, srcB))
+      self.emitMove(tmpReg, dst)
+    else:
+      print("mul %s, %s, %s" % (dst, srcB, srcA))
   
+  def emitDiv(self, srcA, srcB, dst):
+    context = self.context
+    if self.machine == Intel:
+      tmpReg = genTempRegister()
+      self.emitMove(srcA, tmpReg)
+      context.append(self.machine.OpDiv(srcB, tmpReg))
+      print("div %s, %s" % (tmpReg, srcB))
+      self.emitMove(tmpReg, dst)
+    else:
+      print("div %s, %s, %s" % (dst, srcB, srcA))
+
   def emitPush(self, target):
     operand = self.machine.OpPush(target)
     self.context.append(operand)
@@ -101,7 +123,7 @@ class Context:
           tmpreg = IUserReg(reg.value)
         elif reg.type == ASTType('System.lang.String'):
           tmpreg = self.registerInDataSection(reg.value)
-        elif reg.type == 'System.lang.Integer':
+        elif reg.type == 'System.lang.Int':
           tmpreg = IImm(reg['@value'])
         else:
           print(reg.type, reg.value)
@@ -362,6 +384,8 @@ class Translate:
     elif isinstance(tree, ASTCalleeArgType1):
       ret = self.procExpr(tree.value)
       #print(ret)
+    elif isinstance(tree, ASTListGenerateType1):
+      return self.procListGeneratorType1(tree)
     else:
       print(tree, type(tree), tree.lst)
       raise Exception("procExpr", "Not Implemented")
@@ -547,7 +571,7 @@ class Translate:
     context.emitMove(self.machine.getRetReg(), tmpReg)
     context.emitPop(self.machine.getRetReg())
     
-    return Value(type=ASTType(name='System.lang.Array', templ=None, ranks=None), reg=tmpReg)
+    return Value(type=ASTType(name='System.lang.Array<{}>'.format(left.type), templ=None, ranks=None), reg=tmpReg)
   
   def isBasicType(self, type: Type):
     if type == IntegerType() \
@@ -678,7 +702,7 @@ class Translate:
       return Value(type=ASTType(name='System.lang.String', templ=None, ranks=None),
                    reg=self.machine.IString(tree.value))
     elif tree.type == IntegerType():
-      return Value(type=ASTType(name='System.lang.Integer', templ=None, ranks=None),
+      return Value(type=ASTType(name='System.lang.Int', templ=None, ranks=None),
                    reg=self.machine.IInteger(tree.value))
     elif tree.type == DoubleType():
       return Value(type=ASTType(name='System.lang.Double', templ=None, ranks=None),

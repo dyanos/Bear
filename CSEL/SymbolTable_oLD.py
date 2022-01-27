@@ -31,14 +31,14 @@ class DefSymbolInfo(SymbolInfo):
         self.info = info
 
 class VarSymbolInfo(SymbolInfo):
-    def __init__(self, isNative = False, varType = "System.lang.Integer", initCode = None):
+    def __init__(self, isNative = False, varType = "System.lang.Int", initCode = None):
         self.type = SymbolInfo.TYPE_VAR
         self.native = isNative
         self.varType = varType
         self.initCode = initCode
 
 class ConstantSymbolInfo(SymbolInfo):
-    def __init__(self, isNative = False, varType = "System.lang.Integer", initCode = None):
+    def __init__(self, isNative = False, varType = "System.lang.Int", initCode = None):
         self.type = SymbolInfo.TYPE_VAR
         self.native = isNative
         self.varType = varType
@@ -95,7 +95,7 @@ class SymbolTable:
         namespaceByte = "System.lang.Byte"
         namespaceChar = "System.lang.Char"
         namespaceShort = "System.lang.Short"
-        namespaceInt = "System.lang.Integer"
+        namespaceInt = "System.lang.Int"
         namespaceLong = "System.lang.Long"
         namespaceFloat = "System.lang.Float"
         namespaceDouble = "System.lang.Double"

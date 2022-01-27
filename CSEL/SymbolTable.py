@@ -50,6 +50,21 @@ class SymbolTable:
     self.table["System.lang.Int.operator-"] = NativeFuncType("System.lang.Int.operator-",
                                                        [FuncArgInfo("right", self.table["System.lang.Int"])],
                                                        self.table["System.lang.Int"])
+    self.table["operator*"] = NativeFuncType("operator*",
+                                       [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                        FuncArgInfo("right", self.table["System.lang.Int"])],
+                                       self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator*"] = NativeFuncType("System.lang.Int.operator*",
+                                                       [FuncArgInfo("right", self.table["System.lang.Int"])],
+                                                       self.table["System.lang.Int"])
+    self.table["operator/"] = NativeFuncType("operator/",
+                                       [FuncArgInfo("left", self.table["System.lang.Int"]),
+                                        FuncArgInfo("right", self.table["System.lang.Int"])],
+                                       self.table["System.lang.Int"])
+    self.table["System.lang.Int.operator/"] = NativeFuncType("System.lang.Int.operator/",
+                                                       [FuncArgInfo("right", self.table["System.lang.Int"])],
+                                                       self.table["System.lang.Int"])
+
     #self.table["System.lang.Int.operator-"] = FuncType("-", [FuncArgInfo("right", self.table["System.lang.Int"])], self.table["System.lang.Int"])
     self.table["System.out.println"] = FuncType("System.out.println", [
       FuncArgInfo("fmt", ValueType("fmt", StringType(), "")),

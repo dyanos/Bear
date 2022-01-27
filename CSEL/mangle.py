@@ -88,7 +88,7 @@ enm = {'_': 'v',
 longToShort = {
   "System.lang.Char": 'char',
   "System.lang.Short": 'short',
-  "System.lang.Integer": 'int',
+  "System.lang.Int": 'int',
   "System.lang.Long": 'long',
   "System.lang.Float": 'float',
   'System.lang.Double': 'double'
@@ -287,6 +287,17 @@ def convertType_for_gcc(type: Type):
 
 
 def convertType(type):
+  if isinstance(type, ASTType):
+    typestr = type.getType()
+    if typestr == "System.lang.Int":
+      type = IntegerType()
+    elif typestr == "System.lang.Float":
+      type = FloatType()
+    elif typestr == "System.lang.Double":
+      type = DoubleType()
+    else:
+      raise NotImplementedError
+
   if not isinstance(type, Type):
     raise Exception("Error", "Needed ASTType")
   
@@ -447,7 +458,7 @@ def reverseEncodedName(name):
 
 def convertSimpleTypeName(name):
   # shortName = {
-  #  "System.lang.Integer": "i",
+  #  "System.lang.Int": "i",
   #  "System.lang.Boolean": "b",
   #  "System.lang.Float": "f",
   #  "System.lang.Double": "d"}
@@ -459,7 +470,7 @@ def convertSimpleTypeName(name):
 
 def decodeMachineName(name) -> str:
   translateTable = {
-    "i": "System.lang.Integer",
+    "i": "System.lang.Int",
     "b": "System.lang.Boolean",
     "f": "System.lang.Float",
     "d": "System.lang.Double"}

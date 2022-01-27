@@ -13,7 +13,7 @@ class Something:
   def isObject(self, obj):
     self.debug(DEBUG_INFO, "Calling 'isObject' function")
 
-    if obj.type == "System.lang.Integer"  \
+    if obj.type == "System.lang.Int"  \
       or obj.type == "System.lang.Float"  \
       or obj.type == "System.lang.Double":
       return False
