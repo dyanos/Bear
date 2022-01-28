@@ -5,6 +5,7 @@ def main(args: Array[string]): int = {
     val d = a * b;
     val e = a / b;
     val f = [1 ... 3];
+    e = c;
 
     System.out.println("%d", a + b);
     return 0;

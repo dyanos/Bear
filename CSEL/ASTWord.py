@@ -11,16 +11,19 @@ class ASTWord(AST):
     self.value = value
 
   def printXML(self) -> NoReturn:
-    if self.type == StringType():
-      print("<string>%s</string>" % (self.value))
-    elif self.type == IntegerType():
-      print("<integer>%s</integer>" % (self.value))
-    elif self.type == FloatType():
-      print("<float>%s</float>" % (self.value))
-    elif self.type == DoubleType():
-      print("<double>%s</double>" % (self.value))
-    else:
+    if self.type is None:
       print("%s" % (self.value))
+    else:
+      if self.type == StringType():
+        print("<string>%s</string>" % (self.value))
+      elif self.type == IntegerType():
+        print("<integer>%s</integer>" % (self.value))
+      elif self.type == FloatType():
+        print("<float>%s</float>" % (self.value))
+      elif self.type == DoubleType():
+        print("<double>%s</double>" % (self.value))
+      else:
+        print("%s" % (self.value))
 
   def __str__(self) -> str:
     return self.value 

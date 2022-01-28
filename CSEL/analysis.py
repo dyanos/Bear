@@ -209,6 +209,9 @@ class Context:
     return genRandomString(16)
 
 
+# TODO: Unused Symbol에 대한 처리코드가 필요?
+# TODO: iadd, imul과 같은 특수 명령어에 대한 처리 기능 추가?
+# TODO: 오류 출력 기능 향상 : 파일 이름, 현재 파싱되고 있는 line, 오류 출력시 해당 line번호 출력 - token parsing할때 token정보에 관련 정보 출력하도록 
 # Symbol Table은 Java의 Symbol Table의 모습을 따른다.
 #
 # long name
@@ -387,7 +390,8 @@ class Translate:
     elif isinstance(tree, ASTListGenerateType1):
       return self.procListGeneratorType1(tree)
     else:
-      print(tree, type(tree), tree.lst)
+      print(tree, type(tree))
+      tree.printXML()
       raise Exception("procExpr", "Not Implemented")
     
     return None

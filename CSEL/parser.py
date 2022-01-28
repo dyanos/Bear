@@ -354,7 +354,7 @@ class Parser:
       if self.match('val'):  # 상수선언
         name = self.getName()
         if name in body:
-          print("Error) duplicated name :", name)
+          print("Error) duplicated name : {} (lineno: {} at {})".format(name, self.token.tok.lineno, self.token.tok.lexpos))
           raise NameError
         
         type = "System.lang.Int"
@@ -370,14 +370,14 @@ class Parser:
           self.namespaceStack.pop()
         else:
           if name in self.localSymbolTable[-1]:
-            raise Exception(f"already {name}")
+            raise Exception(f"already {name} : lineno {self.token.tok.lineno}")
           else:
             self.localSymbolTable[-1][name] = {'type': type, 'body': body, 'property': PROPERTY.PRIVATE}
             
       elif self.match('var'):  # 변수선언
         name = self.getName()
         if name in body:
-          print("Error) duplicated name :", name)
+          print("Error) duplicated name : {} : lineno {}".format(name, self.token.tok.lineno))
           raise NameError
         
         if self.match(':'):
@@ -417,11 +417,11 @@ class Parser:
             raise SyntaxError
         
         if is_native and body:
-          print("Error) native function doesn't need body")
+          print("Error) native function doesn't need body : lineno {}".format(self.token.tok.lineno))
           raise SyntaxError
         
         if not is_native and not body:
-          print("Error) need function body")
+          print("Error) need function body : lineno {}".format(self.token.tok.lineno))
           raise SyntaxError
         
         self.namespaceStack.append(name)
@@ -446,7 +446,7 @@ class Parser:
     
     params = self.parseTemplateArguments()
     if params is None:
-      print("Error) Needs some template parameters")
+      print("Error) Needs some template parameters : lineno {}".format(self.token.tok.lineno))
       return None
     
     for param in params:
@@ -465,7 +465,7 @@ class Parser:
         "@template args": params})
       # TODO : 그리고 먼가 파일로 만드는 코드 추가
     else:
-      print("Error) Dont use template in this type")
+      print("Error) Dont use template in this type : lineno {}".format(self.token.tok.lineno))
       raise Exception("parseTemplate", "wrong type")
     
     self.pop()
@@ -553,11 +553,11 @@ class Parser:
     # check
     for arg in args:
       if arg.name in self.localSymbolTable:
-        print("Error) Duplicated Name")
+        print("Error) Duplicated Name : lineno {}".format(self.token.tok.lineno))
         raise SyntaxError
       
       if not self.symbolTable.findByLastName(arg.type.name):
-        print("Error) Unknown Type")
+        print("Error) Unknown Type : lineno {}".format(self.token.tok.lineno))
         raise SyntaxError
       
       self.localSymbolTable[arg.name] = arg.type
@@ -567,7 +567,7 @@ class Parser:
     # global symbol table에서 체크 : 인자 다양성 부분에 대한 고려가 필요
     if self.symbolTable.findByLastName(fn):
       name = ".".join(self.namespaceStack + [funcname])
-      print(f"Error) Already defined : {name}")
+      print(f"Error) Already defined : {name} : lineno {self.token.tok.lineno}")
       raise SyntaxError
     
     # To parse return type
@@ -576,7 +576,7 @@ class Parser:
     # To parse body of function
     body = self.parseDefBody()
     if body is None:
-      print("Error) Body Empty : in %s" % (fn))
+      print("Error) Body Empty : in %s : lineno %s" % (fn, self.token.tok.lineno))
       raise Exception("Error", "Error")
     
     if rettype != UnitType():
@@ -615,7 +615,7 @@ class Parser:
       if not self.match(','): break
     
     if not self.match(')'):
-      print("Error) Needed ')'")
+      print("Error) Needed ')' : lineno {}".format(self.token.tok.lineno))
       return None
     
     return args
@@ -647,7 +647,7 @@ class Parser:
     if self.match('<'):
       name = self.parseType()
       if name is None:
-        print("Expected class name")
+        print("Expected class name : lineno {}".format(self.token.tok.lineno))
         sys.exit(-1)
       
       template = self.parseTemplatePart()
@@ -675,7 +675,7 @@ class Parser:
     # 해당 type이 존재하는지 검사합니다.
     tp = self.symbolTable.findByLastName(idStr)
     if tp is None:
-      print("Unknown Type : %s" % (idStr))
+      print("Unknown Type : %s : lineno %s" % (idStr, self.token.tok.lineno))
       sys.exit(-1)
     
     if tp == 'alias':
@@ -711,7 +711,7 @@ class Parser:
       rank = ASTRank(self.parseSimpleExpr())
       lst.append(rank)
       if not self.match(']'):
-        print("Error) Need ']'")
+        print("Error) Need ']' : lineno {}".format(self.token.tok.lineno))
     
     return ASTRankList(lst)
   
@@ -769,14 +769,14 @@ class Parser:
     
     cond = self.parseBasicSimpleExpr()
     if cond is None:
-      print("Error) Needed to identifier")
+      print("Error) Needed to identifier : lineno {}".format(self.token.tok.lineno))
       raise SyntaxError
     if not self.match('<='):
-      print("Error) Needed to <=")
+      print("Error) Needed to <= : lineno {}".format(self.token.tok.lineno))
       raise SyntaxError
     generator = self.parseSimpleExpr()
     if generator is None:
-      print("Error) Needed generator")
+      print("Error) Needed generator : lineno {}".format(self.token.tok.lineno))
       raise SyntaxError
     
     body = None
@@ -856,7 +856,7 @@ class Parser:
     while True:
       name = self.getName()
       if name in sym:
-        print("has duplicated name")
+        print("has duplicated name : lineno {}".format(self.token.tok.lineno))
         raise Exception('Error', 'Duplicated Name')
         return None
       
@@ -883,7 +883,7 @@ class Parser:
         hist.append(tree)
       
       if ltype is None:
-        print("No Variable Type")
+        print("No Variable Type : lineno {}".format(self.token.tok.lineno))
         raise Exception('Error', 'No Variable Type')
       
       self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree}
@@ -904,7 +904,7 @@ class Parser:
     while True:
       name = self.getName()
       if name in sym:
-        print("has duplicated name")
+        print("{} has duplicated name lineno: {}".format(name, self.token.tok.lineno))
         raise Exception('Error', 'Duplicated Name')
         return None
       
@@ -922,7 +922,7 @@ class Parser:
         if rtype:
           if ltype:  # 변수의 type을 명시적으로 선언했으면, 둘이 같은지 검사
             if not self.checkSameType(ltype, rtype):
-              print(f"Error) Not equal between {ltype} and {rtype}")
+              print(f"Error) Not equal between {ltype} and {rtype} : lineno {self.token.tok.lineno}")
               raise SyntaxError
           else:
             ltype = rtype
@@ -931,7 +931,7 @@ class Parser:
         hist.append(tree)
       
       if ltype is None:
-        print("No Variable Type")
+        print("No Variable Type : lineno {}".format(self.token.tok.lineno))
         raise Exception('Error', 'No Variable Type')
       
       self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree}
@@ -948,7 +948,7 @@ class Parser:
     ast = self.parseExprs()
     self.localSymbolTable = backup
     if not self.match('}'):
-      print("Error) Need '}'")
+      print("Error) Need '}' lineno {}".format(self.token.tok.lineno))
       raise SyntaxError
     
     return ast
@@ -1077,7 +1077,7 @@ class Parser:
           symbol = self.symbolTable.findByLastName(fn)
           if symbol is None:
             # 없다면, left.type의 operator로 찾는다. (C++의 someclass::operator + (right)...)
-            print(f"Error) Function or operator not exists : {tokVal}")
+            print(f"Error) Function or operator not exists : {tokVal} : lineno {tok.lineno}")
             raise NotImplementedError
           
           if self.isdebug:
@@ -1135,7 +1135,7 @@ class Parser:
       
       ret = self.symbolTable.findByLastName(path)
       if ret is None:
-        print(f"Error) Not Symbol : {fn}")
+        print(f"Error) Not Symbol : {fn} : lineno {self.token.tok.lineno}")
         raise SyntaxError
     
     if self.isdebug:
@@ -1176,14 +1176,14 @@ class Parser:
 
     symbols = self.symbolTable.findByLastName(fn)
     if symbols is None or len(symbols) == 0:
-      print("Error) symbol is not found")
+      print("Error) symbol is not found : lineno {}".format(self.token.tok.lineno))
       raise SyntaxError
     elif len(symbols) == 1:
       symbol = symbols[list(symbols.keys())[0]]
       if isinstance(symbol, FuncType):
         return symbol.rettype
       else:
-        print("Error) Failed to find a function")
+        print("Error) Failed to find a function : lineno {}".format(self.token.tok.lineno))
         return None
     else:
       # 여러개의 symbol이 발견, 이 중에서 어떤 것을 선택할 것인가??
@@ -1196,7 +1196,7 @@ class Parser:
           bestOne = symbols[key]
       
       if bestOne is None:
-        print("Error) Not found best one!")
+        print("Error) Not found best one! : lineno {}".format(self.token.tok.lineno))
         print(symbols)
         raise NotImplementedError
       
@@ -1343,7 +1343,7 @@ class Parser:
       elif isinstance(arg, ASTID):
         symtbl = self.localSymbolTable[-1]
         if arg.name not in symtbl:
-          print("Error) Not found :", arg.name)
+          print("Error) Not found : {} : lineno {}".format(arg.name, self.token.tok.lineno))
           raise SyntaxError
 
         args.append(arg)
