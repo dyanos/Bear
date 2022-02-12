@@ -12,7 +12,26 @@ from .TypeTable import *
 def processError():
   pass
 
+
 class SymbolTable:
+  cvt = { "System.lang.Int": "int", 
+          "System.lang.Object": "object",
+          "System.lang.Char": "char",
+          "System.lang.Byte": "byte",
+          "System.lang.Short": "short",
+          "System.lang.Word": "word",
+          "System.lang.Int32": "int32",
+          "System.lang.Int64": "int64",
+          "System.lang.Int128": "int128",
+          "System.lang.Int256": "int256",
+          "System.lang.Long": "long",
+          "System.lang.Float": "float",
+          "System.lang.Double": "double",
+          "System.lang.Array": "array",
+          "System.lang.String": "string",
+          "System.lang.Boolean": "boolean",
+          "System.lang.Unit": "unit"}
+
   def __init__(self):
     self.isdebug = False
 
@@ -106,21 +125,26 @@ class SymbolTable:
     self.table[path] = ClassType(path, successions)
 
   # 초기화는 코드로 들어가야 함!!
-  def registerValue(self, path: str, type: Type) -> NoReturn:
+  def registerValue(self, path: str, type: Type, attr: Property) -> NoReturn:
     self.table[path] = ValueType(path, type)
 
-  def registerVariable(self, path: str, type: Type) -> NoReturn:
-    self.table[path] = VariableType(path, type)
+  def registerVariable(self, path: str, type: Type, attr: Property) -> NoReturn:
+    self.table[path] = VariableType(path, type, attr)
 
   def registerFunc(self, path: str, args: List[Type], rettype: Type, body: AST, symtbl: Any) -> NoReturn:
     self.table[path] = FuncType(path, args, rettype, body, symtbl)
 
   def find(self, node: Type) -> Dict[str, Type]:
-    elems = self.findByLastName(node.name)
-    pass
+    if isinstance(node.name, str):
+      return self.findByLastName(node.name)
+    elif isinstance(node.name, ASTID):
+      return self.findByLastName(node.name.name)
+    else:
+      return self.findByLastName(node.name)
   
   def findByLastName(self, idStr: str) -> Dict[str, Type]:
-    return {key: self.table[key] for key in self.table if key.endswith(idStr)}
+    keys = sorted([key for key in self.table if key.endswith(idStr)], key=lambda x: len(x))
+    return {key: self.table[key] for key in keys}
 
   def glob(self, path: str, args: List[Type]) -> Type:
     # path는 일단 두 개의 것을 나눈다.

@@ -68,11 +68,6 @@ sourceSets = []
 # symbol의 type등에 대한 부분은 string match로...
 # class나 struct일 경우는 hierachy탐색이 추가
 # template은 macro에 가까우므로, 별도의 table을 두고, realization할때 가상의 class name을 부여하여 사용 예) <templatename>_<realization type string>
-class PROPERTY:
-  PUBLIE = 1
-  PRIVATE = 2
-  PROTECTED = 3
-
 
 def checkNamespaceGroup(name: str) -> bool:
   if re.match(r'^((_|[a-zA-Z])[a-zA-Z0-9_]*\.)*\*$', name):
@@ -89,8 +84,30 @@ def mangling(name: str, args: List[AST], rettype: ASTType = None, extern: bool =
   return encodeSymbolName(name, args)
 
 
+def render_type(type: ASTType) -> str:
+  # name은 full name으로(namespace전부다)
+  # basic type은 short으로
+  # 아닌 것은 풀 네임으로
+  result = []
+  if type in SymbolTable.cvt:
+    result.append(SymbolTable.cvt[type])
+  else:
+    result.append(type)
+
+  # template부분처리
+
+  return "".join(result)
+
+
 def doInternalMangling(name: str, args: List[AST]) -> str:
-  return encodeSymbolName(name, args)
+  arg_str = []
+  for arg in args:
+    if isinstance(arg, ASTType): # ASTType이 아닌 경우도 있으려나?
+      arg_str.append(render_type(arg))
+    else:
+      raise NotImplementedError
+
+  return "{}${}".format(name, "$".join(arg_str))
 
 
 class ClassSuccessionInfo:
@@ -153,7 +170,8 @@ class Parser:
     # Root Symbol Table 등록
     self.symbolTable: SymbolTable = SymbolTable()
     # 함수 시작되면, 사용
-    self.localSymbolTable = []
+    self.localSymbolTable = {}
+    self.scope = 0
     
     # function이나 class앞의 template이나 attribute같은 것들의 정보를 가지고 있는...
     self.directive = []
@@ -210,12 +228,14 @@ class Parser:
       return None
 
   def searchSymbol(self, name: str):
-    # 우선 local에서... 마지막 scope에서부터 찾는다.
-    for scope in reversed(self.localSymbolTable):
-      if name in scope:
-        return scope[name]
+    targets = []
 
-    return self.symbolTable.find(name)
+    _name = name + "@"
+    for key in self.localSymbolTable:
+      if key.startswith(_name):
+        targets.append(key)
+
+    return [self.localSymbolTable[key] for key in targets]
   
   def getName(self) -> str:
     if self.match('_'):
@@ -341,15 +361,15 @@ class Parser:
     if not self.match('{'):
       return
     
-    property = PROPERTY.PUBLIC
+    property = Property.PUBLIC
     body = {}
     while not self.match('}'):
       if self.match('public'):
-        property = PROPERTY.PUBLIE
+        property = Property.PUBLIE
       elif self.match('prviate'):
-        property = PROPERTY.PRIVATE
+        property = Property.PRIVATE
       elif self.match('protected'):
-        property = PROPERTY.PROTECTED
+        property = Property.PROTECTED
 
       if self.match('val'):  # 상수선언
         name = self.getName()
@@ -364,15 +384,10 @@ class Parser:
         if self.match('='):
           body = self.parseInitExpr()
         
-        if property == PROPERTY.PUBLIC or property == PROPERTY.PROTECTED:
-          self.namespaceStack.append(name)
-          self.symbolTable.registerValue(name, type, body)
-          self.namespaceStack.pop()
-        else:
-          if name in self.localSymbolTable[-1]:
-            raise Exception(f"already {name} : lineno {self.token.tok.lineno}")
-          else:
-            self.localSymbolTable[-1][name] = {'type': type, 'body': body, 'property': PROPERTY.PRIVATE}
+        self.namespaceStack.append(name)
+        path = ".".join(self.namespaceStack)
+        self.symbolTable.registerValue(path, type, body, property)
+        self.namespaceStack.pop()
             
       elif self.match('var'):  # 변수선언
         name = self.getName()
@@ -387,7 +402,8 @@ class Parser:
           body = self.parseInitExpr()
         
         self.namespaceStack.append(name)
-        self.symbolTable.registerVariable(name, type, body)
+        path = ".".join(self.namespaceStack)
+        self.symbolTable.registerVariable(path, type, body, property)
         self.namespaceStack.pop()
       elif self.match('def'):  # 함수
         if 'native' in self.directive:
@@ -563,7 +579,7 @@ class Parser:
       self.localSymbolTable[arg.name] = arg.type
     
     nativeFuncname = doInternalMangling(funcname, args)
-    fn = ".".join(self.namespaceStack + [nativeFuncname])
+    fn = ".".join(self.namespaceStack + [funcname])
     # global symbol table에서 체크 : 인자 다양성 부분에 대한 고려가 필요
     if self.symbolTable.findByLastName(fn):
       name = ".".join(self.namespaceStack + [funcname])
@@ -745,7 +761,9 @@ class Parser:
     elif self.same('val'):
       ret = self.parseVal()
     elif self.same('{'):
+      self.scope += 1
       ret = self.parseBlockExprs()
+      self.scope -= 1
     else:
       ret = self.parseSimpleExpr1()
       # print "***",ret
@@ -886,7 +904,7 @@ class Parser:
         print("No Variable Type : lineno {}".format(self.token.tok.lineno))
         raise Exception('Error', 'No Variable Type')
       
-      self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree}
+      self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree, "label": self.scope}
       if not self.match(','):
         break
     
@@ -934,7 +952,7 @@ class Parser:
         print("No Variable Type : lineno {}".format(self.token.tok.lineno))
         raise Exception('Error', 'No Variable Type')
       
-      self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree}
+      self.localSymbolTable[name] = {"type": "val", "vtype": ltype, "init": tree, "level": self.scope}
       if not self.match(','):
         break
     
@@ -1293,8 +1311,6 @@ class Parser:
         vtype = None
         if path in self.localSymbolTable:
           vtype: CSEL.TypeTable.Type = self.localSymbolTable[path]
-          if 'type' in vtype:
-            vtype: CSEL.TypeTable.Type = vtype['vtype']
         elif path in self.symbolTable:
           vtype: CSEL.TypeTable.Type = self.symbolTable[path]
           if isinstance(vtype, AliasType):
@@ -1341,7 +1357,7 @@ class Parser:
       if isinstance(arg, ASTWord):
         args.append(arg)
       elif isinstance(arg, ASTID):
-        symtbl = self.localSymbolTable[-1]
+        symtbl = self.localSymbolTable
         if arg.name not in symtbl:
           print("Error) Not found : {} : lineno {}".format(arg.name, self.token.tok.lineno))
           raise SyntaxError
@@ -1349,6 +1365,15 @@ class Parser:
         args.append(arg)
       elif isinstance(arg, ASTBinOperator):
         # type checking때문에 type guessing을 해야하나??
+        args.append(arg)
+      elif isinstance(arg, ASTFuncCall):
+        found = self.symbolTable.find(arg)
+        if len(found) == 0:
+          # 유추가 가능하다면, 나중에 링크시에 찾으라고 하고 연결할수도 있음... 현재 1-pass parser인데, 2-pass parser이상일 경우는 간단하게 해결?
+          # 그런데 2-pass parser는 어떻게 구현할까나...
+          print("Error) Failed to find a symbol('{}') at {}".format(arg.name, self.token.tok.lineno))
+          raise SyntaxError
+
         args.append(arg)
       else:
         print(arg)

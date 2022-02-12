@@ -1,6 +1,15 @@
 ﻿from typing import *
+
+from CSEL.ASTNativeAdd import ASTNativeAdd
 from .ASTType import ASTType
 from .ASTNativeDef import *
+
+
+class Property:
+  PUBLIC = 0 # default
+  PROTECTED = 1
+  PRIVATE = 2
+  NATIVE = 4
 
 
 class Type:
@@ -33,9 +42,6 @@ class Type:
     else:
       return True
   
-    return True
-
-
 class AliasType(Type):
   def __init__(self, name: str, oname: Type):
     super(AliasType, self).__init__(typename="alias")
@@ -272,10 +278,11 @@ class NamespaceType(Type):
 
 
 class ValueType(Type):
-  def __init__(self, name: str, type: Type, default_val: Any = None):
+  def __init__(self, name: str, type: Type, attr: Property, default_val: Any = None):
     super(ValueType, self).__init__(typename="value")
     self.name = name
     self.type = type
+    self.attr = attr
     self.default_val = default_val
   
   def __eq__(self, right: Type) -> bool:
@@ -299,10 +306,11 @@ class ValueType(Type):
     return False
 
 class VariableType(Type):
-  def __init__(self, name: str, type: Type, default_val: Any = None):
+  def __init__(self, name: str, type: Type, attr: Property, default_val: Any = None):
     super(VariableType, self).__init__(typename="variable")
     self.name = name
     self.type = type
+    self.attr = attr
     self.default_val = default_val
 
   def __eq__(self, right: Type) -> bool:
