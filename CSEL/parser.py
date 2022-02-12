@@ -102,7 +102,7 @@ def render_type(type: ASTType) -> str:
 def doInternalMangling(name: str, args: List[AST]) -> str:
   arg_str = []
   for arg in args:
-    if isinstance(arg, ASTType): # ASTType이 아닌 경우도 있으려나?
+    if isinstance(arg, ASTType): # ASTType이 아닌 경우도 있으려나? 아 함수 이름...
       arg_str.append(render_type(arg))
     else:
       raise NotImplementedError
