@@ -249,8 +249,8 @@ class Translate:
     return self.datas
   
   def generateMachineCode(self):
-    if "_main" in self.symbolTable:
-      self.procFunc(self.symbolTable["_main"])
+    if "main" in self.symbolTable:
+      self.procFunc(self.symbolTable["main"])
   
   def getLastContext(self):
     return self.context[-1]
@@ -348,10 +348,15 @@ class Translate:
           raise SyntaxError
         elif isinstance(arg, ASTWord):
           new_args.append(arg.type)
+        elif isinstance(arg, ASTFuncCall):
+          new_args.append(self.procExpr(arg))
+        elif isinstance(arg, ASTID):
+          new_args.append(self.procExpr(arg))
         else:
           print(type(arg), arg.type, isinstance(arg.type, CSEL.TypeTable.Type))
           raise NotImplementedError
       
+      print(list(self.symbolTable.table.keys()))
       if isinstance(tree.name, ASTNames):
         sym = self.symbolTable.glob(path=".".join(tree.name.array), args=new_args)
       else:
@@ -361,7 +366,7 @@ class Translate:
         sym = self.symbolTable.glob(path=path, args=new_args)
 
       if sym is None:
-        print(f"Error) symbol is not found {tree.name}")
+        print(f"Error) failed to find {tree.name}")
         raise SyntaxError
       
       nativeName = mangling(sym)
@@ -702,16 +707,16 @@ class Translate:
     tmpReg = genTempRegister()
     
     context = self.getLastContext()
-    if tree.type == StringType():
+    if isinstance(tree.type, StringType):
       return Value(type=ASTType(name='System.lang.String', templ=None, ranks=None),
                    reg=self.machine.IString(tree.value))
-    elif tree.type == IntegerType():
+    elif isinstance(tree.type, IntegerType):
       return Value(type=ASTType(name='System.lang.Int', templ=None, ranks=None),
                    reg=self.machine.IInteger(tree.value))
-    elif tree.type == DoubleType():
+    elif isinstance(tree.type, DoubleType):
       return Value(type=ASTType(name='System.lang.Double', templ=None, ranks=None),
                    reg=self.machine.IDouble(tree.value))
-    elif tree.type == FloatType():
+    elif isinstance(tree.type, FloatType):
       return Value(type=ASTType(name='System.lang.Float', templ=None, ranks=None), reg=self.machine.IFloat(tree.value))
     else:
       print(tree, type(tree))
@@ -724,8 +729,10 @@ class Translate:
     
     context = self.getLastContext()
     info = tree.type
-    
-    if isinstance(info, Type) is False:
+    if isinstance(info, dict):
+      info = info['vtype']
+
+    if not isinstance(info, Type):
       print(info)
       raise Exception('Error', 'Not Type')
     

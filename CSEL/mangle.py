@@ -47,7 +47,7 @@ from .ASTListGenerateType1 import *
 
 from .Value import *
 
-from .mangling_msvc import mangling_msvc
+#from .mangling_msvc import mangling_msvc
 
 import re
 
@@ -521,9 +521,9 @@ def encodeSymbol(name, args, ends) -> str:
 
 
 def mangling(obj: Type, machine_type:str="msvc") -> str:
-  if machine_type == "msvc":
-    return mangling_msvc(obj)
-  elif machine_type == "linux":
+  #if machine_type == "msvc":
+  #  return mangling_msvc(obj)
+  #elif machine_type == "linux":
     if isinstance(obj, FuncType):
       return encodeSymbol(obj.name, obj.args, obj.rettype)
     else:

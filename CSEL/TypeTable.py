@@ -24,8 +24,15 @@ class Type:
     if isinstance(right, AliasType):
       right_type = right.original_type
     
-    if right_type.typename == self.typename:
+    if isinstance(right_type, str) and right_type == self.typename:
       return True
+    elif isinstance(right_type, Type) and right_type.getTypename() == self.typename:
+      return True
+    elif right is None:
+      return False
+    else:
+      print("Type mismatch: %s != %s" % (right_type.typename, self.typename))
+      return False
     
     return False
 
@@ -34,11 +41,12 @@ class Type:
     if isinstance(right, AliasType):
       right_type = right.original_type
   
-    #print(right_type.typename, self.typename)
     if isinstance(right_type, str) and right_type == self.typename:
       return False
     elif isinstance(right_type, Type) and right_type.getTypename() == self.typename:
       return False
+    elif right is None:
+      return True
     else:
       return True
   
@@ -154,6 +162,36 @@ class BooleanType(Type):
     super(BooleanType, self).__init__(typename="System.lang.Boolean")
     self.name = ''
 
+
+class PtrType(Type):
+  def __init__(self, target: Type, cv: int = 0, is_const: bool = False, is_absolute: bool = False):
+    super(PtrType, self).__init__(typename="pointer")
+    self.target = target
+    self.cv = cv
+    self.is_const = is_const
+    self.is_absolute = is_absolute
+  
+  def __eq__(self, right: Type) -> bool:
+    right_type = right
+    if isinstance(right_type, AliasType):
+      right_type = right_type.original_type
+    
+    if self.typename != right_type.typename:
+      return False
+    
+    if self.target != right.target:
+      return False
+    
+    if self.cv != right.cv:
+      return False
+    
+    if self.is_const != right.is_const:
+      return False
+    
+    if self.is_absolute != right.is_absolute:
+      return False
+    
+    return True
 
 class ArrayType(Type):
   def __init__(self, default_type: Type = None, rank: List[int] = None):

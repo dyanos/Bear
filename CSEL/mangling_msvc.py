@@ -41,7 +41,7 @@ def _convertToMSVCType(t: CSEL.TypeTable.Type) -> cppmangle.ast.Type:
     raise NotImplementedError
 
 
-def mangling_msvc(funcObj: CSEL.TypeTable.FuncType):
+def mangling_msvc(funcObj: CSEL.TypeTable.FuncType) -> str:
   #print(funcObj)
   names = funcObj.name
   if isinstance(names, str):

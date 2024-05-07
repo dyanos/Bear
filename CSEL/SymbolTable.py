@@ -167,17 +167,34 @@ class SymbolTable:
             if self.isdebug:
               print(_type.args[idx], args[loc])
 
-            if EllipsisType() == _type.args[idx].type:
+            if isinstance(_type.args[idx].type, EllipsisType):
               is_completed = True
               break
 
             if self.isdebug:  
               print(_type.args[idx].type.type, args[loc])
 
-            if _type.args[idx].type != args[loc]:
+            print("xxx=", _type.args[idx].type, ":", args[loc], ":", type(args[loc]))
+            if isinstance(_type.args[idx].type, Type):
+              if isinstance(args[loc], Type) and _type.args[idx].type != args[loc]:
+                print(f"1. not same")
+                is_completed = False
+                break
+              elif isinstance(args[loc], Value) and _type.args[idx].type != args[loc].type:
+                print(f"2. not same")
+                is_completed = False
+                break
+              elif isinstance(args[loc], str) and _type.args[idx].type != args[loc]:
+                print(f"3. not same")
+                is_completed = False
+                break
+              #else:
+              #  raise NotImplementedError
+            elif isinstance(_type.args[idx].type, FuncArgInfo) and _type.args[idx].type.type != args[loc]:
+              print("*1. not same")
               is_completed = False
               break
-              
+
             idx += 1
             loc += 1
 

@@ -85,11 +85,65 @@ def mangling(name: str, args: List[AST], rettype: ASTType = None, extern: bool =
 
 
 def render_type(type: ASTType) -> str:
+  # C++의 calling convertion에 따라서 type을 변환한다.
+  # 이는 C++로 작성된 library와의 호환을 위한 것이다.
   # name은 full name으로(namespace전부다)
   # basic type은 short으로
   # 아닌 것은 풀 네임으로
+  # class type은 full name으로
+  if type is None:
+    return ""
+  
   result = []
-  if type in SymbolTable.cvt:
+  if isinstance(type, IntegerType):
+    result.append("i")
+  elif isinstance(type, FloatType):
+    result.append("f")
+  elif isinstance(type, DoubleType):
+    result.append("d")
+  elif isinstance(type, CharType):
+    result.append("c")
+  elif isinstance(type, ByteType):
+    result.append("b")
+  elif isinstance(type, ShortType):
+    result.append("s")
+  elif isinstance(type, WordType):
+    result.append("w")
+  elif isinstance(type, EllipsisType):
+    result.append("e")
+  elif isinstance(type, StringType):
+    result.append("S")
+  #elif isinstance(type, PtrType):
+  #  result.append("P")
+  #  result.append(render_type(type.target))
+  elif isinstance(type, ArrayType):
+    result.append("A")
+    result.append(render_type(type.default_type))
+  elif isinstance(type, TemplateType):
+    result.append("T")
+    result.append(render_type(type.type))
+    result.append(render_type(type.arg))
+  elif isinstance(type, FuncType):
+    result.append("F")
+    result.append(render_type(type.rettype))
+    for arg in type.args:
+      result.append(render_type(arg.type))
+  elif isinstance(type, AliasType):
+    result.append("A")
+    result.append(render_type(type.original_type))
+  elif isinstance(type, ValueType):
+    result.append("V")
+    result.append(render_type(type.type))
+  elif isinstance(type, VariableType):
+    result.append("V")
+    result.append(render_type(type.type))
+  elif isinstance(type, UnitType):
+    result.append("U")
+  elif isinstance(type, ClassType):
+    # class type은 full name으로
+    result.append("C")
+    result.append(type.name) 
+  elif type in SymbolTable.cvt:
     result.append(SymbolTable.cvt[type])
   else:
     result.append(type)
@@ -104,6 +158,8 @@ def doInternalMangling(name: str, args: List[AST]) -> str:
   for arg in args:
     if isinstance(arg, ASTType): # ASTType이 아닌 경우도 있으려나? 아 함수 이름...
       arg_str.append(render_type(arg))
+    elif isinstance(arg, ASTDefArg):
+      arg_str.append(render_type(arg.type))
     else:
       raise NotImplementedError
 
@@ -684,7 +740,6 @@ class Parser:
     
     idStr = self.getNames()
     template = self.parseTemplatePart()
-    
     if self.isdebug:
       print(idStr)
     
@@ -697,29 +752,10 @@ class Parser:
     if tp == 'alias':
       idStr = self.symbolTable.findByLastName(idStr)
       # print "(", idStr
+        
+    print("type's full name = %s" % (idStr))
     
-    # tmpl = self.parseTemplatePart()
-    # if not self.matchTemplateInfo(result, tmpl):
-    #  # 일단 현재는 pass
-    #  print("Error) Not matched template information")
-    #  pass
-    
-    # print("type's full name = %s" % (idStr))
-    
-    # tmpl  = self.parseTemplatePart()
-    # ename, body = symbolTable.search(names.array)
-    # if ename is None:
-    #  print("doesn't exist symbol : %s" % (".".join(names.array)))
-    #  sys.exit(-1) # 일단 죽이고... 나중에 에러처리 생각
-    # else:
-    #  names.array = ename
-    
-    rank = self.parseRankList()
-    
-    if self.isdebug:
-      print("ending parseType")
-    
-    return self.symbolTable.convert(ASTType(name=idStr, templ=template, ranks=rank))
+    return self.symbolTable.convert(ASTType(name=idStr, templ=template, ranks=None))
   
   def parseRankList(self) -> ASTRankList:
     lst = []
@@ -845,7 +881,15 @@ class Parser:
     elif isinstance(expr, ASTBinOperator) or isinstance(expr, ASTUnary):
       return expr.vtype
     elif isinstance(expr, ASTID):
-      return expr.type
+      if isinstance(expr.type, Type):
+        return expr.type
+      elif isinstance(expr.type, dict) and 'vtype' in expr.type:
+        return expr.type['vtype']
+      else:
+        print(expr, expr.type)
+        print(self.localSymbolTable[expr.name]['vtype'])
+        raise NotImplementedError
+        #return self.localSymbolTable[expr.name]['vtype']
     elif isinstance(expr, ASTListGenerateType1):
       return self.guessType(expr.start)
     else:
@@ -1170,6 +1214,16 @@ class Parser:
       return node.type
     elif isinstance(node, ASTBinOperator):
       return node.vtype
+    elif isinstance(node, ASTFuncCall):
+      if isinstance(node.name, ASTID):
+        ret = self.symbolTable.findByLastName(node.name.name)
+        return ret[node.name.name]
+      elif isinstance(node.name, str):
+        ret = self.symbolTable.findByLastName(node.name)
+        return ret[node.name]
+      else:
+        print(node)
+        raise NotImplementedError
     else:
       print(node)
       raise NotImplementedError

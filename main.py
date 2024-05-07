@@ -2,8 +2,6 @@
 from typing import *
 import sys
 
-from cppmangle import mangle, demangle
-
 from CSEL.parser import *
 from CSEL.analysis import *
 from CSEL.Operand import *
@@ -25,11 +23,13 @@ DataSection = {}
 print("Parsing End")
 asmf = open(parser.basename+"64.asm", "wt")
 
+#print(parser.symbolTable.table)
+
 machine = None
-if "_main" in parser.symbolTable:
+if "main" in parser.symbolTable:
   machine = Translate(parser.symbolTable)
 
-if machine.codes == None:
+if machine is None or machine.codes is None:
   print("machine.codes is None")
   sys.exit(-1)
 else:
